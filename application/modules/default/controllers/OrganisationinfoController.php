@@ -40,7 +40,6 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 			$loginuserRole = $auth->getStorage()->read()->emprole;
 			$loginuserGroup = $auth->getStorage()->read()->group_id;
 		}
-		//$id = 1;
 		$orgInfoModel = new Default_Model_Organisationinfo();
 		$getorgData = $orgInfoModel->getorgrecords();
 		$addpermission = sapp_Global::_checkprivileges(ORGANISATIONINFO,$loginuserGroup,$loginuserRole,'add');
@@ -53,7 +52,6 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 		{
                     
 			$id = $getorgData[0]['id'];
-			//$data = $orgInfoModel->getOrganisationData($id);
                         $data = $getorgData[0];
                         $head_data = $orgInfoModel->getorghead_details();
                         $data['orghead'] = isset($head_data['head_name'])?$head_data['head_name']:"";
@@ -127,7 +125,7 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 		}
                 
 	}
-    public function editAction()
+public function editAction()
     {		
         $auth = Zend_Auth::getInstance();
         if($auth->hasIdentity())
@@ -136,20 +134,8 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
             $loginuserRole = $auth->getStorage()->read()->emprole;
             $loginuserGroup = $auth->getStorage()->read()->group_id;
         }
-        $popConfigPermission = array();$empid = '';$orgheadsData = array();$oldOrgHead = '';
+        $popConfigPermission = array();
         $new_stateId ='';
-        if(sapp_Global::_checkprivileges(PREFIX,$loginuserGroup,$loginuserRole,'add') == 'Yes'){
-			array_push($popConfigPermission,'prefix');
-        }
-        if(sapp_Global::_checkprivileges(IDENTITYCODES,$loginuserGroup,$loginuserRole,'edit') == 'Yes'){
-            array_push($popConfigPermission,'identitycodes');
-        }
-        if(sapp_Global::_checkprivileges(JOBTITLES,$loginuserGroup,$loginuserRole,'add') == 'Yes'){
-                array_push($popConfigPermission,'jobtitles');
-        }
-        if(sapp_Global::_checkprivileges(POSITIONS,$loginuserGroup,$loginuserRole,'add') == 'Yes'){
-                array_push($popConfigPermission,'position');
-        }
 		if(sapp_Global::_checkprivileges(COUNTRIES,$loginuserGroup,$loginuserRole,'add') == 'Yes'){
                 array_push($popConfigPermission,'country');
         }
@@ -159,54 +145,26 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 		if(sapp_Global::_checkprivileges(CITIES,$loginuserGroup,$loginuserRole,'add') == 'Yes'){
                 array_push($popConfigPermission,'city');
         }
-		if(sapp_Global::_checkprivileges(EMPLOYEE,$loginuserGroup,$loginuserRole,'edit') == 'Yes'){
-            array_push($popConfigPermission,'employee');
-        }
-        $msgarray = array();$new_stateId = '';
+        $msgarray = array();
+        $new_stateId = '';
+        $new_cityId = '';
         $id = $this->getRequest()->getParam('id');
         $form = new Default_Form_Organisationinfo();
-        //$emp_form = new Default_Form_employee();
-        $user_model = new Default_Model_Usermanagement();
         $orgInfoModel = new Default_Model_Organisationinfo();
         $countriesModel = new Default_Model_Countries();
         $statesmodel = new Default_Model_States();
-        $citiesmodel = new Default_Model_Cities();        
-        $role_model = new Default_Model_Roles();
-        $prefixModel = new Default_Model_Prefix();
-        $identity_code_model = new Default_Model_Identitycodes();
-        $jobtitlesModel = new Default_Model_Jobtitles();
-        $employeeModal = new Default_Model_Employee();
-        $positionsmodel = new Default_Model_Positions();
+        $citiesmodel = new Default_Model_Cities();
+        $wizard_model = new Default_Model_Wizard();        
 
-        $identity_codes = $identity_code_model->getIdentitycodesRecord();
-        $role_data = $role_model->getRolesList_orginfo();
         $allCountriesData = $countriesModel->fetchAll('isactive=1','country')->toArray();
         $allStatesData = $statesmodel->fetchAll('isactive=1','state')->toArray();
         $allCitiesData = $citiesmodel->fetchAll('isactive=1','city')->toArray();
-        
         $flag = 'true';
-        $emp_identity_code = isset($identity_codes[0])?$identity_codes[0]['employee_code']:"";
-        if($emp_identity_code!='')
-        {
-            $emp_id = $emp_identity_code."-".str_pad($user_model->getMaxEmpId($emp_identity_code), 4, '0', STR_PAD_LEFT);
-        }	
-        else 
-        {
-            $emp_id = '';
-            $msgarray['employeeId'] = 'Identity codes are not configured yet.';
-            $flag = 'false';
-        }	
+        	
 		
-        $form->employeeId->setValue($emp_id);
-        $form->emprole->addMultiOptions(array('' => 'Select Role')+$role_data);
         if(empty($allCountriesData))
         {
                 $msgarray['country'] = 'Countries are not configured yet.';
-                $flag = 'false';
-        }
-        if(empty($role_data))
-        {
-                $msgarray['emprole'] = 'Roles are not added yet.';
                 $flag = 'false';
         }
         if(empty($allStatesData))
@@ -219,53 +177,19 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
                 $msgarray['city'] = 'Cities are not configured yet.';
                 $flag = 'false';
         }
-        $prefixData = $prefixModel->getPrefixList(); 
-			
-        $form->prefix_id->addMultiOption('','Select Prefix');
-        if(!empty($prefixData))
-        { 			
-            foreach ($prefixData as $prefixres)
-            {
-                $form->prefix_id->addMultiOption($prefixres['id'],$prefixres['prefix']);
-            }
-        }
-        else
-        {
-            $msgarray['prefix_id'] = 'Prefixes are not configured yet.';
-            $flag = 'false';
-        }
-        $jobtitleData = $jobtitlesModel->getJobTitleList(); 	
-
-        if(!empty($jobtitleData))
-        { 						        
-            foreach ($jobtitleData as $jobtitleres)
-            {
-                $form->jobtitle_id->addMultiOption($jobtitleres['id'],$jobtitleres['jobtitlename']);
-            }
-        }
-        else
-        {			    
-            $msgarray['jobtitle_id'] = 'Job titles are not configured yet.';
-            $msgarray['position_id'] = 'Positions are not configured yet.';
-            $flag = 'false';
-        }
-		
-		$orgheadsData = $employeeModal->getEmployeesForOrgHead();		
-		
         if($id)
         {
 			$form->submit->setLabel('Update');
             try 
             {
                 $data = $orgInfoModel->getOrganisationData($id);
-                $currentOrgHead = $employeeModal->getCurrentOrgHead();
-				//$oldOrgHead = $data['orghead'];
-				$oldOrgHead = $currentOrgHead[0]['user_id'];
                 $form->setAttrib('action',DOMAIN.'organisationinfo/edit/id/'.$id);
                 $data['org_startdate'] = sapp_Global::change_date($data['org_startdate'],'view');
                 $form->populate($data);
-                $countryId = $data['country'];$stateId = $data['state'];$cityId = $data['city'];
-                                
+                $countryId = $data['country'];
+                $stateId = $data['state'];
+                $cityId = $data['city'];
+                $actionpage = 'edit';                
                 if(count($_POST) > 0)
                 {
                     $countryId = isset($_POST['country'])?$_POST['country']:"";
@@ -297,50 +221,6 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
                     if(count($_POST) == 0)
                         $cityId = $new_cityId;
                 }
-                //organisation head details
-                $emp_data = $employeeModal->fetchRow("is_orghead = 1");
-				//echo "<pre>"; print_r( $emp_data); die;
-				if(!empty($emp_data))
-				{
-					$user_data = $user_model->fetchRow("id = ".$emp_data->user_id);
-					if(!empty($user_data))
-					{
-						$form->setDefault('employeeId',$user_data->employeeId);
-						$form->setDefault('emprole',$user_data->emprole);
-						$form->setDefault('emailaddress',$user_data->emailaddress);
-						$form->setDefault('jobtitle_id',$user_data->jobtitle_id);
-						$form->setDefault('prefix_id',$emp_data->prefix_id);
-						$form->setDefault('date_of_joining',  sapp_Global::change_date($emp_data->date_of_joining,'view'));
-						$jobtitle_id = $emp_data->jobtitle_id;
-						if(isset($_POST['jobtitle_id']))
-							$jobtitle_id =  $_POST['jobtitle_id'];
-						
-						$form->position_id->addMultiOption('','Select a Position');
-						if($jobtitle_id != '')
-						{
-							$positionlistArr = $positionsmodel->getPositionList($jobtitle_id);
-							if(sizeof($positionlistArr) > 0)
-							{                        
-								foreach ($positionlistArr as $positionlistres)
-								{
-									$form->position_id->addMultiOption($positionlistres['id'],$positionlistres['positionname']);
-								}
-							}
-						}
-						$form->setDefault('position_id',$emp_data->position_id);
-						//$form->setDefault('orghead',$user_data->userfullname);
-						$form->setDefault('orghead',$user_data->id);
-					}
-					$empid = $emp_data->user_id;
-				}else{
-					//$form->setDefault('orghead','');
-					$form->setDefault('orghead','');
-				}
-                //end of organisation head details
-				if(empty($orgheadsData))
-				{
-					$msgarray['orghead'] = 'Management employees are not added yet.';
-				}
                 $form->setDefault('country',$countryId);
                 $form->setDefault('state',$stateId);
                 $form->setDefault('city',$cityId);
@@ -348,8 +228,6 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
                 $this->view->org_image = $data['org_image'];
                 $this->view->ermsg = '';
                 $this->view->datarr = $data;
-                $this->view->user_id = $empid;
-				$this->view->orgheadsData = $orgheadsData;
             }
             catch(Exception $e)
             {
@@ -358,118 +236,35 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
         }
         else
         {
-            $activeOrgs = $orgInfoModel->getorgrecords();
-            if(empty($activeOrgs))
-            {
-                $form->setAttrib('action',DOMAIN.'organisationinfo/edit');
-                $country = $this->_request->getParam('country');
-                $state = intVal($this->_request->getParam('state'));
-                $city = intVal($this->_request->getParam('city'));
-                if(isset($country) && $country != 0 && $country != '')
-                {
-                    $statesData = $statesmodel->getBasicStatesList($country);
-                    foreach($statesData as $res)
-                        $form->state->addMultiOption($res['state_id_org'].'!@#'.utf8_encode($res['state']),utf8_encode($res['state']));
-                    if(isset($state) && $state != 0 && $state != '')
-                        $form->setDefault('state',$state);
-                }
-                if(isset($state) && $state != 0 && $state != '')
-                {
-                    $citiesData = $citiesmodel->getBasicCitiesList($state);
-                    foreach($citiesData as $res)
-                        $form->city->addMultiOption($res['city_org_id'].'!@#'.utf8_encode($res['city']),utf8_encode($res['city']));
-                    if(isset($city) && $city != 0 && $city != '')
-                        $form->setDefault('city',$city);
-                }
-                $this->view->ermsg = '';
-            }
-            else
-            {
-                $this->view->ermsg = 'cannotadd';
-            }
-            $form->position_id->addMultiOption('','Select a Position');
-            if(isset($_POST['jobtitle_id']) && $_POST['jobtitle_id'] != '')
-            {
-                $jobtitle_id =  $_POST['jobtitle_id'];
-                $positionlistArr = $positionsmodel->getPositionList($jobtitle_id);
-                
-                if(sizeof($positionlistArr) > 0)
-                {                        
-                    foreach ($positionlistArr as $positionlistres)
-                    {
-                        $form->position_id->addMultiOption($positionlistres['id'],$positionlistres['positionname']);
-                    }
-                }
-                
-            }
-			 $emp_data = $employeeModal->fetchRow("is_orghead = 1");
-			//echo "<pre>"; print_r( $emp_data); die;
-			if(!empty($emp_data))
-			{
-				$user_data = $user_model->fetchRow("id = ".$emp_data->user_id);
-				if(!empty($user_data))
-				{
-					$form->setDefault('employeeId',$user_data->employeeId);
-					$form->setDefault('emprole',$user_data->emprole);
-					$form->setDefault('emailaddress',$user_data->emailaddress);
-					$form->setDefault('jobtitle_id',$user_data->jobtitle_id);
-					$form->setDefault('prefix_id',$emp_data->prefix_id);
-					$form->setDefault('date_of_joining',  sapp_Global::change_date($emp_data->date_of_joining,'view'));
-					$jobtitle_id = $emp_data->jobtitle_id;
-					if(isset($_POST['jobtitle_id']))
-						$jobtitle_id =  $_POST['jobtitle_id'];
-					
-					$form->position_id->addMultiOption('','Select a Position');
-					if($jobtitle_id != '')
-					{
-						$positionlistArr = $positionsmodel->getPositionList($jobtitle_id);
-						if(sizeof($positionlistArr) > 0)
-						{                        
-							foreach ($positionlistArr as $positionlistres)
-							{
-								$form->position_id->addMultiOption($positionlistres['id'],$positionlistres['positionname']);
-							}
-						}
-					}
-					$form->setDefault('position_id',$emp_data->position_id);
-					//$form->setDefault('orghead',$user_data->userfullname);
-					$form->setDefault('orghead',$user_data->id);
-				}
-				$empid = $emp_data->user_id;
-			}else{
-				//$form->setDefault('orghead','');
-				$form->setDefault('orghead','');				
-			}
-			
-			if(empty($orgheadsData))
-			{
-				$msgarray['orghead'] = 'Management employees are not added yet.';
-			}
-			$this->view->user_id = $empid;
-			$this->view->orgheadsData = $orgheadsData;
+        	$wizardData = $wizard_model->getWizardData();
+        	sapp_Global::buildlocations($form,$wizardData);
         }
         $this->view->form = $form;
-
         if(!empty($allCountriesData) && !empty($allStatesData) && !empty($allCitiesData))
         {
             $this->view->configuremsg = '';
         }else{
             $this->view->configuremsg = 'notconfigurable';
         }
-		if(isset($_POST['prevorgheadrm']))
-		$prevorgheadrm = $this->_request->getParam('prevorgheadrm');
-		else
-		$prevorgheadrm = '';
-		$this->view->prevorgheadrmval = $prevorgheadrm;
-		
-		if(isset($_POST['rmflag']))
-		$rmflag = $this->_request->getParam('rmflag');
-		else
-		$rmflag = '0';
-		$this->view->rmflag = $rmflag;
-		//echo"<pre>";print_r($this->getRequest()->getPost());		
+        $this->view->msgarray = $msgarray;
         if($this->getRequest()->getPost())
         {
+        	$result = $this->saveorginfo($form,$loginUserId);
+			$this->view->msgarray = $result;
+			if(isset($this->msgarray['domain'])) 
+            $this->view->msMsg = 'multiselecterror';
+        }
+      
+        
+        $this->view->popConfigPermission = $popConfigPermission;
+        
+    }
+    
+    public function saveorginfo($form,$loginUserId)
+    {
+    		$orgInfoModel = new Default_Model_Organisationinfo();
+    		$wizard_model = new Default_Model_Wizard();
+    		$id = $this->getRequest()->getParam('id');
             $imagerror = $this->_request->getParam('imgerr');
             $imagepath = $this->_request->getParam('org_image_value');
             $imgerrmsg = $this->_request->getParam('imgerrmsg');
@@ -510,24 +305,14 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
                 $msgarray['secondaryphone'] = 'Please enter different phone number.';
                 $flag = 'false';
             }
-
-           // echo "<pre>"; print_r($this->_request->getPost());echo "</pre>";exit;
             if($form->isValid($this->_request->getPost()) && $flag != 'false')                    
             { 
-            	 
-				$domain = $this->_request->getParam('domain'); $domain = implode(',',$domain);
-				$prevorgheadrm = $this->_request->getParam('prevorgheadrm');				
-				$actionflag = '';
-				$date = new Zend_Date();
-				$newOrgHead = $this->_request->getParam('orghead');
-				$neworgHeadData = $employeeModal->getsingleEmployeeData($newOrgHead);
-				if(!empty($neworgHeadData))
-				{	
-					$headfullname = $neworgHeadData[0]['userfullname'];
-				}else{
-					$headfullname = '';
+				$domain = $this->_request->getParam('domain'); 
+				if(!empty($domain))
+				{
+				  $domain = implode(',',$domain);
 				}
-				//$neworghead
+				$date = new Zend_Date();
 				$data = array(
 							'organisationname'=> trim($this->_request->getParam('organisationname')),
 							'domain' =>trim($domain),
@@ -546,25 +331,17 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 							'address2' => trim($this->_request->getParam('address2')),
 							'address3' => trim($this->_request->getParam('address3')),
 							'description' => trim($this->_request->getParam('description')),
-							'orghead' => trim($this->_request->getParam('orghead')),
-							//'designation' => trim($this->_request->getParam('designation',null)),
+							//'orghead' => trim($this->_request->getParam('orghead')),
 							'designation' => trim($this->_request->getParam('jobtitle_id',null)),
 							'modifiedby' =>	$loginUserId,
 							'modifieddate' => gmdate("Y-m-d H:i:s")
 						);
-						//echo "<pre>";print_r($data);exit;
 				
 				$db = Zend_Db_Table::getDefaultAdapter();	
 				$db->beginTransaction();
 				try
 				{
 		  
-					/* Swapping of organization heads */
-					if($oldOrgHead != $newOrgHead && $oldOrgHead != '' && $newOrgHead != '' && $prevorgheadrm)
-					{	
-						$orgInfoModel->changeOrgHead($oldOrgHead, $newOrgHead,$prevorgheadrm);
-					}
-					/* Swapping of organization heads END */
 					$path = IMAGE_UPLOAD_PATH;
 					$imagepath = $this->_request->getParam('org_image_value');
 					$filecopy = 'success';
@@ -606,153 +383,45 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 					}
 					$Id = $orgInfoModel->SaveorUpdateData($data, $where);
 					
-					$jobtitle_id = $this->_request->getParam('jobtitle_id',null);
-					$position_id = $this->_request->getParam('position_id',null);                        
-					$date_of_joining = sapp_Global::change_date($this->_request->getParam('date_of_joining',null),'database');
-					$employeeId = $this->_getParam('employeeId',null);
-					$emprole = $this->_getParam('emprole',null);
-					$emailaddress = $this->_getParam('emailaddress',null);
-					$emppassword = sapp_Global::generatePassword();
-					//$userfullname = trim($this->_request->getParam('orghead',null));
-					$userfullname = $headfullname;
-					$prefix_id = $this->_getParam('prefix_id',null);
-					$user_id = $this->_getParam('user_id',null);
+					$location_data = array('country' => trim((int)$this->_request->getParam('country')),
+											'state' => trim(intval($this->_request->getParam('state'))),
+											'city' => trim(intval($this->_request->getParam('city'))),
+                 							'modifiedby'=>$loginUserId,
+								  	       'modifieddate'=>gmdate("Y-m-d H:i:s"),
+					);
 					
-					$user_data = array(
-								'emprole' => $emprole,                                
-								'userfullname' => $userfullname,
-								'emailaddress' => $emailaddress,
-								'jobtitle_id'=> $jobtitle_id,
-								'modifiedby'=> $loginUserId,
-								'modifieddate'=> gmdate("Y-m-d H:i:s"),                                                                      
-								'emppassword' => md5($emppassword),
-								'employeeId' => $employeeId,
-								//'modeofentry' => 'Direct',                                                              
-								'selecteddate' => $date_of_joining,                                    
-								'userstatus' => 'old',       
-								'modeofentry' => 'Direct'
-							);
-					$emp_data = array(  
-									'user_id'=>$newOrgHead,                                        
-									'jobtitle_id'=>$jobtitle_id, 
-									'position_id'=>$position_id, 
-									'prefix_id'=>$prefix_id,    
-									'reporting_manager' => 0,
-									'date_of_joining'=>$date_of_joining,                                    
-									'modifiedby'=>$loginUserId,				
-									'modifieddate'=>gmdate("Y-m-d H:i:s")
-									);
+					$LocationId = $wizard_model->SaveorUpdateWizardData($location_data, '');
 									
-					//echo "<pre>"; print_r($user_data);print_r($emp_data);die;
-					if($Id == 'update')
-					{
-						$tableid = $id;
-						unset($user_data['emppassword']);unset($user_data['modeofentry']);unset($user_data['userstatus']);
-						if($newOrgHead != '')
-						{
-							$user_st = $user_model->SaveorUpdateUserData($user_data, " id = ".$newOrgHead);
-							$employeeModal->SaveorUpdateEmployeeData($emp_data, " user_id = ".$newOrgHead);
-						}
-						else
-						{
-							$user_data['userstatus'] = 'old';
-							$user_data['emppassword'] = md5($emppassword);
-							$user_data['createdby'] = $loginUserId;
-							$user_data['createddate'] = gmdate("Y-m-d H:i:s");
-							$user_data['isactive'] = 1;
-							if($emp_identity_code!='')
-								$emp_id = $emp_identity_code."-".str_pad($user_model->getMaxEmpId($emp_identity_code), 4, '0', STR_PAD_LEFT);
-							else
-							$emp_id = '';
-
-							$user_data['employeeId'] = $emp_id;
-							
-							$user_id = $user_model->SaveorUpdateUserData($user_data, '');
-							
-							$emp_data['user_id'] = $newOrgHead;
-							$emp_data['createdby'] = $loginUserId;
-							$emp_data['createddate'] = gmdate("Y-m-d H:i:s");;
-							$emp_data['isactive'] = 1;
-							$emp_data['is_orghead'] = 1;
-							$employeeModal->SaveorUpdateEmployeeData($emp_data, '');
-						}
-						
-						
-						if($filecopy == 'success')
-							$this->_helper->getHelper("FlashMessenger")->addMessage("Organization information updated successfully.");
-						else
-							$this->_helper->getHelper("FlashMessenger")->addMessage("Organization information updated successfully but failed to upload the logo.");
-					}
-					else
-					{
-						//start of saving into employee table                                                                                              
-						$user_data['createdby'] = $loginUserId;
-						$user_data['createddate'] = gmdate("Y-m-d H:i:s");
-						$user_data['isactive'] = 1;
-						if($emp_identity_code!='')
-							$emp_id = $emp_identity_code."-".str_pad($user_model->getMaxEmpId($emp_identity_code), 4, '0', STR_PAD_LEFT);
-						else
-						$emp_id = '';
-
-						$user_data['employeeId'] = $emp_id;
-						
-						//$user_id = $user_model->SaveorUpdateUserData($user_data, '');
-						
-						$emp_data['user_id'] = $user_id;
-						$emp_data['createdby'] = $loginUserId;
-						$emp_data['createddate'] = gmdate("Y-m-d H:i:s");;
-						$emp_data['isactive'] = 1;
-						$emp_data['is_orghead'] = 1;
-						//$employeeModal->SaveorUpdateEmployeeData($emp_data, '');
-						//end of saving into employee table.
-						$tableid = $Id;
 						if($filecopy == 'success')
 							$this->_helper->getHelper("FlashMessenger")->addMessage("Organization information saved successfully.");
 						else
 							$this->_helper->getHelper("FlashMessenger")->addMessage("Organization information saved successfully but failed to upload the logo.");
-					}
 
 					$menuID = ORGANISATIONINFO;
 					try 
 					{
 						if($Id != '' && $Id != 'update')
 						$result = sapp_Global::logManager($menuID,$actionflag,$loginUserId,$Id);
-						else $result = sapp_Global::logManager($menuID,$actionflag,$loginUserId,$id);
+						else 
+						$result = sapp_Global::logManager($menuID,$actionflag,$loginUserId,$id);
 					}
-					catch(Exception $e) { echo $e->getMessage();}
+					catch(Exception $e) 
+					{ 
+						echo $e->getMessage();
+					}
 					
-					/* Send Mail to the user */
-					if($Id != 'update')
-					{
-						$base_url = 'http://'.$this->getRequest()->getHttpHost() . $this->getRequest()->getBaseUrl();
-						$view = $this->getHelper('ViewRenderer')->view;
-						$this->view->emp_name = $userfullname;
-						$this->view->password = $emppassword;
-						$this->view->emp_id = $emp_id;
-						$this->view->base_url=$base_url;
-						$text = $view->render('mailtemplates/newpassword.phtml');
-						$options['subject'] = APPLICATION_NAME.': login credentials';
-						$options['header'] = 'Greetings from Sentrifugo';
-						$options['toEmail'] = $emailaddress;
-						$options['toName'] = $this->view->emp_name;
-						$options['message'] = $text;
-						$result = sapp_Global::_sendEmail($options);
-					}
-					/* END */
 					$db->commit();
 					$this->_redirect('organisationinfo');
-					//return 'success';
                 }
 				catch(Exception $e)
 				{	
-					//echo $e->getMessage(); die;
 					$db->rollBack();
 					return 'failed';
 				}
             }
             else
             {
-                $messages = $form->getMessages();  
+                $messages = $form->getMessages();
                 foreach ($messages as $key => $val)
                 {
                     foreach($val as $key2 => $val2)
@@ -760,27 +429,59 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
                         $msgarray[$key] = $val2;
                         break;
                     }
-                    if(empty($allCountriesData)){
-                            $msgarray['country'] = 'Countries are not configured yet.';
-                    }
-                    if(empty($allStatesData)){
-                            $msgarray['state'] = 'States are not configured yet.';
-                    }
-                    if(empty($allCitiesData)){
-                            $msgarray['city'] = 'Cities are not configured yet.';
-                    }
+                    
                 }
-                if(isset($this->msgarray['domain'])) $this->view->msMsg = 'multiselecterror';
+                return $msgarray;
+                
             }			
-        }
-      
-        $this->view->msgarray = $msgarray;
-        $this->view->popConfigPermission = $popConfigPermission;
-        
     }
+    
+    public function buildlocations($form)
+    {
+    	$countriesModel = new Default_Model_Countries();
+        $statesmodel = new Default_Model_States();
+        $citiesmodel = new Default_Model_Cities();
+    	$countryId = '';
+    	$stateId = '';
+    	$cityId = '';
+    		if(count($_POST) > 0)
+                {
+                    $countryId = isset($_POST['country'])?$_POST['country']:"";
+                    $stateId = isset($_POST['state'])?$_POST['state']:"";
+                    $cityId = isset($_POST['city'])?$_POST['city']:"";                                    
+                }
+                if($countryId != '')
+                {
+                    $statesData = $statesmodel->getBasicStatesList((int)$countryId);
+                    foreach($statesData as $res)
+                    {
+                        if($stateId == $res['state_id_org'])
+                            $new_stateId = $res['state_id_org'].'!@#'.utf8_encode($res['state']);
+                        $form->state->addMultiOption($res['state_id_org'].'!@#'.utf8_encode($res['state']),utf8_encode($res['state']));
+                    }
+                    if(count($_POST) == 0)
+                        $stateId = $new_stateId;
+                }
+                if($stateId != '')
+                {
+                    $citiesData = $citiesmodel->getBasicCitiesList((int)$stateId);
+
+                    foreach($citiesData as $res)
+                    {
+                        if($cityId == $res['city_org_id'])
+                            $new_cityId = $res['city_org_id'].'!@#'.utf8_encode($res['city']);
+                        $form->city->addMultiOption($res['city_org_id'].'!@#'.utf8_encode($res['city']),utf8_encode($res['city']));
+                    }
+                    if(count($_POST) == 0)
+                        $cityId = $new_cityId;
+                }       
+    }
+    
+   
 
 	public function saveupdateAction()
 	{
+		$orgInfoModel = new Default_Model_Organisationinfo();
 		$auth = Zend_Auth::getInstance();
 		if($auth->hasIdentity())
 		{
@@ -803,23 +504,18 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 							'domain'				=>	trim($domain),
 							'website'				=>	trim($this->_request->getParam('website')),
 							'totalemployees'		=>	trim($this->_request->getParam('totalemployees')),
-				//'registration_number'	=>	trim($this->_request->getParam('registration_number')),
 							'org_startdate'         =>  $org_startdate, 
 							'phonenumber'			=>	trim($this->_request->getParam('phonenumber')),
 							'secondaryphone'		=>	trim($this->_request->getParam('secondaryphone')),
-				//'email'					=>	trim($this->_request->getParam('email')),
-				//'secondaryemail'		=>	trim($this->_request->getParam('secondaryemail')),
 							'faxnumber'				=>	trim($this->_request->getParam('faxnumber')),
 							'address1'				=>	trim($this->_request->getParam('address1')),
 							'address2'				=>	trim($this->_request->getParam('address2')),
 							'address3'				=>	trim($this->_request->getParam('address3')),
 							'managementdetails'		=>	trim($this->_request->getParam('managementdetails')),
 							'modifiedby'			=>	$loginUserId,
-							//'modifieddate'			=>	Zend_Registry::get('currentdate')
 							'modifieddate'=>gmdate("Y-m-d H:i:s")
 				);
 				$where = array('id=?'=>$id);
-				//$messages['message'] = 'Data updated successfully';
 				$Id = $orgInfoModel->SaveorUpdateData($data, $where);
 				$actionflag = 2;
 				$menuidArr = $menumodel->getMenuObjID('/organisationinfo');
@@ -827,8 +523,6 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 				$result = sapp_Global::logManager($menuID,$actionflag,$loginUserId,$id);
 				$this->_redirect('organisationinfo');
 				$this->_helper->getHelper("FlashMessenger")->addMessage("Organization information updated successfully.");
-				/*$messages['result']='saved';
-				 $this->_helper->json($messages);*/
 			}
 			else
 			{
@@ -837,7 +531,6 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 				{
 					foreach($val as $key2 => $val2)
 					{
-						//echo $key." >> ".$val2;
 						$msgarray[$key] = $val2;
 					}
 				}
@@ -903,17 +596,12 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 						    if($imgheight < 40){
 							   $setHeight = $imgheight;
 							}
-							//$image = new Zend_Resize($newfilename);
-							//$image-> resizeImage(265, 40, 'crop');
-							//$image->saveImage($newfilename, 100);
-							//$this->smartresizeimage($newfilename,265, 40,true,'file',false,false);
 							
                             if($imgwidth > 265 || $imgheight > 40){
 							   sapp_Global::smartresizeimage($newfilename,$setWidth, $setHeight,false,'file',false,false);
                             }
 							$result_status = 'success';
 							$result_msg = '';
-							//echo 'The image was successfully loaded';//exit;
 						}
 					}
 				}
@@ -973,17 +661,14 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 	   }
 	   else if($con == 'departments' || $con == 'deptunit')
 	   {
-	      //echo $bunitid;
 	      if($bunitid != 0)
 		    $unitid = $bunitid;
 		  else
            	$unitid = '';
 			
-			//echo "a".$unitid;exit;
       		$isvalidorgstartdate = $orgInfoModel->validateOrgStartDate($startdate,$con,$unitid);
 	   }
 	  
-	   //echo "<pre>";print_r($isvalidorgstartdate);exit;
 	   if(!empty($isvalidorgstartdate))
 	     $result = 'error';
 	   else
@@ -992,103 +677,6 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 	   
 	}
 	
-	/*public function smartresizeimage($file,
-                              $width              = 0, 
-                              $height             = 0, 
-                              $proportional       = false, 
-                              $output             = 'file', 
-                              $delete_original    = false, 
-                              $use_linux_commands = false ) 
-	{
-      
-		if ( $height <= 0 && $width <= 0 ) return false;
-
-		# Setting defaults and meta
-		$info                         = getimagesize($file);
-		$image                        = '';
-		$final_width                  = 0;
-		$final_height                 = 0;
-		list($width_old, $height_old) = $info;
-
-		# Calculating proportionality
-		if ($proportional) 
-		{
-			if      ($width  == 0)  $factor = $height/$height_old;
-			elseif  ($height == 0)  $factor = $width/$width_old;
-			else                    $factor = min( $width / $width_old, $height / $height_old );
-
-			$final_width  = round( $width_old * $factor );
-			$final_height = round( $height_old * $factor );
-		}
-		else
-		{
-			$final_width = ( $width <= 0 ) ? $width_old : $width;
-			$final_height = ( $height <= 0 ) ? $height_old : $height;
-		}
-
-		# Loading image to memory according to type
-		switch ( $info[2] ) {
-			case IMAGETYPE_GIF:   $image = imagecreatefromgif($file);   break;
-			case IMAGETYPE_JPEG:  $image = imagecreatefromjpeg($file);  break;
-			case IMAGETYPE_PNG:   $image = imagecreatefrompng($file);   break;
-			default: return false;
-		}
-
-
-		# This is the resizing/resampling/transparency-preserving magic
-		$image_resized = imagecreatetruecolor( $final_width, $final_height );
-		if ( ($info[2] == IMAGETYPE_GIF) || ($info[2] == IMAGETYPE_PNG) ) 
-		{
-			$transparency = imagecolortransparent($image);
-
-			if ($transparency >= 0) {
-				$transparent_color  = imagecolorsforindex($image, $trnprt_indx);
-				$transparency       = imagecolorallocate($image_resized, $trnprt_color['red'], $trnprt_color['green'], $trnprt_color['blue']);
-				imagefill($image_resized, 0, 0, $transparency);
-				imagecolortransparent($image_resized, $transparency);
-			}
-			elseif ($info[2] == IMAGETYPE_PNG) {
-				imagealphablending($image_resized, false);
-				$color = imagecolorallocatealpha($image_resized, 0, 0, 0, 127);
-				imagefill($image_resized, 0, 0, $color);
-				imagesavealpha($image_resized, true);
-			}
-		}
-		imagecopyresampled($image_resized, $image, 0, 0, 0, 0, $final_width, $final_height, $width_old, $height_old);
-
-		# Taking care of original, if needed
-		if ( $delete_original ) {
-			if ( $use_linux_commands ) exec('rm '.$file);
-			else @unlink($file);
-		}
-
-		# Preparing a method of providing result
-		switch ( strtolower($output) ) {
-			case 'browser':
-			$mime = image_type_to_mime_type($info[2]);
-			header("Content-type: $mime");
-			$output = NULL;
-			break;
-			case 'file':
-			$output = $file;
-			break;
-			case 'return':
-			return $image_resized;
-			break;
-			default:
-			break;
-		}
-
-		# Writing image according to type to the output destination
-		switch ( $info[2] ) {
-			case IMAGETYPE_GIF:   imagegif($image_resized, $output);    break;
-			case IMAGETYPE_JPEG:  imagejpeg($image_resized, $output);   break;
-			case IMAGETYPE_PNG:   imagepng($image_resized, $output);    break;
-			default: return false;
-		}
-
-		return true;
-	}*/
 	
 	public function getcompleteorgdataAction()
 	{
@@ -1154,7 +742,7 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 			$emp_identity_code = isset($identity_codes[0])?$identity_codes[0]['employee_code']:"";
 			if($emp_identity_code!='')
 			{
-				$emp_id = $emp_identity_code."-".str_pad($user_model->getMaxEmpId($emp_identity_code), 4, '0', STR_PAD_LEFT);
+				$emp_id = $emp_identity_code.str_pad($user_model->getMaxEmpId($emp_identity_code), 4, '0', STR_PAD_LEFT);
 			}	
 			else 
 			{
@@ -1183,7 +771,6 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 			else
 			{
 				$msgarray['prefix_id'] = 'Prefixes are not configured yet.';
-				$flag = 'false';
 			}
 			
 			$jobtitleData = $jobtitlesModel->getJobTitleList(); 	
@@ -1198,7 +785,6 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 			{			    
 				$msgarray['jobtitle_id'] = 'Job titles are not configured yet.';
 				$msgarray['position_id'] = 'Positions are not configured yet.';
-				$flag = 'false';
 			}
 			
 			$form->position_id->addMultiOption('','Select a Position');
@@ -1248,14 +834,19 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 					$emprole = $this->_request->getParam('emprole',null);
 					$emailaddress = $this->_request->getParam('emailaddress',null);
 					$emppassword = sapp_Global::generatePassword();
-					$userfullname = trim($this->_request->getParam('orghead',null));
+					$first_name = trim($this->_request->getParam('firstname_orghead',null));
+					$last_name = trim($this->_request->getParam('lastname_orghead',null));
+					//$userfullname = trim($this->_request->getParam('orghead',null));
+					$userfullname = $first_name.' '.$last_name;
 					$prefix_id = $this->_request->getParam('prefix_id',null);
 					$user_id = $this->_request->getParam('user_id',null);
 					$prevorghead_rm = $this->_request->getParam('prevorghead_rm',null);
 					$prevheadid = $this->_request->getParam('prevheadid',null);
 				
 					$user_data = array(
-						'emprole' => $emprole,                                
+						'emprole' => $emprole,
+					    'firstname' => $first_name,
+						'lastname' => $last_name,					                                     
 						'userfullname' => $userfullname,
 						'emailaddress' => $emailaddress,
 						'jobtitle_id'=> $jobtitle_id,						                                                                 
@@ -1290,7 +881,7 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 					);
 					
 					if($emp_identity_code!='')
-						$emp_id = $emp_identity_code."-".str_pad($user_model->getMaxEmpId($emp_identity_code), 4, '0', STR_PAD_LEFT);
+						$emp_id = $emp_identity_code.str_pad($user_model->getMaxEmpId($emp_identity_code), 4, '0', STR_PAD_LEFT);
 					else
 					$emp_id = '';
 					$user_data['employeeId'] = $emp_id;		
@@ -1332,12 +923,11 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 					catch(Exception $e)
 					{
 						$db->rollBack();
-						//echo $e->getMessage(); die;
 					}
 				}
 				else
 				{
-					$messages = $form->getMessages();               
+					$messages = $form->getMessages();   
 					foreach ($messages as $key => $val)
 					{
 						foreach($val as $key2 => $val2)
@@ -1348,7 +938,6 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 					}                
 				}
 			}	
-			//echo "<pre>"; print_r($msgarray); die;
 			$this->view->prevorgheadId = $prevorgheadId;
 			$this->view->form = $form;			
 			$this->view->msgarray = $msgarray;
@@ -1381,7 +970,6 @@ class Default_OrganisationinfoController extends Zend_Controller_Action
 											<div>'.ucfirst($newRMData[0]['userfullname']).' is your new reporting manager.</div>
 											<div style="padding:20px 0 10px 0;">Please <a href="'.$baseUrl.'/index/popup" target="_blank" style="color:#b3512f;">click here</a> to login </div>
 										</div>';
-				//$options['cron'] = 'yes';
 				$result = sapp_Global::_sendEmail($options);
 				
 			}

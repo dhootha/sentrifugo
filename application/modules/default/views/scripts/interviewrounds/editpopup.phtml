@@ -26,8 +26,6 @@
 <?php 
 
 $messages = $this->messages;
-
-//echo $this->message;
 $data = $this->data;
 $form = $this->form;
 $round_count = $this->round_count;
@@ -36,9 +34,7 @@ $country_name = $this->country_name;
 $state_name = $this->state_name;
 $city_name = $this->city_name;
 $inter_options = $this->inter_options;
-  sapp_Global::generateClientValidations($this->form);
-//echo "<pre>";print_r($data);echo "</pre>";
-//echo "<pre>";print_r($inter_options);echo "</pre>";
+sapp_Global::generateClientValidations($this->form);
 ?>
 <?php if($this->popup == 'close') { ?>
 
@@ -52,7 +48,6 @@ Interview round details <?php echo $this->eventact; ?> successfully.
     ?>
 	<input type="hidden" value="<?php echo $this->deptid;?>" id="deptidform" name="deptidform" />
 <div class="total-form-controller">
-<!--<div class="separetor-heading">Interview Details</div>-->     
    
 <?php if(($this->loginuserGroup == HR_GROUP || $this->loginuserGroup == MANAGEMENT_GROUP || $this->loginuserGroup == '') && $data['interviewer_id'] != $this->loginUserId)
 {
@@ -165,7 +160,7 @@ Interview round details <?php echo $this->eventact; ?> successfully.
     ?>
     <div class="new-form-ui">		
         <label class="required">Interviewer</label>
-        <div class="division"><?php //echo $form->interviewer_id;?></div>
+        <div class="division"></div>
         <select name="interviewer_id" id="interviewer_id">
             <option value="">Select Interviewer</option>
 <?php 
@@ -227,7 +222,7 @@ Interview round details <?php echo $this->eventact; ?> successfully.
         <span id="errors-interview_time" class="errors"><?php echo (isset($messages['interview_time'])?$messages['interview_time']:"");?></span>
     </div>
 	<div class="new-form-ui">
-		<label class="required">Interview Name</label>
+		<label class="required">Interview Name<img class="tooltip" title="Written,Technical,HR.." src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"></label>
 		  <div class="division"><?php echo $form->interview_round;?></div>
 		  <span id="errors-interview_time" class="errors"><?php echo (isset($messages['interview_round'])?$messages['interview_round']:"");?></span>
     </div>
@@ -337,7 +332,7 @@ Interview round details <?php echo $this->eventact; ?> successfully.
         </div>        
     </div>
     <div class="new-form-ui">
-        <label>Interview Name</label>
+        <label>Interview Name<img class="tooltip" title="Written,Technical,HR.." src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"></label>
         <div class="division">         
             <input type='text' value='<?php echo $data['interview_round'];?>' disabled />
         </div>		 
@@ -396,6 +391,7 @@ Interview round details <?php echo $this->eventact; ?> successfully.
 <?php } ?>
 </script>
 <script type="text/javascript" language="javascript">
+var yearrange = <?php echo "'".YEAR.':'.(date('Y')+20)."'"; ?>;
 $(document).ready(function(){    
     <?php 
     if($this->ermsg != 'nodata' && $form->round_status->getValue()=='')
@@ -403,10 +399,12 @@ $(document).ready(function(){
     ?>
      $( "#interview_date" ).datepicker({
         showOn: "both",
+        yearRange: yearrange,
         buttonImage: "<?php echo MEDIA_PATH;?>images/cal.png",
         buttonImageOnly: true,
         buttonText: "",
         changeMonth: true,
+        
         changeYear: true,
         showButtonPanel: true ,
         dateFormat:"<?php echo DATEFORMAT_JS;?>",
@@ -419,7 +417,6 @@ $(document).ready(function(){
      $('#interview_time').timepicker({
                     showPeriod: true,
                     showLeadingZero: true,
-                    // showCloseButton:true,
                      onClose:function(){
                          $('#interview_time').trigger('blur');
                        timepicker_onclose('interview_time');

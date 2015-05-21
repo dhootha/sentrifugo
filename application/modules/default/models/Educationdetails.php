@@ -34,11 +34,11 @@ class Default_Model_Educationdetails extends Zend_Db_Table_Abstract
 		$empeducationDetails = $this->select()
 		                ->setIntegrityCheck(false)
 						->from(array('e'=>'main_empeducationdetails'),array('id'=>'id','institution_name'=>'institution_name','course'=>'course','from_date'=>'DATE_FORMAT(from_date,"'.DATEFORMAT_MYSQL.'")','to_date'=>'DATE_FORMAT(to_date,"'.DATEFORMAT_MYSQL.'")','percentage'=>'percentage'))
-						->joinLeft(array('ed'=>'main_educationlevelcode'), 'ed.id=e.educationlevel',array('educationlevel'=>'ed.educationlevelcode'))							   
+						->joinLeft(array('ed'=>'main_educationlevelcode'), 'ed.id=e.educationlevel AND ed.isactive = 1',array('educationlevel'=>'ed.educationlevelcode'))							   
 						 ->where($where)
 						  ->order("$by $sort") 
 						  ->limitPage($pageNo, $perPage);
-		//echo "<br/>".$empeducationDetails;
+		
 		return $empeducationDetails;       		
 	}
 	
@@ -53,7 +53,7 @@ class Default_Model_Educationdetails extends Zend_Db_Table_Abstract
 									->from(array('e'=>'main_empeducationdetails'))
 									->where($where);
 		
-			//echo "Query > ".     $empeducationDetails;die;                                            
+			
 			$empeducationDetailsArr = $this->fetchAll($empeducationDetails)->toArray(); 
         }
 		return $empeducationDetailsArr;       		
@@ -125,7 +125,7 @@ class Default_Model_Educationdetails extends Zend_Db_Table_Abstract
 						'searchArray' => $searchArray,
 						'dashboardcall'=>$dashboardcall,
 						'add'=>'add',
-						'menuName'=>'Education Details',
+						'menuName'=>'Education',
 						'formgrid' => 'true',
 						'unitId'=>$exParam1,
 						'call'=>$call,

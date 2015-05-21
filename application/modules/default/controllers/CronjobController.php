@@ -41,6 +41,10 @@ class Default_CronjobController extends Zend_Controller_Action
    
         $email_model = new Default_Model_EmailLogs();
         $cron_model = new Default_Model_Cronstatus();
+        // appraisal notifications
+        $this->checkperformanceduedate();
+        // feed forward notifications        
+        $this->checkffduedate();
         
         $cron_status = $cron_model->getActiveCron('General');
         if($cron_status == 'yes')
@@ -91,7 +95,6 @@ class Default_CronjobController extends Zend_Controller_Action
                     //updating cron status table to completed.                    
                     $cron_data = array(
                         'cron_status' => 0,                      
-                        //'completed_at' => $date->get('yyyy-MM-dd HH:mm:ss'),
                         'completed_at' => gmdate("Y-m-d H:i:s"),
                     );
                     $cron_id = $cron_model->SaveorUpdateCronStatusData($cron_data, "id = ".$cron_id);
@@ -99,13 +102,82 @@ class Default_CronjobController extends Zend_Controller_Action
             }
             catch(Exception $e)
             {
-                //echo $e->getMessage();
+                
             }
         }//end of cron status if
+       
+        
     }//end of index action
     
+    
     /**
-     * This action is used to send mails to employees for passport expiry,and credit card expiry
+     * This action is used to send mails to employees for passport expiry,and credit card expiry(personal details screen)
+     */
+    public function empdocsexpiryAction()
+    {
+        
+        $this->_helper->viewRenderer->setNoRender(true);
+        $this->_helper->layout()->disableLayout();
+        
+        $email_model = new Default_Model_EmailLogs();
+        $cron_model = new Default_Model_Cronstatus();
+        
+        $cron_status = $cron_model->getActiveCron('Emp docs expiry');
+                
+        if($cron_status == 'yes')
+        {
+            try
+            {
+                //updating cron status table to in-progress
+                $cron_data = array(
+                    'cron_status' => 1,
+                    'cron_type' => 'Emp docs expiry',
+                    'started_at' => gmdate("Y-m-d H:i:s"),
+                );
+
+                $cron_id = $cron_model->SaveorUpdateCronStatusData($cron_data, '');
+
+                if($cron_id != '')
+                {
+                    $calc_date = new DateTime(date('Y-m-d'));
+                    $calc_date->add(new DateInterval('P1M'));
+                    $print_date = $calc_date->format(DATEFORMAT_PHP);
+                    $calc_date = $calc_date->format('Y-m-d');
+                    $mail_data = $email_model->getEmpDocExpiryData($calc_date);
+                    if(count($mail_data) > 0)
+                    {
+                        foreach($mail_data as $mdata)
+                        {                            
+                            $view = $this->getHelper('ViewRenderer')->view;
+                            $this->view->emp_name = $mdata['name'];                           
+                            $this->view->docs_arr = $mdata['docs'];
+                            $this->view->expiry_date = $print_date;
+                            $text = $view->render('mailtemplates/empdocsexpirycron.phtml');
+                            $options['subject'] = APPLICATION_NAME.': Documents expiry';
+                            $options['header'] = 'Greetings from '.APPLICATION_NAME;
+                            $options['toEmail'] = $mdata['email'];  
+                            $options['toName'] = $mdata['name'];
+                            $options['message'] = $text;                            
+                            
+                            sapp_Global::_sendEmail($options);
+                        }
+                    }
+                    $cron_data = array(
+                            'cron_status' => 0,
+                            'completed_at' => gmdate("Y-m-d H:i:s"),
+                        );
+                    $cron_id = $cron_model->SaveorUpdateCronStatusData($cron_data, "id = ".$cron_id);
+                }//end of cron status id if  
+            }
+            catch(Exception $e)
+            {
+                
+            }
+        }//end of cron status if
+    }//end of emp expiry action
+    
+    /**
+     * This action is used to send mails to employees for passport expiry,and credit card expiry(visa and immigration screen)
      */
     public function empexpiryAction()
     {
@@ -156,7 +228,6 @@ class Default_CronjobController extends Zend_Controller_Action
                             $options['cron'] = 'yes';
                             
                             sapp_Global::_sendEmail($options);
-                            //sapp_Mail::_email($options);
                         }
                     }
                     $cron_data = array(
@@ -168,10 +239,11 @@ class Default_CronjobController extends Zend_Controller_Action
             }
             catch(Exception $e)
             {
-                //echo $e->getMessage();
+                
             }
         }//end of cron status if
     }//end of emp expiry action
+    
     /**
      * This action is to remind managers to approve leaves of his team members before end of month.
      */
@@ -231,7 +303,7 @@ class Default_CronjobController extends Zend_Controller_Action
             }
             catch(Exception $e)
             {
-                //echo $e->getMessage();
+                
             }
         }//end of cron status if
     }//end of leave approve action
@@ -270,7 +342,6 @@ class Default_CronjobController extends Zend_Controller_Action
                     $mail_data = $email_model->getRequisitionData($calc_date);
                     if(count($mail_data) > 0)
                     {
-                        //echo "<pre>";print_r($mail_data);echo "</pre>";
                         foreach($mail_data as $did => $mdata)
                         {
                             if(defined("REQ_HR_".$did))
@@ -290,7 +361,6 @@ class Default_CronjobController extends Zend_Controller_Action
                                 $options['cron'] = 'yes';
 
                                 sapp_Global::_sendEmail($options);
-                                //sapp_Mail::_email($options);
                             }
                         }
                     }
@@ -303,7 +373,7 @@ class Default_CronjobController extends Zend_Controller_Action
             }
             catch(Exception $e)
             {
-                //echo $e->getMessage();
+             
             }
         }//end of cron status if
     }//end of requisition action.
@@ -343,7 +413,6 @@ class Default_CronjobController extends Zend_Controller_Action
                     $mail_data = $email_model->getInactiveusersData($calc_date);
                     if(count($mail_data) > 0)
                     {
-                        //echo "<pre>";print_r($mail_data);echo "</pre>";
                         foreach($mail_data as $did => $mdata)
                         {                            
                             $base_url = 'http://'.$this->getRequest()->getHttpHost() . $this->getRequest()->getBaseUrl();
@@ -361,8 +430,6 @@ class Default_CronjobController extends Zend_Controller_Action
                             $options['cron'] = 'yes';
 
                             sapp_Global::_sendEmail($options);
-                            //sapp_Mail::_email($options);
-                            
                         }
                     }
                     $cron_data = array(
@@ -374,7 +441,7 @@ class Default_CronjobController extends Zend_Controller_Action
             }
             catch(Exception $e)
             {
-                //echo $e->getMessage();
+                
             }
         }//end of cron status if
     }//end of inactiveusers action.
@@ -394,38 +461,30 @@ class Default_CronjobController extends Zend_Controller_Action
 	   $logData = $logmanager_model->getLogManagerData();
 	   $i = 0;
 	   if(count($logData) > 0){
-	    // echo '<pre>'; print_r($logData); exit;
 	     foreach($logData as $record){
 		     if(isset($record['log_details']) && !empty($record['log_details'])){
-		     
 		        $id = $record['id'];
 		        $menuId = $record['menuId'];
 		        $actionflag = $record['user_action'];
 		        $userid = $record['last_modifiedby'];
 		        $keyflag = $record['key_flag'];
 		        $date = $record['last_modifieddate'];
-	
 				$jsondetails = '{"testjson":['.$record['log_details'].']}';
 				$jsonarr = @get_object_vars(json_decode($jsondetails));
-
 				$mainTableJson = '';
 				$cronTableJson = '';
 				if(!empty($jsonarr))
 				{
-				  //echo '<pre>'; print_r($jsonarr); exit;
 				  $mainJsonArrayCount = count($jsonarr['testjson']);
-				  
 				  foreach($jsonarr['testjson'] as $key => $json){
 				   $jsonVal = @get_object_vars($json);
 				   if(!empty($jsonVal)){
-				  
 					    $jsondate = explode(' ',$jsonVal['date']);
 					    $datetime1 = new DateTime($jsondate[0]);
 						$datetime2 = new DateTime();				 
 		                $interval = $datetime1->diff($datetime2);
 		                $interval = $interval->format('%a');
 		                if($interval > 30){
-		                
 		                  if($cronTableJson == ''){
 		                   	 $cronTableJson .=  json_encode($jsonVal);
 		                   }else{
@@ -447,7 +506,7 @@ class Default_CronjobController extends Zend_Controller_Action
 		            	$mainTableJson .=  json_encode($jsonVal);
 		            }
 				   }
-				 }  //echo '<hr>'.$mainTableJson.'--**--'.$mainJsonArrayCount.'----'.$cronTableJson;
+				 }  
 				 try{ 
 				 
 					 if($cronTableJson != '' && $mainTableJson != ''){
@@ -464,10 +523,152 @@ class Default_CronjobController extends Zend_Controller_Action
 				}
 		     }	     
 	     
-	     }//echo '<hr>'.'No of rows affected--'.$i;    
+	     }    
 	    
 	   }
 	}
 	
+	public function checkperformanceduedate()
+	{
+		 $app_init_model = new Default_Model_Appraisalinit();
+		 $app_ratings_model = new Default_Model_Appraisalemployeeratings();
+         $active_appraisal_Arr = $app_init_model->getActiveAppraisals();
+         $appraisalPrivMainModel = new Default_Model_Appraisalqsmain();
+         $usersmodel = new Default_Model_Users();
+         //echo'<pre>';print_r($active_appraisal_Arr);exit;
+                  
+         $current_day = new DateTime('now');
+         $current_day->sub(new DateInterval('P1D'));
+         if(!empty($active_appraisal_Arr))
+         {
+         		foreach($active_appraisal_Arr as $appval)
+         		{
+         			
+         			if($appval['enable_step'] == 2)
+         			{
+         				if($appval['managers_due_date'])
+         					$manager_due_date = new DateTime($appval['managers_due_date']);
+         				else
+         					$manager_due_date = '';	
+         				if($appval['employees_due_date'])	
+         					$emp_due_date = new DateTime($appval['employees_due_date']);
+         				else
+         					$emp_due_date = '';	
+         				$employeeidArr = $app_ratings_model->getEmployeeIds($appval['id'],'cron');
+         				if(!empty($employeeidArr))
+         				{
+         					foreach($employeeidArr as $empval)
+         					{
+         						if($empval['appraisal_status']!=7)
+         						{
+         							$interval = $current_day->diff($emp_due_date);
+		 							$interval->format('%d');
+		 							$interval=$interval->days;
+		 							if($interval<=1)
+		 							{
+		 								$employeeDetailsArr = $usersmodel->getUserDetailsByID($empval['employee_id'],'');
+		 								$optionArr = array('subject'=>'Performance Appraisal Pending',
+		 												  'header'=>'Performance Appraisal',
+		 												  'toemail'=>$employeeDetailsArr[0]['userfullname'],	
+		 												  'toname'=>$employeeDetailsArr[0]['emailaddress'],
+		 												  'message'=>'Dear '.$employeeDetailsArr[0]['userfullname'].', performance appraisal is pending.',
+		 												  'cron'=>'yes');
+		 								sapp_PerformanceHelper::saveCronMail($optionArr);
+		 								
+		 							}
+         						}
+         					}
+         				}
+         			}
+         			else
+         			{
+         				if($appval['managers_due_date'])
+         					$manager_due_date = new DateTime($appval['managers_due_date']);
+         				else
+         					$manager_due_date = '';
+         					
+         				if($appval['manager_ids'])
+         					$manager_comp_array = explode(',',$appval['manager_ids']);
+         				else
+         					$manager_comp_array = array();	
+         				$getLine1ManagerId = $appraisalPrivMainModel->getLine1ManagerIdMain($appval['id']);
+         				if(!empty($getLine1ManagerId))
+						{
+							foreach($getLine1ManagerId as $val)
+							{
+								if(!in_array($val['line_manager_1'], $manager_comp_array))
+								{
+									$interval = $current_day->diff($manager_due_date);
+		 							$interval->format('%d');
+		 							$interval=$interval->days;
+		 							if($interval<=1)
+		 							{
+		 								$optionArr = array('subject'=>'Performance Appraisal Pending',
+		 												  'header'=>'Performance Appraisal',
+		 												  'toemail'=>$val['emailaddress'],
+		 												  'toname'=>$val['userfullname'],
+		 												  'message'=>'Dear '.$val['userfullname'].', performance appraisal is pending.',
+		 												  'cron'=>'yes');
+		 								sapp_PerformanceHelper::saveCronMail($optionArr);
+		 								
+		 							}
+									
+								}
+							}
+						}	
+         			}
+         		}
+         }
+	}
+	
+	public function checkffduedate()
+	{
+		$ffinitModel = new Default_Model_Feedforwardinit();
+		$ffEmpRatModel = new Default_Model_Feedforwardemployeeratings;
+		
+        $ffDataArr = $ffinitModel->getFFbyBUDept('','yes');
+        
+       	$current_day = new DateTime('now');
+      	$current_day->sub(new DateInterval('P1D'));
+        
+        if(!empty($ffDataArr))
+      	{
+      		foreach($ffDataArr as $ffval)
+        	{
+         		if($ffval['status'] == 1)
+         		{
+         			if($ffval['ff_due_date'])
+         				$due_date = new DateTime($ffval['ff_due_date']);
+         			else
+         				$due_date = '';
+
+    				$ffEmpsStatusData = $ffEmpRatModel->getEmpsFFStatus($ffval['id'],'cron');
+    				
+         				if(!empty($ffEmpsStatusData))
+         				{
+         					foreach($ffEmpsStatusData as $empval)
+         					{
+         						if($empval['ff_status']!=APP_COMPLETED)
+         						{
+         							$interval = $current_day->diff($due_date);
+		 							$interval->format('%d');
+		 							$interval=$interval->days;
+		 							if($interval<=1)
+		 							{
+		 								$optionArr = array('subject'=>'Feed Forward Pending',
+		 												  'header'=>'Feed Forward',
+		 												  'toemail'=>$empval['userfullname'],	
+		 												  'toname'=>$empval['emailaddress'],
+		 												  'message'=>'Dear '.$empval['userfullname'].', feed forward is pending.',
+		 												  'cron'=>'yes');
+		 								sapp_PerformanceHelper::saveCronMail($optionArr);
+		 							}
+         						}
+         					}
+         				}
+         		}
+         	}
+      	}
+	}
 }
 

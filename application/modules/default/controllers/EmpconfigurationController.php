@@ -33,18 +33,18 @@ class Default_EmpconfigurationController extends Zend_Controller_Action
 	public function init()
 	{
 		$this->_options= $this->getInvokeArg('bootstrap')->getOptions();
-		$this->empConfigureArray = array('emppersonaldetails'=>'Personal Details',
-								   'empcommunicationdetails'=>'Communication Details',
+		$this->empConfigureArray = array(		
+								   'employeedocs' => 'Employee Documents',
+									'emp_leaves' => 'Employee Leaves',
+									'emp_leaves' => 'Employee Leaves',
+								   'emp_holidays' => 'Employee Holidays',
+								   'emp_salary' => 'Salary Details',
+								   'emppersonaldetails'=>'Personal Details',
+								   'empcommunicationdetails'=>'Contact Details',
 								   'emp_skills' => 'Employee Skills',
 								   'emp_jobhistory' => 'Employee Job History',
 								   'experience_details' => 'Experience Details',
 								   'education_details' => 'Education  Details',
-								   'emp_leaves' => 'Employee Leaves',
-								   'emp_holidays' => 'Employee Holidays',
-								   'emp_salary' => 'Salary Account Details',
-								   'emp_performanceappraisal' => 'Performance Appraisal',
-								   'emp_payslips' => 'Pay slips',
-								   'emp_benifits' => 'Benefits',
 								   'trainingandcertification_details' => 'Training & Certification  Details',
 								   'medical_claims' => 'Medical Claims',
 								   'disabilitydetails' => 'Disability Details',
@@ -52,10 +52,12 @@ class Default_EmpconfigurationController extends Zend_Controller_Action
 								   'visadetails' => 'Visa and Immigration Details',
 								   'creditcarddetails' => 'Corporate Card Details',
 								   'workeligibilitydetails' => 'Work Eligibility Details',
-								   'emp_reqdetails' => 'Requisition Details',
+								   'emp_additional' => 'Additional Details',
+								   'emp_performanceappraisal' => 'Performance Appraisal',
+								   'emp_payslips' => 'Pay slips',
+								   'emp_benifits' => 'Benefits',
 								   'emp_renumeration' => 'Remuneration Details',
 								   'emp_security' => 'Security Credentials',
-								   'emp_additional' => 'Additional Details'
 								   );
 
 	}
@@ -99,14 +101,12 @@ class Default_EmpconfigurationController extends Zend_Controller_Action
 			{
 				$checktype = $this->_request->getParam('checktype');
 				$emptab = sapp_Global::generateEmpTabConstants($checktype);
-				//echo '<pre>';print_r($checktype); exit;
 				$this->_helper->getHelper("FlashMessenger")->addMessage($emptab);
 				$this->_redirect('empconfiguration');
 
 			}else
 			{
 				$messages = $empconfigurationform->getMessages();
-				//echo "<br/>Messages >> <pre>";print_r($messages);die;
 				foreach ($messages as $key => $val)
 				{
 					foreach($val as $key2 => $val2)
@@ -136,8 +136,6 @@ class Default_EmpconfigurationController extends Zend_Controller_Action
 		}
 		$this->view->form = $empconfigurationform;
 		$this->view->succesmsg = $this->_helper->flashMessenger->getMessages();
-
-
 	}
 
 	public function addAction()
@@ -147,21 +145,15 @@ class Default_EmpconfigurationController extends Zend_Controller_Action
 			$loginUserId = $auth->getStorage()->read()->id;
 			$loginuserGroup = $auth->getStorage()->read()->group_id;
 		}
-
 		$empconfigurationform = new Default_Form_empconfiguration();
 		$empconfigurationform->setAttrib('action',DOMAIN.'empconfiguration/add');
-
-
 		if($loginuserGroup == ''){
 			$checkTypeArray = array_keys($this->empConfigureArray);
 		}
-
 		if(!empty($checkTypeArray)){
 			$empconfigurationform->setDefaults(array('checktype'=>$checkTypeArray));
 			$empconfigurationform->setDefault('checkall',1);
 		}
-
-
 		$this->view->form = $empconfigurationform;
 		$this->view->succesmsg = $this->_helper->flashMessenger->getMessages();
 
@@ -170,14 +162,11 @@ class Default_EmpconfigurationController extends Zend_Controller_Action
 			{
 				$checktype = $this->_request->getParam('checktype');
 				$emptab = sapp_Global::generateEmpTabConstants($checktype);
-				//echo '<pre>';print_r($checktype); exit;
 				$this->_helper->getHelper("FlashMessenger")->addMessage($emptab);
 				$this->_redirect('empconfiguration');
-
 			}else
 			{
 				$messages = $empconfigurationform->getMessages();
-				//echo "<br/>Messages >> <pre>";print_r($messages);die;
 				foreach ($messages as $key => $val)
 				{
 					foreach($val as $key2 => $val2)
@@ -191,7 +180,4 @@ class Default_EmpconfigurationController extends Zend_Controller_Action
 			}
 		}
 	}
-
-
 }
-

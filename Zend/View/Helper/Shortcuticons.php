@@ -74,43 +74,54 @@ class Zend_View_Helper_Shortcuticons extends Zend_View_Helper_Abstract {
 				if($privilegedmenuIdsCsv != "")	$menuIdsStr = $privilegedmenuIdsCsv;
 				
 				$menuDetailsArr = $settingsModel->getMenuName($menuIdsStr,1);
-
-				for($s = 0; $s < sizeof($menuDetailsArr); $s++)
+				$betaFlag = 0;
+				if(!empty($menuDetailsArr))
 				{
-					$menuName = $menuDetailsArr[$s]['menuName'];
-					$tmpMenuUrl = $menuDetailsArr[$s]['url'];
-
-					//echo $s." >> ".(strpos($tmpMenuUrl,'http://') === false)."<br/>";
-
-					if($tmpMenuUrl && (strpos($tmpMenuUrl,'http://') === false || strpos($tmpMenuUrl,'http://') === false  || strpos($tmpMenuUrl,'http://') === false))
+					for($s = 0; $s < sizeof($menuDetailsArr); $s++)
 					{
-						$menuUrl = DOMAIN.substr($tmpMenuUrl,1,strlen($tmpMenuUrl));
-					}
-					else if(strpos($tmpMenuUrl,'http://') === true || strpos($tmpMenuUrl,'http://') === true  || strpos($tmpMenuUrl,'http://') === true)
-						$menuUrl = $tmpMenuUrl;
-					else
-						$menuUrl = 'javascript:void(0);';
-						
-                    if($menuDetailsArr[$s]['iconPath'] !='') 
-					  $menuIcon = 'images/menuIcons/shortcuts/'.$menuDetailsArr[$s]['iconPath'];
-                    else
-                      $menuIcon = 'images/sampleimg.png';	
+						$menuName = $menuDetailsArr[$s]['menuName'];
+						$tmpMenuUrl = $menuDetailsArr[$s]['url'];
 
-                    //$shortcutsStr.='<li><a href="'.$menuUrl.'"><img src="'.MEDIA_PATH.'images/'.$menuIcon.'" onerror=this.src="'.MEDIA_PATH.'images/sampleimg.png"; height="33" width="33" border="0" /></a></li>';					  
-					$shortcutsStr.='<li><a href="'.$menuUrl.'" title="'.$menuName.'" ><img src="'.MEDIA_PATH.''.$menuIcon.'"  onerror=this.src="'.MEDIA_PATH.'images/sampleimg.png"; height="33" width="33" border="0" /></a></li>';
-				}										
+						//echo $s." >> ".(strpos($tmpMenuUrl,'http://') === false)."<br/>";
 
-				echo $shortcutsStr.='</ul>';
+						if($tmpMenuUrl && (strpos($tmpMenuUrl,'http://') === false || strpos($tmpMenuUrl,'http://') === false  || strpos($tmpMenuUrl,'http://') === false))
+						{
+							$menuUrl = DOMAIN.substr($tmpMenuUrl,1,strlen($tmpMenuUrl));
+						}
+						else if(strpos($tmpMenuUrl,'http://') === true || strpos($tmpMenuUrl,'http://') === true  || strpos($tmpMenuUrl,'http://') === true)
+							$menuUrl = $tmpMenuUrl;
+						else
+							$menuUrl = 'javascript:void(0);';
+							
+						if($menuDetailsArr[$s]['iconPath'] !='') 
+						  $menuIcon = 'images/menuIcons/shortcuts/'.$menuDetailsArr[$s]['iconPath'];
+						else
+						  $menuIcon = 'images/sampleimg.png';	
 
+						//$shortcutsStr.='<li><a href="'.$menuUrl.'"><img src="'.MEDIA_PATH.'images/'.$menuIcon.'" onerror=this.src="'.MEDIA_PATH.'images/sampleimg.png"; height="33" width="33" border="0" /></a></li>';					  
+						$shortcutsStr.='<li><a href="'.$menuUrl.'" title="'.$menuName.'" ><img src="'.MEDIA_PATH.''.$menuIcon.'"  onerror=this.src="'.MEDIA_PATH.'images/sampleimg.png"; height="33" width="33" border="0" /></a></li>';
+
+						if($menuDetailsArr[$s]['id'] > 148 && $menuDetailsArr[$s]['id'] < 175)
+							$betaFlag = 1;
+					}										
+
+					echo $shortcutsStr.='</ul></div>';
+					if($betaFlag == 1)
+						echo '<div class="beta_info" title="beta version">Beta</div>';
+				}
+				else
+				{
+					echo "No active shortcut icons. ".'<a href="'.DOMAIN.'viewsettings/2">'."Click here".'</a> '."to configure.";
+				}
 			}
 			else
 			{
-				echo 'You have not configured your shortcut icons. <a href="'.DOMAIN.'viewsettings/2">Click here</a> to configure.';
+				echo "You have not configured your shortcut icons. ".'<a href="'.DOMAIN.'viewsettings/2">'."Click here".'</a> '."to configure.";
 			}
 		}
 		else
 		{
-			echo 'You have not configured your shortcut icons. <a href="'.DOMAIN.'viewsettings/2">Click here</a> to configure.';
+			echo "You have not configured your shortcut icons. ".' <a href="'.DOMAIN.'viewsettings/2">'."Click here".'</a> '."to configure";
 		}
 		
 	}

@@ -72,8 +72,8 @@ class Default_Model_Usermanagement extends Zend_Db_Table_Abstract
     public function getMaxEmpId($emp_identity_code)
     {
         $db = Zend_Db_Table::getDefaultAdapter();
-        $query = "select max(cast(substr(employeeId,".(strlen($emp_identity_code)+2).") as unsigned)) max_empid 
-                    from main_users ";
+        $query = "select max(cast(substr(employeeId,".(strlen($emp_identity_code)+1).") as unsigned)) max_empid 
+                    from main_users where lower(substr(employeeId,1,".(strlen($emp_identity_code)).")) = lower('".$emp_identity_code."') and employeeId is not null and employeeId != ''";
         $result = $db->query($query);
         $row = $result->fetch();
         $maxid = $row['max_empid'];
@@ -104,9 +104,7 @@ class Default_Model_Usermanagement extends Zend_Db_Table_Abstract
                         else 
                             $search_str .= " u.isactive = 1";
                     }
-                    /*else if($key == 'logindatetime')
-                        $search_str .= " date(".$key.") = '".  sapp_Global::change_date(sapp_Global::getGMTformatdate($value),'database')."' and";
-                    */
+                    
                     else 
                         $search_str .= " ".$key." = '".$value."' and";
                 }

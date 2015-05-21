@@ -50,7 +50,11 @@ class Default_EmppersonaldetailsController extends Zend_Controller_Action
 		 	$auth = Zend_Auth::getInstance();
 		 	if($auth->hasIdentity()){
 		 		$loginUserId = $auth->getStorage()->read()->id;
+		 		$loginUserGroup = $auth->getStorage()->read()->group_id;
+				$loginUserRole = $auth->getStorage()->read()->emprole;
 		 	}
+		 	$identityDocumentArr = array();
+			$documentsArr = array();
 		 	$id = $this->getRequest()->getParam('userid');
 		 	if($id == '')		$id = $loginUserId;
 
@@ -96,13 +100,6 @@ class Default_EmppersonaldetailsController extends Zend_Controller_Action
 		 					$ethniccodemodel = new Default_Model_Ethniccode();
 		 					$racecodemodel = new Default_Model_Racecode();
 		 					$languagemodel = new Default_Model_Language();
-		 					//$identitydocumentsModel = new Default_Model_Identitydocuments();
-		 					//$identityDocumentArr = $identitydocumentsModel->getIdentitydocumnetsrecord();
-		 					/*
-		 					 Purpose:	Only management,HR,Superadmin can see the employee's identity documents.
-		 					 Modified Date:	11/13/2013
-		 					 Modified By:	Yamini
-		 					 */
 		 					if($loginUserGroup == MANAGEMENT_GROUP || $loginUserGroup == HR_GROUP || $loginUserRole == SUPERADMINROLE)
 		 					{
 		 						$identitydocumentsModel = new Default_Model_Identitydocuments();
@@ -146,7 +143,6 @@ class Default_EmppersonaldetailsController extends Zend_Controller_Action
 		 						if(isset($data[0]['ethniccodeid']) && $data[0]['ethniccodeid'] !='')
 		 						{
 		 							$singleethniccodeArr = $ethniccodemodel->getsingleEthnicCodeData($data[0]['ethniccodeid']);
-		 							//echo "<pre>";print_r($singleethniccodeArr);exit;
 		 							if($singleethniccodeArr !='norows')
 		 							$emppersonaldetailsform->ethniccodeid->addMultiOption($singleethniccodeArr[0]['id'],$singleethniccodeArr[0]['ethnicname']);
 		 						}
@@ -169,19 +165,26 @@ class Default_EmppersonaldetailsController extends Zend_Controller_Action
 
 		 						$dob = sapp_Global::change_date($data[0]["dob"], 'view');
 		 						$emppersonaldetailsform->dob->setValue($dob);
+		 						/*
 		 						if($data[0]['celebrated_dob'] !='')
 		 						{
 
 		 							$celebrated_dob = sapp_Global::change_date($data[0]["celebrated_dob"], 'view');
 		 							$emppersonaldetailsform->celebrated_dob->setValue($celebrated_dob);
 		 						}
+		 						*/
+		 						if($data[0]['identity_documents'] !='')
+								{
+									$documentsArr = get_object_vars(json_decode($data[0]['identity_documents']));
+									
+								}
 
 		 					}
 		 					$this->view->controllername = $objName;
 		 					$this->view->data = $data;
+		 					$this->view->documentsArr = $documentsArr;
 		 					$this->view->id = $id;
 		 					$this->view->form = $emppersonaldetailsform;
-		 					//$this->view->employeedata = $employeeData[0];
 		 					$this->view->employeedata = $empdata[0];
 
 		 				}
@@ -213,6 +216,8 @@ class Default_EmppersonaldetailsController extends Zend_Controller_Action
 		$racecodepermission = '';
 		$languagepermission = '';
 		$nationalityaddpermission = '';	
+		$identityDocumentArr = array();
+		$documentsArr = array();
 		if(defined('EMPTABCONFIGS'))
 		{
 			$empOrganizationTabs = explode(",",EMPTABCONFIGS);
@@ -253,24 +258,16 @@ class Default_EmppersonaldetailsController extends Zend_Controller_Action
 						else
 						{
 							$this->view->rowexist = "rows";
-							//$empdata = $employeeModal->getActiveEmployeeData($id);
 							if(!empty($empdata))
 							{
 								$empperdetailsModal = new Default_Model_Emppersonaldetails();
 								$usersModel = new Default_Model_Users();
 								$emppersonaldetailsform = new Default_Form_emppersonaldetails();
-								/*
-								 Purpose:	Only management,HR,Superadmin can see the employee's identity documents.
-								 Modified Date:	11/13/2013
-								 Modified By:	Yamini
-								 */
 								if($loginUserGroup == MANAGEMENT_GROUP || $loginUserGroup == HR_GROUP || $loginUserRole == SUPERADMINROLE)
 								{
 									$identitydocumentsModel = new Default_Model_Identitydocuments();
 									$identityDocumentArr = $identitydocumentsModel->getIdentitydocumnetsrecord();
 								}
-								//$employeeData = $usersModel->getUserDetailsByIDandFlag($id);
-								//echo "<pre>";print_r($employeeData);exit;
 								$genderModel = new Default_Model_Gender();
 								$maritalstatusmodel = new Default_Model_Maritalstatus();
 								$nationalitymodel = new Default_Model_Nationality();
@@ -280,7 +277,6 @@ class Default_EmppersonaldetailsController extends Zend_Controller_Action
 								$msgarray = array();
 
 								$genderlistArr = $genderModel->getGenderList();
-								//$genderlistArr="";
 								if(!empty($genderlistArr))
 								{
 									foreach ($genderlistArr as $genderlistres){
@@ -358,56 +354,31 @@ class Default_EmppersonaldetailsController extends Zend_Controller_Action
 									$msgarray['languageid'] = 'Languages are not configured yet.';
 									$emptyFlag++;
 								}
-								//echo"<pre>";print_r($identityDocumentArr);exit;
 								if(!empty($identityDocumentArr))
 								{
-									/*if($identityDocumentArr[0]['passport'] == 1)
-									 {
-									 $emppersonaldetailsform->passport->setRequired(true);
-									 $emppersonaldetailsform->passport->addValidator('NotEmpty', false, array('messages' => 'Please enter passport number.'));
-									 }
-									 if($identityDocumentArr[0]['ssn'] == 1)
-									 {
-									 $emppersonaldetailsform->SSN_number->setRequired(true);
-									 $emppersonaldetailsform->SSN_number->addValidator('NotEmpty', false, array('messages' => 'Please enter SSN.'));
-									 }
-									 if($identityDocumentArr[0]['aadhaar'] == 1)
-									 {
-									 $emppersonaldetailsform->adhar_number->setRequired(true);
-									 $emppersonaldetailsform->adhar_number->addValidator('NotEmpty', false, array('messages' => 'Please enter aadhar number.'));
-									 }
-									 if($identityDocumentArr[0]['pancard'] == 1)
-									 {
-									 $emppersonaldetailsform->pancard_number->setRequired(true);
-									 $emppersonaldetailsform->pancard_number->addValidator('NotEmpty', false, array('messages' => 'Please enter pancard number.'));
-									 }
-									 if($identityDocumentArr[0]['drivinglicense'] == 1)
-									 {
-									 $emppersonaldetailsform->drivinglicence_number->setRequired(true);
-									 $emppersonaldetailsform->drivinglicence_number->addValidator('NotEmpty', false, array('messages' => 'Please enter driving license number.'));
-									 }
-									 if($identityDocumentArr[0]['others'] !='')
-									 {
-									 $emppersonaldetailsform->otheridentity->setRequired(true);
-									 $emppersonaldetailsform->otheridentity->addValidator('NotEmpty', false, array('messages' => 'Please enter '.$identityDocumentArr[0]['others'].'.'));
-									 }*/
 									$this->view->identitydocument = $identityDocumentArr;
 								}
 
 
 								$data = $empperdetailsModal->getsingleEmpPerDetailsData($id);
-								//echo "<pre>";print_r($data);exit;
 								if(!empty($data))
 								{
 									$emppersonaldetailsform->populate($data[0]);
 
 									$dob = sapp_Global::change_date($data[0]["dob"], 'view');
 									$emppersonaldetailsform->dob->setValue($dob);
+									/*
 									if($data[0]['celebrated_dob'] !='')
 									{
 
 										$celebrated_dob = sapp_Global::change_date($data[0]["celebrated_dob"], 'view');
 										$emppersonaldetailsform->celebrated_dob->setValue($celebrated_dob);
+									}
+									*/
+									if($data[0]['identity_documents'] !='')
+									{
+										$documentsArr = get_object_vars(json_decode($data[0]['identity_documents']));
+										
 									}
 									$emppersonaldetailsform->setDefault('genderid',$data[0]['genderid']);
 									$emppersonaldetailsform->setDefault('maritalstatusid',$data[0]['maritalstatusid']);
@@ -418,9 +389,11 @@ class Default_EmppersonaldetailsController extends Zend_Controller_Action
 								}
 								$emppersonaldetailsform->user_id->setValue($id);
 								$emppersonaldetailsform->setAttrib('action',DOMAIN.'emppersonaldetails/edit/userid/'.$id);
-
+								
+								
 								$this->view->form = $emppersonaldetailsform;
 								$this->view->data = $data;
+								$this->view->documentsArr = $documentsArr;
 								$this->view->id = $id;
 								$this->view->msgarray = $msgarray;
 								$this->view->employeedata = $empdata[0];
@@ -442,7 +415,7 @@ class Default_EmppersonaldetailsController extends Zend_Controller_Action
 				}
 				if($this->getRequest()->getPost())
 				{
-					$result = $this->save($emppersonaldetailsform,$id);
+					$result = $this->save($emppersonaldetailsform,$id,$identityDocumentArr);
 					$this->view->msgarray = $result;
 				}
 
@@ -462,101 +435,170 @@ class Default_EmppersonaldetailsController extends Zend_Controller_Action
 		$this->view->nationalityaddpermission = $nationalityaddpermission;
 	}
 
-	public function save($emppersonaldetailsform,$userid)
+	public function save($emppersonaldetailsform,$userid,$identityDocumentArr)
 	{
 		$auth = Zend_Auth::getInstance();
 		if($auth->hasIdentity()){
 			$loginUserId = $auth->getStorage()->read()->id;
 		}
-		//echo"<pre>";print_r($this->_request->getPost());exit;
-		if($emppersonaldetailsform->isValid($this->_request->getPost())){
-			$empperdetailsModal = new Default_Model_Emppersonaldetails();
-			$id = $this->_request->getParam('id');
-			$user_id = $userid;
-			$genderid = $this->_request->getParam('genderid');
-			$maritalstatusid = $this->_request->getParam('maritalstatusid');
-			$nationalityid = $this->_request->getParam('nationalityid');
-			$ethniccodeid = $this->_request->getParam('ethniccodeid');
-			$racecodeid = $this->_request->getParam('racecodeid');
-			$languageid = $this->_request->getParam('languageid');
-
-			$dob = $this->_request->getParam('dob');
-			$dob = sapp_Global::change_date($dob, 'database');
-			$celebrated_dob = $this->_request->getParam('celebrated_dob');
-			$celebrated_dob = sapp_Global::change_date($celebrated_dob, 'database');
-
-			$passport = $this->_request->getParam('passport');
-			$pancard_number = $this->_request->getParam('pancard_number');
-			$SSN_number = $this->_request->getParam('SSN_number');
-			$adhar_number = $this->_request->getParam('adhar_number');
-			$drivinglicence_number = $this->_request->getParam('drivinglicence_number');
-			$otheridentity = $this->_request->getParam('otheridentity');
-
-			$bloodgroup = $this->_request->getParam('bloodgroup');
-
-			$date = new Zend_Date();
-			$menumodel = new Default_Model_Menu();
-			$actionflag = '';
-			$tableid  = '';
-
-			$data = array('user_id'=>$user_id,
-				                 'genderid'=>$genderid,
-								 'maritalstatusid'=>$maritalstatusid,
-                                 'nationalityid'=>$nationalityid,
-                                 'ethniccodeid'=>$ethniccodeid,
-                                 'racecodeid'=>$racecodeid,
-                                 'languageid'=>$languageid,    								 
-				      			 'dob'=>$dob,
-								 'celebrated_dob'=>($celebrated_dob!=''?$celebrated_dob:NULL),
-								 'passport'=>($passport!=''?$passport:NULL),
-								 'pancard_number'=>($pancard_number!=''?$pancard_number:NULL),
-								 'adhar_number'=>($adhar_number!=''?$adhar_number:NULL),
-                                 'SSN_number'=>($SSN_number!=''?$SSN_number:NULL), 
-                                 'drivinglicence_number'=>($drivinglicence_number!=''?$drivinglicence_number:NULL), 								 
-								 'otheridentity'=>($otheridentity!=''?$otheridentity:NULL),
-				      			 'bloodgroup'=>($bloodgroup!=''?$bloodgroup:NULL),
-								 'modifiedby'=>$loginUserId,
-			                     'modifieddate'=>gmdate("Y-m-d H:i:s")
-
-			//'modifieddate'=>$date->get('yyyy-MM-dd HH:mm:ss')
-			);
-			if($id!=''){
-				$where = array('user_id=?'=>$user_id);
-				$actionflag = 2;
-			}
-			else
-			{
-				$data['createdby'] = $loginUserId;
-				//$data['createddate'] = $date->get('yyyy-MM-dd HH:mm:ss');
-				$data['createddate'] = gmdate("Y-m-d H:i:s");
-				$data['isactive'] = 1;
-				$where = '';
-				$actionflag = 1;
-			}
-			//print_r($where);
-			//echo "<pre>";print_r($data);exit;
-			$Id = $empperdetailsModal->SaveorUpdateEmpPersonalData($data, $where);
-			if($Id == 'update')
-			{
-				$tableid = $id;
-				$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee personal details updated successfully."));
+		
+				$documentnameArr = array();
+				$expiry_dateArr = array();
+				$mandatorydocArr = array();
+				
+				$documentnameArr = $this->_request->getParam('document_name');
+				$expiry_dateArr = $this->_request->getParam('expiry_date');
+				$mandatorydocStr = $this->_request->getParam('mandatorydoc');
+				
+				$errorflag = 'true';
+				if($mandatorydocStr !='')
+				{
+					$mandatorydocArr = explode(',',$mandatorydocStr);
+				}
+				if(!empty($documentnameArr) && !empty($mandatorydocArr))
+				{
+					for($i=0;$i<sizeof($documentnameArr);$i++)
+					{
+						if($mandatorydocArr[$i] == 1)
+						{
+							if($documentnameArr[$i] == '')
+							{
+								$msgarray[$i]['document_name'] = 'Please enter document name.';
+								$errorflag = 'false';
+							}
+							else if(!preg_match('/^[a-zA-Z0-9.\- ?]+$/', $documentnameArr[$i]))
+							{
+								$msgarray[$i]['document_name'] = 'Please enter valid request type.';
+								$errorflag = 'false';
+							}	
+						}else if($mandatorydocArr[$i] == 0)
+						{
+							if($documentnameArr[$i] !='')
+							{
+								if(!preg_match('/^[a-zA-Z0-9.\- ?]+$/', $documentnameArr[$i]))
+								{
+									$msgarray[$i]['document_name'] = 'Please enter valid request type.';
+									$errorflag = 'false';
+								}
+							}
+						}
+						
+					}
+				}
+				
+				if(!empty($expiry_dateArr))
+				{
+					for($j=0;$j<sizeof($expiry_dateArr);$j++)
+					{
+							if($expiry_dateArr[$j] == '')
+							{
+								$msgarray[$j]['expiry_date'] = 'Please enter expiry date.';
+								$errorflag = 'false';
+							}	
+					}
+				}
+				
+				if($emppersonaldetailsform->isValid($this->_request->getPost()) && $errorflag == 'true'){
+					$post_values = $this->_request->getPost();
+		           	 if(isset($post_values['id']))
+		                unset($post_values['id']);
+		             if(isset($post_values['user_id']))
+		                unset($post_values['user_id']);
+		             if(isset($post_values['submit']))	
+		                unset($post_values['submit']);
+		        $new_post_values = array_filter($post_values);
+		        if(!empty($new_post_values))
+		        {
+					$identitydocArr = array();
+					$identitydoc = '';
+					$expirydate = '';
+					if(!empty($identityDocumentArr))
+					{
+						for($k=0;$k<sizeof($identityDocumentArr);$k++)
+						{
+							$identitydoc = isset($documentnameArr[$k])?$documentnameArr[$k]:'';
+							if(isset($expiry_dateArr[$k]) && $expiry_dateArr[$k] !='empty')
+								$expirydate = sapp_Global::change_date($expiry_dateArr[$k],'database');
+							else
+								$expirydate = '';	
+							$identitydocArr[$identityDocumentArr[$k]['id']] = $identitydoc.':'.$expirydate;
+						}
+					}
 					
-			}
-			else
+					$identitydocjson = json_encode($identitydocArr);
+					
+					$empperdetailsModal = new Default_Model_Emppersonaldetails();
+					$id = $this->_request->getParam('id');
+					$user_id = $userid;
+					$genderid = $this->_request->getParam('genderid');
+					$maritalstatusid = $this->_request->getParam('maritalstatusid');
+					$nationalityid = $this->_request->getParam('nationalityid');
+					$ethniccodeid = $this->_request->getParam('ethniccodeid');
+					$racecodeid = $this->_request->getParam('racecodeid');
+					$languageid = $this->_request->getParam('languageid');
+		
+					$dob = $this->_request->getParam('dob');
+					$dob = sapp_Global::change_date($dob, 'database');
+					//$celebrated_dob = $this->_request->getParam('celebrated_dob');
+					//$celebrated_dob = sapp_Global::change_date($celebrated_dob, 'database');
+		
+					$bloodgroup = $this->_request->getParam('bloodgroup');
+		
+					$date = new Zend_Date();
+					$menumodel = new Default_Model_Menu();
+					$actionflag = '';
+					$tableid  = '';
+		
+					$data = array('user_id'=>$user_id,
+						                 'genderid'=>$genderid,
+										 'maritalstatusid'=>$maritalstatusid,
+		                                 'nationalityid'=>$nationalityid,
+		                                 'ethniccodeid'=>$ethniccodeid,
+		                                 'racecodeid'=>$racecodeid,
+		                                 'languageid'=>$languageid,    								 
+						      			 'dob'=>$dob,
+										 //'celebrated_dob'=>($celebrated_dob!=''?$celebrated_dob:NULL),
+						      			 'bloodgroup'=>($bloodgroup!=''?$bloodgroup:NULL),
+										 'identity_documents'=>(!empty($identitydocArr)?$identitydocjson:NULL),	
+										 'modifiedby'=>$loginUserId,
+					                     'modifieddate'=>gmdate("Y-m-d H:i:s")
+		
+					);
+					if($id!=''){
+						$where = array('user_id=?'=>$user_id);
+						$actionflag = 2;
+					}
+					else
+					{
+						$data['createdby'] = $loginUserId;
+						$data['createddate'] = gmdate("Y-m-d H:i:s");
+						$data['isactive'] = 1;
+						$where = '';
+						$actionflag = 1;
+					}
+					$Id = $empperdetailsModal->SaveorUpdateEmpPersonalData($data, $where);
+					if($Id == 'update')
+					{
+						$tableid = $id;
+						$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee personal details updated successfully."));
+							
+					}
+					else
+					{
+						$tableid = $Id;
+						$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee personal details added successfully."));
+					}
+					$menuidArr = $menumodel->getMenuObjID('/employee');
+					$menuID = $menuidArr[0]['id'];
+					$result = sapp_Global::logManager($menuID,$actionflag,$loginUserId,$user_id);
+			}else
 			{
-				$tableid = $Id;
-				$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee personal details added successfully."));
-			}
-			$menuidArr = $menumodel->getMenuObjID('/employee');
-			$menuID = $menuidArr[0]['id'];
-			//echo "<pre>";print_r($menuidArr);exit;
-			$result = sapp_Global::logManager($menuID,$actionflag,$loginUserId,$user_id);
-			//echo $result;exit;
-			$this->_redirect('emppersonaldetails/edit/userid/'.$user_id);
+				$this->_helper->getHelper("FlashMessenger")->addMessage(array("error"=>FIELDMSG));
+			}			
+					$this->_redirect('emppersonaldetails/edit/userid/'.$userid);
 		}else
 		{
 			$messages = $emppersonaldetailsform->getMessages();
-			//echo"<pre>";print_r($messages);exit;
 			foreach ($messages as $key => $val)
 			{
 				foreach($val as $key2 => $val2)
@@ -565,7 +607,7 @@ class Default_EmppersonaldetailsController extends Zend_Controller_Action
 					break;
 				}
 			}
-			//echo"<pre>";print_r($messages);exit;
+			//echo '<pre>';print_r($msgarray);exit;
 			return $msgarray;
 		}
 

@@ -24,7 +24,7 @@ class Default_Form_empcommunicationdetails extends Zend_Form
     public function init()
     {
         $this->setMethod('post');
-		//$this->setAttrib('action',DOMAIN.'employee/add');
+		
         $this->setAttrib('id', 'formid');
         $this->setAttrib('name', 'emplcommunicationdetails');
 		
@@ -33,14 +33,11 @@ class Default_Form_empcommunicationdetails extends Zend_Form
         $userid = new Zend_Form_Element_Hidden('user_id');
 			
         $personalemail = new Zend_Form_Element_Text('personalemail');
-        $personalemail->setRequired(true);
         $personalemail->setAttrib('maxLength', 50);
         $personalemail->addFilter('StripTags');
         $personalemail->addFilter('StringTrim');
-        $personalemail->addValidator('NotEmpty', false, array('messages' => 'Please enter email.'));
-        /*$personalemail->addValidator('EmailAddress', true, array('messages'=>array('emailAddressInvalidFormat'=>'Please enter valid email.','emailAddressInvalidHostname'=>'Please enter a valid email.')));*/
 		$personalemail->addValidator("regex",true,array(
-                           // 'pattern'=>'/^(?!.*\.{2})[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$\//gi',                            		   
+                           
 						    'pattern'=>'/^(?!.*\.{2})[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/',                            
                            'messages'=>array(
                                'regexNotMatch'=>'Please enter valid email.'
@@ -50,38 +47,23 @@ class Default_Form_empcommunicationdetails extends Zend_Form
         $perm_streetaddress = new Zend_Form_Element_Text('perm_streetaddress');
         $perm_streetaddress->setAttrib('maxLength', 100);
         $perm_streetaddress->addFilter(new Zend_Filter_StringTrim());
-        $perm_streetaddress->setRequired(true);
-        $perm_streetaddress->addValidator('NotEmpty', false, array('messages' => 'Please enter street address.'));		
 			
         $perm_country = new Zend_Form_Element_Select('perm_country');
-        $perm_country->setRequired(true)->addErrorMessage('Please select country.');
-        $perm_country->addValidator('NotEmpty', false, array('messages' => 'Please select country.'));
-		//$perm_country->addFilter('Int')->addValidator('NotEmpty',true, array('integer','zero'));
-        //$perm_country->setAttrib('onchange', 'displayParticularState_normal(this,"","perm_state","perm_city")');
 		$perm_country->setAttrib('onchange', 'displayParticularState(this,"","perm_state","")');
-		
         $perm_country->setRegisterInArrayValidator(false);
-
+        
         $perm_state = new Zend_Form_Element_Select('perm_state');
-        //$perm_state->setAttrib('onchange', 'displayParticularCity_normal(this,"","perm_city","")');
 		$perm_state->setAttrib('onchange', 'displayParticularCity(this,"","perm_city","")');
         $perm_state->setRegisterInArrayValidator(false);
         $perm_state->addMultiOption('','Select State');
-        $perm_state->setRequired(true);
-        $perm_state->addValidator('NotEmpty', false, array('messages' => 'Please select state.')); 
 		
         $perm_city = new Zend_Form_Element_Select('perm_city');
-        //$perm_city->setAttrib('onchange', 'displayCityCode(this)');
         $perm_city->setRegisterInArrayValidator(false);
         $perm_city->addMultiOption('','Select City');
-        $perm_city->setRequired(true);
-        $perm_city->addValidator('NotEmpty', false, array('messages' => 'Please select city.'));  
 
         $perm_pincode = new Zend_Form_Element_Text('perm_pincode');
         $perm_pincode->setAttrib('maxLength', 10);
         $perm_pincode->addFilter(new Zend_Filter_StringTrim());
-        $perm_pincode->setRequired(true);
-        $perm_pincode->addValidator('NotEmpty', false, array('messages' => 'Please enter postal code.'));
         $perm_pincode->addValidators(array(array('StringLength',false,
                                   array('min' => 3,
                                   		'max' => 10,
@@ -93,7 +75,7 @@ class Default_Form_empcommunicationdetails extends Zend_Form
 		
         $perm_pincode->addValidator("regex",true,array(
                            'pattern'=>'/^(?!0{3})[0-9a-zA-Z]+$/', 
-                          // 'pattern'=>'/^[a-zA-Z][^(!~^?%`)]+$/',
+
                            'messages'=>array(
                                'regexNotMatch'=>'Please enter valid postal code.'
                            )
@@ -106,19 +88,19 @@ class Default_Form_empcommunicationdetails extends Zend_Form
 		
 			
         $current_country = new Zend_Form_Element_Select('current_country');
-       	//$current_country->setAttrib('onchange', 'displayParticularState_normal(this,"","current_state","current_city")');
+       	
 		$current_country->setAttrib('onchange', 'displayParticularState(this,"","current_state","")');
         $current_country->setRegisterInArrayValidator(false);
         $current_country->addMultiOption('','Select Country');
 
         $current_state = new Zend_Form_Element_Select('current_state');
-        //$current_state->setAttrib('onchange', 'displayParticularCity_normal(this,"","current_city","")');
+        
 		$current_state->setAttrib('onchange', 'displayParticularCity(this,"","current_city","")');
         $current_state->setRegisterInArrayValidator(false);
         $current_state->addMultiOption('','Select State');
        		
         $current_city = new Zend_Form_Element_Select('current_city');
-        //$perm_city->setAttrib('onchange', 'displayCityCode(this)');
+        
         $current_city->setRegisterInArrayValidator(false);
         $current_city->addMultiOption('','Select City');
 		
@@ -137,8 +119,8 @@ class Default_Form_empcommunicationdetails extends Zend_Form
 		
         $current_pincode->addValidator("regex",true,array(
 		                    'pattern'=>'/^(?!0{3})[0-9a-zA-Z]+$/', 
-                           //'pattern'=>'/^[0-9a-zA-Z]+$/', 
-                          // 'pattern'=>'/^[a-zA-Z][^(!~^?%`)]+$/',
+                           
+                          
                            'messages'=>array(
                                'regexNotMatch'=>'Please enter valid postal code.'
                            )
@@ -153,7 +135,7 @@ class Default_Form_empcommunicationdetails extends Zend_Form
         $emergency_number->addFilter(new Zend_Filter_StringTrim());
         $emergency_number->addValidator("regex",true,array(
                            'pattern'=>'/^(?!0{10})[0-9]+$/', 
-                          // 'pattern'=>'/^[a-zA-Z][^(!~^?%`)]+$/',
+                          
                            'messages'=>array(
                                'regexNotMatch'=>'Please enter valid phone number.'
                            )
@@ -171,10 +153,10 @@ class Default_Form_empcommunicationdetails extends Zend_Form
         $emergency_email = new Zend_Form_Element_Text('emergency_email');
         $emergency_email->setAttrib('maxLength', 50);
         $emergency_email->addFilter(new Zend_Filter_StringTrim());
-		//$emergency_email->addValidator('EmailAddress');
-        /*$emergency_email->addValidator('EmailAddress', true, array('messages'=>array('emailAddressInvalidFormat'=>'Please enter valid email.','emailAddressInvalidHostname'=>'Please enter valid email.')));*/
+		
+        
 		$emergency_email->addValidator("regex",true,array(
-                           // 'pattern'=>'/^(?!.*\.{2})[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$\//gi',                            		   
+                           
 						    'pattern'=>'/^(?!.*\.{2})[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/',                            
                            'messages'=>array(
                                'regexNotMatch'=>'Please enter valid email.'

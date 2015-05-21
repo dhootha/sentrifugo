@@ -29,28 +29,15 @@ if(!empty($this->employeedata))
  } 
 ?>
 
-<div class="right-block-data"> 
+<div class="right-block-data right-over-bottom-border"> 
 	<div id="error_message" style="display:none;"></div>
 		<div class="ml-alert-1-info m1-info-set">
 			<div class="style-1-icon info"></div>Feature will be available soon.
 		</div>	
 </div>	
 </div>
-<script>
+<script type='text/javascript'>
 $(document).ready(function(){
-     /* Making window responsive
- 	var complete_width = $('.poc-ui-data-control').width();
-	$('.left-block-ui-data').css("width", "230");
-	$('.right-block-data').css("width", (complete_width-(253)));	
-		
-	 function checkWidth() {
-        var complete_width = $('.poc-ui-data-control').width();		
-		$('.left-block-ui-data').css("width", "230");
-		$('.right-block-data').css("width", (complete_width-(253)));		
-    }
-	$(window).resize(function() {
-		checkWidth();
-	}); */
     $("#emp_security").addClass('active');
     $("#emp_security").removeAttr("onclick");
 

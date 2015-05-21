@@ -59,18 +59,15 @@ if($this->form->emptyFlag->getValue() != 0)
         <div class="total-form-controller">
 		 
 			<div class="new-form-ui">
-			  <label class="required">Document Type </label>
+			  <label>Document Type </label>
 			<div class="division loca_state_div"><?php echo $this->form->documenttype_id; ?></div>
-			<?php //if($this->form->emptyFlag->getValue() != 0)	{	?>
-				<!--<span class="errors" id="err_<?php //echo $this->form->documenttype_id->getId(); ?>">Work eligibility document types are not configured yet.</span>-->
-			<?php	//}	?>
 			<?php if(isset($this->msgarray['documenttype_id'])){?>
 			   <span class="errors" id="errors-<?php echo $this->form->documenttype_id->getId(); ?>"><?php echo $this->msgarray['documenttype_id'];?></span>
 			<?php }?>
 			</div>
 			
 			<div class="new-form-ui">
-			  <label class="required">Document Issued Date <img class="tooltip" title=" <?php echo DATE_DESCRIPTION;?>" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"> </label>
+			  <label>Document Issued Date <img class="tooltip" title=" <?php echo DATE_DESCRIPTION;?>" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"> </label>
 			<div class="division"><?php echo $this->form->doc_issue_date; ?></div>
 			<?php if(isset($this->msgarray['doc_issue_date'])){?>
 			   <span class="errors" id="errors-<?php echo $this->form->doc_issue_date->getId(); ?>"><?php echo $this->msgarray['doc_issue_date'];?></span>
@@ -80,14 +77,14 @@ if($this->form->emptyFlag->getValue() != 0)
 			
 			
 			<div class="new-form-ui">
-			  <label class="required">Document Expiry Date <img class="tooltip" title=" <?php echo DATE_DESCRIPTION;?>" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"> </label>
+			  <label>Document Expiry Date <img class="tooltip" title=" <?php echo DATE_DESCRIPTION;?>" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"> </label>
 			<div class="division"><?php echo $this->form->doc_expiry_date; ?></div>
 			 <?php if(isset($this->msgarray['doc_expiry_date'])){?>
 			   <span class="errors" id="errors-<?php echo $this->form->doc_expiry_date->getId(); ?>"><?php echo $this->msgarray['doc_expiry_date'];?></span>
 			<?php }?>
 			</div>
 			<div class="new-form-ui">
-			  <label class="required">Issuing Authority Name <img class="tooltip" title="Start with alphabets and accepts spaces,numbers,hyphens and &" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"></label>
+			  <label>Issuing Authority Name <img class="tooltip" title="Start with alphabets and accepts spaces,numbers,hyphens and &" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"></label>
 			<div class="division"><?php echo $this->form->issuingauth_name; ?></div>
 			
 			  <?php if(isset($this->msgarray['issuingauth_name'])){?>
@@ -96,7 +93,7 @@ if($this->form->emptyFlag->getValue() != 0)
 			</div>
 			
 			<div class="new-form-ui">
-			  <label class="required">Issuing Authority Country</label>
+			  <label>Issuing Authority Country</label>
 			<div class="division"><?php echo $this->form->issuingauth_country; ?></div>
 			 <?php if(isset($this->msgarray['issuingauth_country'])){?>
 			   <span class="errors" id="errors-<?php echo $this->form->issuingauth_country->getId(); ?>"><?php echo $this->msgarray['issuingauth_country'];?></span>
@@ -127,7 +124,7 @@ if($this->form->emptyFlag->getValue() != 0)
 			</div>
 			
 			<div class="new-form-ui">
-			  <label class="required">Issuing Authority Postal Code</label>
+			  <label>Issuing Authority Postal Code</label>
 			<div class="division"><?php echo $this->form->issuingauth_postalcode; ?></div>
 			 <?php if(isset($this->msgarray['issuingauth_postalcode'])){?>
 			   <span class="errors" id="errors-<?php echo $this->form->issuingauth_postalcode->getId(); ?>"><?php echo $this->msgarray['issuingauth_postalcode'];?></span>
@@ -139,7 +136,6 @@ if($this->form->emptyFlag->getValue() != 0)
 
         <div class="new-form-ui-submit">
         <?php echo $this->form->submit; ?>
-        <!--<button onclick="window.location.href='/hrms/mydetails/edit';" type="button" id="Cancel" name="Cancel">Cancel</button>-->
         </div>
      </div>
 </form>
@@ -147,7 +143,7 @@ if($this->form->emptyFlag->getValue() != 0)
 </div>
 
 
-<script>
+<script type='text/javascript'>
 $(document).ready(function(){
 		<?php if (count($this->messages)) {?>
       setTimeout(function(){
@@ -155,12 +151,13 @@ $(document).ready(function(){
 		},3000);
 
 <?php } ?>
-	//To get the Calender image...
-	var yearrange = <?php echo "'".date("Y", strtotime("-30 years")).':'.date('Y')."'"; ?>;
+	//To get the Calender image...//] 
+	  var yearrange = <?php echo "'".YEAR.':'.date('Y')."'"; ?>;
+  //var yearrange = <?php echo "'".date("Y", strtotime("-30 years")).':'.date('Y')."'"; ?>;
 
 	$("#doc_issue_date").datepicker({
 					showOn:'both',
-					maxDate: new Date, 
+					//maxDate: new Date, 
 					yearRange: yearrange,
 					dateFormat: '<?php echo DATEFORMAT_JS;?>',
 					buttonImage: "<?php echo $this->baseUrl("public/media/images/cal.jpg");?>",
@@ -194,19 +191,6 @@ $("#doc_expiry_date").datepicker({
                                 }
 					
 	});
-	/* Making window responsive
- 	var complete_width = $('.poc-ui-data-control').width();
-	$('.left-block-ui-data').css("width", "230");
-	$('.right-block-data').css("width", (complete_width-(253)));	
-		
-	 function checkWidth() {
-        var complete_width = $('.poc-ui-data-control').width();		
-		$('.left-block-ui-data').css("width", "230");
-		$('.right-block-data').css("width", (complete_width-(253)));		
-    }
-	$(window).resize(function() {
-		checkWidth();
-	}); */
 	
 	$("#workeligibilitydetails").addClass('active');
 	$("#workeligibilitydetails").removeAttr("onclick");

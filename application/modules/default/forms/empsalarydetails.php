@@ -24,7 +24,7 @@ class Default_Form_empsalarydetails extends Zend_Form
 	public function init()
 	{
 		$this->setMethod('post');
-		//$this->setAttrib('action',DOMAIN.'employee/add');
+		
 		$this->setAttrib('id', 'formid');
 		$this->setAttrib('name', 'empsalarydetails');
 		
@@ -35,18 +35,43 @@ class Default_Form_empsalarydetails extends Zend_Form
 		$currencyid = new Zend_Form_Element_Select('currencyid');
 		$currencyid->setLabel('Salary Currency');
     	$currencyid->setRegisterInArrayValidator(false);
-		$currencyid->setRequired(true);
-		$currencyid->addValidator('NotEmpty', false, array('messages' => 'Please select salary currency.'));
+		
+		$salarytype = new Zend_Form_Element_Select('salarytype');
+		$salarytype->setLabel("Pay Frequency");
+		$salarytype->setAttrib('id', 'jobpayfrequency');
+		//$salarytype->setAttrib('onchange', 'changesalarytext(this)');
+        $salarytype->setRegisterInArrayValidator(false);
+        /*$salarytype->setMultiOptions(array(	
+        					'' => 'Select Salary Type',						
+							'1'=>'Yearly' ,
+							'2'=>'Hourly',
+							));*/
+		
+		$salary = new Zend_Form_Element_Text('salary');
+		$salary->setLabel("Salary");
+        $salary->setAttrib('maxLength', 8);
+	    $salary->addFilter(new Zend_Filter_StringTrim());
+		
+		$salary->addValidators(array(
+						 array(
+							 'validator'   => 'Regex',
+							 'breakChainOnFailure' => true,
+							 'options'     => array( 
+							 
+							 'pattern'=>'/^[0-9\.]*$/', 
+							  'messages' => array('regexNotMatch'=>'Please enter only numbers.'
+								 )
+							 )
+						 )
+					 ));
 		
 		$bankname = new Zend_Form_Element_Text('bankname');
 		$bankname->setAttrib('maxlength',40);
 		$bankname->setLabel('Bank Name');
-		$bankname->setRequired(true);
-		$bankname->addValidator('NotEmpty', false, array('messages' => 'Please enter bank name.'));
 		$bankname->addFilters(array('StringTrim'));
 		$bankname->addValidator("regex",true,array(
                             'pattern'=>'/^[a-zA-Z][a-zA-Z0-9\-\. ]*$/', 
-                           //'pattern'=>"!~^?%`",
+                           
                            'messages'=>array(
                                'regexNotMatch'=>'Please enter valid bank name.'
                            )
@@ -55,8 +80,6 @@ class Default_Form_empsalarydetails extends Zend_Form
 		$accountholder_name = new Zend_Form_Element_Text('accountholder_name');
 		$accountholder_name->setAttrib('maxlength',40);
 		$accountholder_name->setLabel('Account Holder Name');
-		$accountholder_name->setRequired(true);
-		$accountholder_name->addValidator('NotEmpty', false, array('messages' => 'Please enter account holder name.'));
 		$accountholder_name->addFilters(array('StringTrim'));
 		$accountholder_name->addValidators(array(
 			         array(
@@ -84,18 +107,14 @@ class Default_Form_empsalarydetails extends Zend_Form
 		$bankaccountid = new Zend_Form_Element_Select('bankaccountid');
 		$bankaccountid->setLabel('Account Type');
     	$bankaccountid->setRegisterInArrayValidator(false);
-		$bankaccountid->setRequired(true);
-		$bankaccountid->addValidator('NotEmpty', false, array('messages' => 'Please select account type.')); 				 
 		
 		$accountnumber = new Zend_Form_Element_Text('accountnumber');
 		$accountnumber->setAttrib('maxlength',20);
 		$accountnumber->setLabel('Account Number');
-		$accountnumber->setRequired(true);
-		$accountnumber->addValidator('NotEmpty', false, array('messages' => 'Please enter account number.'));
 		$accountnumber->addFilters(array('StringTrim'));
 		$accountnumber->addValidator("regex",true,array(
                             'pattern'=>'/^[a-zA-Z0-9 ]*$/', 
-                           //'pattern'=>"!~^?%`",
+                           
                            'messages'=>array(
                                'regexNotMatch'=>'Please enter only alphanumeric characters.'
                            )
@@ -108,7 +127,7 @@ class Default_Form_empsalarydetails extends Zend_Form
 		$submit->setAttrib('id', 'submitbutton');
 		$submit->setLabel('Save');
 		
-		$this->addElements(array($id,$userid,$currencyid,$bankname,$accountholder_name,$accountholding,$accountclasstypeid,$bankaccountid,$accountnumber,$submit));
+		$this->addElements(array($id,$userid,$currencyid,$salarytype,$salary,$bankname,$accountholder_name,$accountholding,$accountclasstypeid,$bankaccountid,$accountnumber,$submit));
         $this->setElementDecorators(array('ViewHelper')); 
  		 $this->setElementDecorators(array(
                     'UiWidgetElement',

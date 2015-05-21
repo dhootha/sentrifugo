@@ -83,8 +83,6 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
 						else
 						{
 							$this->view->rowexist = "rows";
-							//$empdata = $employeeModal->getActiveEmployeeData($id);
-							//echo "<pre>";print_r($empdata);	//die;
 							if(!empty($empdata))
 							{
 								$empDept = $empdata[0]['department_id'];
@@ -145,33 +143,39 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
 
 								if(!empty($data))
 								{
-									$countrieslistArr = $countriesModel->getCountryCode($data[0]['perm_country']);
-									if(sizeof($countrieslistArr)>0)
-									{
-										$empcommdetailsform->perm_country->addMultiOption('','Select Country');
-										foreach ($countrieslistArr as $countrieslistres)
+									if($data[0]['perm_country'] != ''){
+										$countrieslistArr = $countriesModel->getCountryCode($data[0]['perm_country']);
+										if(sizeof($countrieslistArr)>0)
 										{
-											$empcommdetailsform->perm_country->addMultiOption($countrieslistres['id'],$countrieslistres['country_name']);
+											$empcommdetailsform->perm_country->addMultiOption('','Select Country');
+											foreach ($countrieslistArr as $countrieslistres)
+											{
+												$empcommdetailsform->perm_country->addMultiOption($countrieslistres['id'],$countrieslistres['country_name']);
+											}
 										}
 									}
 
-									$statePermlistArr = $statesmodel->getStatesList($data[0]['perm_country']);
-									if(sizeof($statePermlistArr)>0)
-									{
-										$empcommdetailsform->perm_state->addMultiOption('','Select State');
-										foreach($statePermlistArr as $statelistres)
+									if($data[0]['perm_country'] != ''){
+										$statePermlistArr = $statesmodel->getStatesList($data[0]['perm_country']);
+										if(sizeof($statePermlistArr)>0)
 										{
-											$empcommdetailsform->perm_state->addMultiOption($statelistres['id'].'!@#'.$statelistres['state_name'],$statelistres['state_name']);
+											$empcommdetailsform->perm_state->addMultiOption('','Select State');
+											foreach($statePermlistArr as $statelistres)
+											{
+												$empcommdetailsform->perm_state->addMultiOption($statelistres['id'].'!@#'.$statelistres['state_name'],$statelistres['state_name']);
+											}
 										}
 									}
 
-									$cityPermlistArr = $citiesmodel->getCitiesList($data[0]['perm_state']);
-									if(sizeof($cityPermlistArr)>0)
-									{
-										$empcommdetailsform->perm_city->addMultiOption('','Select City');
-										foreach($cityPermlistArr as $cityPermlistres)
+									if($data[0]['perm_state'] != ''){
+										$cityPermlistArr = $citiesmodel->getCitiesList($data[0]['perm_state']);
+										if(sizeof($cityPermlistArr)>0)
 										{
-											$empcommdetailsform->perm_city->addMultiOption($cityPermlistres['id'].'!@#'.$cityPermlistres['city_name'],$cityPermlistres['city_name']);
+											$empcommdetailsform->perm_city->addMultiOption('','Select City');
+											foreach($cityPermlistArr as $cityPermlistres)
+											{
+												$empcommdetailsform->perm_city->addMultiOption($cityPermlistres['id'].'!@#'.$cityPermlistres['city_name'],$cityPermlistres['city_name']);
+											}
 										}
 									}
 
@@ -218,14 +222,18 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
 										}
 										$currcityNameArr = $citiesmodel->getCityName($data[0]['current_city']);
 									}
-									$permstateNameArr = $statesmodel->getStateName($data[0]['perm_state']);
-									//echo "<pre>";print_r($permstateNameArr);exit;
-									$permcityNameArr = $citiesmodel->getCityName($data[0]['perm_city']);
-									//echo "<pre>";print_r($permcityNameArr);exit;
+									
 									$empcommdetailsform->populate($data[0]);
-									$empcommdetailsform->setDefault('perm_country',$data[0]['perm_country']);
-									$empcommdetailsform->setDefault('perm_state',$permstateNameArr[0]['id'].'!@#'.$permstateNameArr[0]['statename']);
-									$empcommdetailsform->setDefault('perm_city',$permcityNameArr[0]['id'].'!@#'.$permcityNameArr[0]['cityname']);
+									if($data[0]['perm_country'] != '')
+										$empcommdetailsform->setDefault('perm_country',$data[0]['perm_country']);
+									if($data[0]['perm_state'] != ''){
+										$permstateNameArr = $statesmodel->getStateName($data[0]['perm_state']);
+										$empcommdetailsform->setDefault('perm_state',$permstateNameArr[0]['id'].'!@#'.$permstateNameArr[0]['statename']);	
+									}
+									if($data[0]['perm_city'] != ''){
+										$permcityNameArr = $citiesmodel->getCityName($data[0]['perm_city']);
+										$empcommdetailsform->setDefault('perm_city',$permcityNameArr[0]['id'].'!@#'.$permcityNameArr[0]['cityname']);
+									}
 									if($data[0]['current_country'] != '')
 									$empcommdetailsform->setDefault('current_country',$data[0]['current_country']);
 									if($data[0]['current_state'] !='')
@@ -266,182 +274,7 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
 			$this->_redirect('error');
 		}
 	}
-	public function viewAction_27092013()
-	{
-		$auth = Zend_Auth::getInstance();
-		if($auth->hasIdentity()){
-			$loginUserId = $auth->getStorage()->read()->id;
-		}
-		$id = $this->getRequest()->getParam('userid');
-		//if($id == '')		$id = $loginUserId;
-		$callval = $this->getRequest()->getParam('call');
-		if($callval == 'ajaxcall')
-		$this->_helper->layout->disableLayout();
-		$objName = 'empcommunicationdetails';
-		$empcommdetailsform = new Default_Form_empcommunicationdetails();
-		$empcommdetailsform->removeElement("submit");
-		$elements = $empcommdetailsform->getElements();
-		if(count($elements)>0)
-		{
-			foreach($elements as $key=>$element)
-			{
-				if(($key!="Cancel")&&($key!="Edit")&&($key!="Delete")&&($key!="Attachments")){
-					$element->setAttrib("disabled", "disabled");
-				}
-			}
-		}
-		try
-		{
-			if($id)
-			{
-				$employeeModal = new Default_Model_Employee();
-				$isrowexist = $employeeModal->getsingleEmployeeData($id);
-				if($isrowexist == 'norows')
-				$this->view->rowexist = "norows";
-				else
-				$this->view->rowexist = "rows";
-				$empdata = $employeeModal->getActiveEmployeeData($id);
-				//echo "<pre>";print_r($empdata);die;
-				if(!empty($empdata))
-				{
-					//TO get the Employee  profile information....
-					$usersModel = new Default_Model_Users();
-					$employeeData = $usersModel->getUserDetailsByIDandFlag($id);
-					//echo "Employee Data : <pre>";print_r($employeeData);die;
-					$empcommdetailsModal = new Default_Model_Empcommunicationdetails();
-					$usersModel = new Default_Model_Users();
-					$countriesModel = new Default_Model_Countries();
-					$statesmodel = new Default_Model_States();
-					$citiesmodel = new Default_Model_Cities();
-					$orgInfoModel = new Default_Model_Organisationinfo();
-					$msgarray = array();
-					$orgid = 1;
-					$orgdata = $orgInfoModel->getOrganisationData($orgid);
-					//echo"<pre>";print_r($orgdata);exit;
-					$countryId = $orgdata['country'];
-					$stateId = $orgdata['state'];
-					$cityId = $orgdata['city'];
-
-					if($countryId !='')
-					{
-						$countryData = $countriesModel->getActiveCountryName($countryId );
-						$orgdata['country'] = $countryData[0]['country'];
-					}
-
-					if($stateId !='')
-					{
-						$stateData = $statesmodel->getStateNameData($stateId);
-						//echo "<pre>";print_r($stateData);exit;
-						$orgdata['state'] = $stateData[0]['state'];
-					}
-
-					if($cityId !='')
-					{
-						$citiesData = $citiesmodel->getCitiesNameData($cityId);
-						$orgdata['city'] = $citiesData[0]['city'];
-					}
-
-					$countrieslistArr = $countriesModel->getActiveCountriesList();
-					//echo "<pre>";print_r($countrieslistArr);exit;
-					if(sizeof($countrieslistArr)>0)
-					{
-						$empcommdetailsform->perm_country->addMultiOption('','Select Country');
-						$empcommdetailsform->current_country->addMultiOption('','Select Country');
-						foreach ($countrieslistArr as $countrieslistres){
-							$empcommdetailsform->perm_country->addMultiOption($countrieslistres['country_id_org'],$countrieslistres['country']);
-							$empcommdetailsform->current_country->addMultiOption($countrieslistres['country_id_org'],$countrieslistres['country']);
-						}
-					}else
-					{
-						$msgarray['perm_country'] = 'Countries are not configured yet.';
-						$msgarray['current_country'] = 'Countries are not configured yet.';
-					}
-					$data = $empcommdetailsModal->getsingleEmpCommDetailsData($id);
-					//echo "<pre>";print_r($data);exit;
-					if(!empty($data))
-					{
-
-						$statePermlistArr = $statesmodel->getStatesList($data[0]['perm_country']);
-							
-						if(sizeof($statePermlistArr)>0)
-						{
-							$empcommdetailsform->perm_state->addMultiOption('','Select State');
-							foreach($statePermlistArr as $statelistres)
-							{
-								$empcommdetailsform->perm_state->addMultiOption($statelistres['id'].'!@#'.$statelistres['state_name'],$statelistres['state_name']);
-							}
-						}
-
-						$cityPermlistArr = $citiesmodel->getCitiesList($data[0]['perm_state']);
-						if(sizeof($cityPermlistArr)>0)
-						{
-							$empcommdetailsform->perm_city->addMultiOption('','Select City');
-							foreach($cityPermlistArr as $cityPermlistres)
-							{
-								$empcommdetailsform->perm_city->addMultiOption($cityPermlistres['id'].'!@#'.$cityPermlistres['city_name'],$cityPermlistres['city_name']);
-							}
-						}
-						if($data[0]['current_country']!='' && $data[0]['current_state'] !='')
-						{
-							$statecurrlistArr = $statesmodel->getStatesList($data[0]['current_country']);
-							if(sizeof($statecurrlistArr)>0)
-							{
-								$empcommdetailsform->current_state->addMultiOption('','Select State');
-								foreach($statecurrlistArr as $statecurrlistres)
-								{
-									$empcommdetailsform->current_state->addMultiOption($statecurrlistres['id'].'!@#'.$statecurrlistres['state_name'],$statecurrlistres['state_name']);
-								}
-							}
-							$currstateNameArr = $statesmodel->getStateName($data[0]['current_state']);
-
-						}
-						if($data[0]['current_country']!='' && $data[0]['current_state'] !='' && $data[0]['current_city']!='')
-						{
-							$cityCurrlistArr = $citiesmodel->getCitiesList($data[0]['current_state']);
-
-							if(sizeof($cityCurrlistArr)>0)
-							{
-								$empcommdetailsform->current_city->addMultiOption('','Select State');
-								foreach($cityCurrlistArr as $cityCurrlistres)
-								{
-									$empcommdetailsform->current_city->addMultiOption($cityCurrlistres['id'].'!@#'.$cityCurrlistres['city_name'],$cityCurrlistres['city_name']);
-								}
-							}
-							$currcityNameArr = $citiesmodel->getCityName($data[0]['current_city']);
-						}
-						$permstateNameArr = $statesmodel->getStateName($data[0]['perm_state']);
-						//echo "<pre>";print_r($permstateNameArr);exit;
-						$permcityNameArr = $citiesmodel->getCityName($data[0]['perm_city']);
-						//echo "<pre>";print_r($permcityNameArr);exit;
-						$empcommdetailsform->populate($data[0]);
-						$empcommdetailsform->setDefault('perm_country',$data[0]['perm_country']);
-						$empcommdetailsform->setDefault('perm_state',$permstateNameArr[0]['id'].'!@#'.$permstateNameArr[0]['statename']);
-						$empcommdetailsform->setDefault('perm_city',$permcityNameArr[0]['id'].'!@#'.$permcityNameArr[0]['cityname']);
-						if($data[0]['current_country'] != '')
-						$empcommdetailsform->setDefault('current_country',$data[0]['current_country']);
-						if($data[0]['current_state'] !='')
-						$empcommdetailsform->setDefault('current_state',$currstateNameArr[0]['id'].'!@#'.$currstateNameArr[0]['statename']);
-						if($data[0]['current_city'] != '')
-						$empcommdetailsform->setDefault('current_city',$currcityNameArr[0]['id'].'!@#'.$currcityNameArr[0]['cityname']);
-							
-					}
-					$this->view->controllername = $objName;
-					$this->view->data = $data;
-					$this->view->dataArray = $orgdata;
-					$this->view->id = $id;
-					$this->view->employeedata = $employeeData[0];
-					$this->view->form = $empcommdetailsform;
-				}
-				$this->view->empdata = $empdata;
-			}
-		}
-		catch(Exception $e)
-		{
-			$this->view->rowexist = "norows";
-		}
-			
-	}
-
+	
     public function editAction()
     {
         if(defined('EMPTABCONFIGS'))
@@ -481,7 +314,6 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
                     {
                         $employeeModal = new Default_Model_Employee();
                         $empdata = $employeeModal->getsingleEmployeeData($id);
-                            //echo "in controller <pre>";print_r($empdata);
                         if($empdata == 'norows')
                         {
                             $this->view->rowexist = "norows";
@@ -528,7 +360,6 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
 										$cityId = $empDeptdata[0]['city'];
 									}
 								}	
-								//echo "<pre>";print_r($empDeptdata);exit;
 									if($countryId !='')
 										$countryData = $countriesModel->getActiveCountryName($countryId);
                                     if(!empty($countryData))
@@ -549,11 +380,7 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
                                         $empDeptdata[0]['city'] = $citiesData[0]['city'];
                                     else
                                         $empDeptdata[0]['city'] ='';
-
-                               
-								
                                 $countrieslistArr = $countriesModel->getTotalCountriesList();
-
                                 if(sizeof($countrieslistArr)>0)
                                 {
                                     $empcommdetailsform->perm_country->addMultiOption('','Select Country');
@@ -570,8 +397,6 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
                                     $msgarray['current_country'] = 'Countries are not configured yet.';
                                 }
                                 $data = $empcommdetailsModal->getsingleEmpCommDetailsData($id);
-								//echo "<pre>";print_r($data);exit;
-                                //echo "<pre>";print_r($_POST);echo "</pre>";
                                 if(!empty($data))
                                 {
                                     $perm_country = $data[0]['perm_country'];
@@ -639,7 +464,6 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
                                                 $empcommdetailsform->current_state->addMultiOption($statecurrlistres['id'],$statecurrlistres['state_name']);
                                             }
                                         }
-                                        //$currstateNameArr = $statesmodel->getStateName($current_state);
                                     }
                                     if($current_state != '')
                                     {
@@ -653,11 +477,7 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
                                                 $empcommdetailsform->current_city->addMultiOption($cityCurrlistres['id'],$cityCurrlistres['city_name']);
                                             }
                                         }
-                                        //$currcityNameArr = $citiesmodel->getCityName($current_city);
                                     }
-                                    //$permstateNameArr = $statesmodel->getStateName($perm_state);
-                                    //$permcityNameArr = $citiesmodel->getCityName($perm_city);
-
                                     $empcommdetailsform->populate($data[0]);
                                     $empcommdetailsform->setDefault('perm_country',$perm_country);
                                     $empcommdetailsform->setDefault('perm_state',$perm_state);
@@ -680,7 +500,6 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
                                     $this->view->dataArray = $empDeptdata[0];
                                 else
                                     $this->view->dataArray = $empDeptdata;
-                                //echo "<pre> Data ";	print_r($data);die;
                                 $this->view->form = $empcommdetailsform;
                                 $this->view->data = $data;
                                 $this->view->id = $id;
@@ -698,7 +517,6 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
                 }
                 catch(Exception $e)
                 {
-                    //echo $e->getMessage();echo "<br/>".$e->getTraceAsString();                    
                     $this->view->rowexist = "norows";
                 }
                 if($this->getRequest()->getPost())
@@ -724,7 +542,6 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
 		if($auth->hasIdentity()){
 			$loginUserId = $auth->getStorage()->read()->id;
 		}
-		//echo"<pre>";print_r($this->_request->getPost());exit;
 		$perm_country = $this->_request->getParam('perm_country');
 		$perm_stateparam = $this->_request->getParam('perm_state');
 		$perm_stateArr = explode("!@#",$this->_request->getParam('perm_state'));
@@ -743,6 +560,16 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
 
 
 		if($empcommdetailsform->isValid($this->_request->getPost())){
+			 $post_values = $this->_request->getPost();
+           	 if(isset($post_values['id']))
+                unset($post_values['id']);
+             if(isset($post_values['user_id']))
+                unset($post_values['user_id']);
+             if(isset($post_values['submit']))	
+                unset($post_values['submit']);
+           $new_post_values = array_filter($post_values);
+           if(!empty($new_post_values))
+           {
 			$empcommdetailsModal = new Default_Model_Empcommunicationdetails();
 			$id = $this->_request->getParam('id');
 			$user_id = $userid;
@@ -757,27 +584,16 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
 			$emergency_number = $this->_request->getParam('emergency_number');
 			$emergency_name = $this->_request->getParam('emergency_name');
 			$emergency_email = $this->_request->getParam('emergency_email');
-
-
-			/*if($address_flag == 1)
-			 {
-			 $current_streetaddress = $perm_streetaddress;
-			 $current_country = $perm_country;
-			 $current_state = $perm_state;
-			 $current_city = $perm_city;
-			 $current_pincode = $perm_pincode;
-			 }*/
 			$date = new Zend_Date();
 			$menumodel = new Default_Model_Menu();
 			$actionflag = '';
 			$tableid  = '';
-
 			$data = array('user_id'=>$user_id,
 				                 'personalemail'=>$personalemail,
 								 'perm_streetaddress'=>$perm_streetaddress, 								 
-				      			 'perm_country'=>$perm_country,
-								 'perm_state'=>$perm_state,
-								 'perm_city'=>$perm_city,
+				      			 'perm_country'=>($perm_country!=''?$perm_country:NULL),
+								 'perm_state'=>($perm_state!=''?$perm_state:NULL),
+								 'perm_city'=>($perm_city!=''?$perm_city:NULL),
 								 'perm_pincode'=>$perm_pincode,
                                  'current_streetaddress'=>($current_streetaddress!=''?$current_streetaddress:NULL), 
                                  'current_country'=>($current_country!=''?$current_country:NULL), 								 
@@ -789,7 +605,6 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
 								 'emergency_email'=>($emergency_email!=''?$emergency_email:NULL),
 								 'modifiedby'=>$loginUserId,
 			                     'modifieddate'=>gmdate("Y-m-d H:i:s")			
-			//'modifieddate'=>$date->get('yyyy-MM-dd HH:mm:ss')
 			);
 			if($id!=''){
 				$where = array('user_id=?'=>$user_id);
@@ -798,33 +613,31 @@ class Default_EmpcommunicationdetailsController extends Zend_Controller_Action
 			else
 			{
 				$data['createdby'] = $loginUserId;
-				//$data['createddate'] = $date->get('yyyy-MM-dd HH:mm:ss');
 				$data['createddate'] = gmdate("Y-m-d H:i:s");
 				$data['isactive'] = 1;
 				$where = '';
 				$actionflag = 1;
 			}
-			//print_r($where);
-			//echo "<pre>";print_r($data);exit;
 			$Id = $empcommdetailsModal->SaveorUpdateEmpcommData($data, $where);
 			if($Id == 'update')
 			{
 				$tableid = $id;
-				// $this->_helper->getHelper("FlashMessenger")->addMessage("Employee communication details updated successfully.");
-				$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee communication details updated successfully."));
+				$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee contact details updated successfully."));
 			}
 			else
 			{
 				$tableid = $Id;
-				// $this->_helper->getHelper("FlashMessenger")->addMessage("Employee communication details added successfully.");
-				$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee communication details added successfully."));
+				$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee contact details added successfully."));
 			}
 			$menuidArr = $menumodel->getMenuObjID('/employee');
 			$menuID = $menuidArr[0]['id'];
-			//echo "<pre>";print_r($menuidArr);exit;
 			$result = sapp_Global::logManager($menuID,$actionflag,$loginUserId,$user_id);
-			//echo $result;exit;
-			$this->_redirect('empcommunicationdetails/edit/userid/'.$user_id);
+           }
+			else
+           {
+           		$this->_helper->getHelper("FlashMessenger")->addMessage(array("error"=>FIELDMSG));
+           }	
+			$this->_redirect('empcommunicationdetails/edit/userid/'.$userid);
 		}else
 		{
 			$messages = $empcommdetailsform->getMessages();

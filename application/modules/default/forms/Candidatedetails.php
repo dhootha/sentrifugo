@@ -36,7 +36,7 @@ class Default_Form_Candidatedetails extends Zend_Form
         $requisition_id->setRegisterInArrayValidator(false);
         $requisition_id->setLabel("Requisition ID");	
         $requisition_id->setAttrib("class", "formDataElement"); 
-        //$requisition_id->setAttrib("onchange", "getApprReqData(this);"); 
+        
 		$requisition_id->setAttrib('onchange', 'displayParticularCandidates(this,"cand")');
         $requisition_id->setAttrib('title', 'Requisition ID');
 
@@ -44,14 +44,14 @@ class Default_Form_Candidatedetails extends Zend_Form
 		$selected_option = Zend_Controller_Front::getInstance()->getRequest()->getParam('selected_option',null);
 
 		// Below condition is used to skip form validation if the user opt for 'file upload'. 
-		// if($selected_option == 'fill-up-form'){}
+		
 		
         if($id_val == '')
         {
             $requisition_id->setRequired(true);
             $requisition_id->addValidator('NotEmpty', false, array('messages' => 'Please select requisition id.')); 
         }               
-        $candidate_name = new Zend_Form_Element_Text('candidate_name');
+        /*$candidate_name = new Zend_Form_Element_Text('candidate_name');
         $candidate_name->setAttrib('maxLength', 90);
         $candidate_name->setAttrib('title', 'Candidate Name');        
         $candidate_name->addFilter(new Zend_Filter_StringTrim());
@@ -62,7 +62,33 @@ class Default_Form_Candidatedetails extends Zend_Form
                            'messages'=>array(
                                'regexNotMatch'=>'Please enter valid candidate name.'
                            )
+        	));*/
+
+        $candidate_firstname = new Zend_Form_Element_Text('candidate_firstname');
+        $candidate_firstname->setAttrib('maxLength', 50);
+        $candidate_firstname->setAttrib('title', 'Candidate First Name');        
+        $candidate_firstname->addFilter(new Zend_Filter_StringTrim());
+        $candidate_firstname->setRequired(true);
+        $candidate_firstname->addValidator('NotEmpty', false, array('messages' => 'Please enter candidate first name.'));  
+        $candidate_firstname->addValidator("regex",true,array(                           
+                           'pattern'=>'/^[a-zA-Z.\- ?]+$/',
+                           'messages'=>array(
+                               'regexNotMatch'=>'Please enter valid candidate first name.'
+                           )
         	));
+
+        $candidate_lastname = new Zend_Form_Element_Text('candidate_lastname');
+        $candidate_lastname->setAttrib('maxLength', 50);
+        $candidate_lastname->setAttrib('title', 'Candidate Last Name');        
+        $candidate_lastname->addFilter(new Zend_Filter_StringTrim());
+        $candidate_lastname->setRequired(true);
+        $candidate_lastname->addValidator('NotEmpty', false, array('messages' => 'Please enter candidate last name.'));  
+        $candidate_lastname->addValidator("regex",true,array(                           
+                           'pattern'=>'/^[a-zA-Z.\- ?]+$/',
+                           'messages'=>array(
+                               'regexNotMatch'=>'Please enter valid candidate last name.'
+                           )
+        	));	
                 
 		$emailid = new Zend_Form_Element_Text('emailid');
 		
@@ -74,20 +100,9 @@ class Default_Form_Candidatedetails extends Zend_Form
         $emailid->setAttrib('title', 'Email');        
         $emailid->addFilter(new Zend_Filter_StringTrim());
         $emailid->addValidator('NotEmpty', false, array('messages' => 'Please enter email.'));  
-        //$emailid->addValidator(new Zend_Validate_EmailAddress());
-		/*$emailid->addValidator('EmailAddress', true, array('messages'=>array(
-									'emailAddressInvalid'=>'Please enter valid email.',
-									'emailAddressInvalidFormat'=>'Please enter valid email.',
-									'emailAddressInvalidHostname'=>'Please enter valid email.',
-									'emailAddressInvalidMxRecord'=>'Please enter valid email.',
-									'emailAddressInvalidSegment'=>'Please enter valid email.',
-									'emailAddressDotAtom'=>'Please enter valid email.',
-									'emailAddressQuotedString'=>'Please enter valid email.',
-									'emailAddressInvalidLocalPart'=>'Please enter valid email.',
-									'emailAddressLengthExceeded'=>'Please enter valid email.'
-									)));*/
+        
         $emailid->addValidator("regex",true,array(
-                           // 'pattern'=>'/^(?!.*\.{2})[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$\//gi',                            		   
+                           
 						    'pattern'=>'/^(?!.*\.{2})[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/',                            
                            'messages'=>array(
                                'regexNotMatch'=>'Please enter valid email.'
@@ -113,11 +128,11 @@ class Default_Form_Candidatedetails extends Zend_Form
         $contact_number->addFilter(new Zend_Filter_StringTrim());
         $contact_number->addValidator('NotEmpty', false, array('messages' => 'Please enter contact number.'));  
         $contact_number->addValidator("regex",true,array(                           
-                           //'pattern'=>'/^([6-9]{1}[0-9]{9})+$/',
-                            //'pattern'=>'/^([0-9]{10})+$/',
+                           
+                           
                             'pattern'=>'/^(?!0{10})([0-9\+\-\)\(]{10})+$/',
                            'messages'=>array(
-                               //'regexNotMatch'=>'Please enter only numeric characters.'
+                           
                                'regexNotMatch'=>'Please enter valid contact number.'
                            )
         	));
@@ -254,8 +269,7 @@ class Default_Form_Candidatedetails extends Zend_Form
                                         'Postal code must contain at least %min% characters.')))));
         $pincode->addValidator("regex",true,array(  
                             'pattern'=>'/^(?!0{3})[0-9a-zA-Z]+$/', 		
-                           //'pattern'=>'/^([1-9]{1}[0-9]{5})+$/',
-                            //'pattern'=>'/^([0-9a-zA-Z])+$/',
+                           
                             'messages'=>array(
                                'regexNotMatch'=>'Please enter valid postal code.'
                            )
@@ -263,7 +277,7 @@ class Default_Form_Candidatedetails extends Zend_Form
 		
         $cand_status = new Zend_Form_Element_Select("cand_status");
         $cand_status->setRegisterInArrayValidator(false);
-        //$cand_status->addMultiOptions(array('Not Scheduled' => 'Not Scheduled','Scheduled' => 'Scheduled'));
+        
         $cand_status->setLabel("Status");
         $cand_status->setAttrib("class", "formDataElement");        
         $cand_status->setAttrib('title', 'Candidate status');
@@ -277,9 +291,9 @@ class Default_Form_Candidatedetails extends Zend_Form
         for($i=0;$i<3;$i++)
         {            
             $company_name[$i] = new Zend_Form_Element_Text('txt_cname['.$i.']');
-            //$company_name[$i]->setName($company_name[$i]->filterName('txt_cname['.$i.']', true));
+            
             $company_name[$i]->setAttrib('id', 'idtxt_cname'.$i);
-            //$company_name[$i]->setAttrib('name', 'txt_cname['.$i.']');
+            
             $company_name[$i]->setAttrib('maxlength', 70);
             $company_name[$i]->addValidator("regex",true,array(                           
                            'pattern'=>'/^[a-zA-Z.\-& ?]+$/',
@@ -291,7 +305,7 @@ class Default_Form_Candidatedetails extends Zend_Form
             
             $cdesignation[$i] = new Zend_Form_Element_Text('txt_desig['.$i.']');
             $cdesignation[$i]->setAttrib('id', 'idtxt_desig'.$i);
-            //$cdesignation[$i]->setAttrib('name', 'txt_desig[]');
+            
             $cdesignation[$i]->setAttrib('maxlength', 40);
             $cdesignation[$i]->addValidator("regex",true,array(                           
                            'pattern'=>'/^[a-zA-Z.\-& ?]+$/',
@@ -303,25 +317,25 @@ class Default_Form_Candidatedetails extends Zend_Form
             
             $from_date[$i] = new Zend_Form_Element_Text('txt_from['.$i.']');
             $from_date[$i]->setAttrib('id', 'idtxt_from'.$i);
-            //$from_date[$i]->setAttrib('name', 'txt_from[]');
+            
             $from_date[$i]->setAttrib('readonly', 'readonly');            
             $this->addElement($from_date[$i]);
             
             $to_date[$i] = new Zend_Form_Element_Text('txt_to['.$i.']');
             $to_date[$i]->setAttrib('id', 'idtxt_to'.$i);
-            //$to_date[$i]->setAttrib('name', 'txt_to[]');            
+            
             $to_date[$i]->setAttrib('readonly', 'readonly');            
             $this->addElement($to_date[$i]);
             
             $cnumber[$i] = new Zend_Form_Element_Text('txt_cnumber['.$i.']');
             $cnumber[$i]->setAttrib('id', 'idtxt_cnumber'.$i);
-           // $cnumber[$i]->setAttrib('name', 'txt_cnumber[]');
+           
             $cnumber[$i]->setAttrib('maxlength', 10);
             $cnumber[$i]->addValidator("regex",true,array(                           
-                           //'pattern'=>'/^([6-9]{1}[0-9]{9})+$/',\
+                           
                            'pattern'=>'/^(?!0{10})([0-9\+\-\)\(]{10})+$/',
                            'messages'=>array(
-                               //'regexNotMatch'=>'Please enter only numeric characters.'
+                           
                                'regexNotMatch'=>'Please enter valid contact number.'
                            )
         	));
@@ -329,9 +343,9 @@ class Default_Form_Candidatedetails extends Zend_Form
             
             $website[$i] = new Zend_Form_Element_Text('txt_website['.$i.']');
             $website[$i]->setAttrib('id', 'idtxt_website'.$i);
-            //$website[$i]->setAttrib('name', 'txt_website[]');
+            
             $website[$i]->setAttrib('maxlength', 70);
-            //$website[$i]->addValidator(new Zend_Validate_Uri());
+            
             $website[$i]->addValidator("regex",true,array(                           
                            'pattern'=>'/^(http:\/\/www|https:\/\/www|www)+\.([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,3})$/',
                            'messages'=>array(
@@ -342,15 +356,15 @@ class Default_Form_Candidatedetails extends Zend_Form
             
             $comp_address[$i] = new Zend_Form_Element_Textarea('txt_address['.$i.']');
             $comp_address[$i]->setAttrib('id', 'idtxt_address'.$i);
-            //$comp_address[$i]->setAttrib('name', 'txt_address[]');
-            //$comp_address[$i]->setAttrib('maxlength', 400);            
+            
+            
             $this->addElement($comp_address[$i]);
         }
         //end of candidate work details.
 		$job_title = new Zend_Form_Element_Text('job_title');        
 		$job_title->setAttrib('readonly', 'readonly');
 		
-        $this->addElements(array($job_title,$cand_status,$id,$requisition_id,$candidate_name,$emailid,$contact_number,$qualification,$experience,
+        $this->addElements(array($job_title,$cand_status,$id,$requisition_id,$candidate_firstname,$candidate_lastname,$emailid,$contact_number,$qualification,$experience,
                                 $skillset,$education_summary,$summary,$cand_location,$country,$state,$city,$pincode,$submit));
         $this->setElementDecorators(array('ViewHelper')); 
     }

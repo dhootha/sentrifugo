@@ -35,11 +35,11 @@ class Default_Model_Empskills extends Zend_Db_Table_Abstract
 		$empskillsData = $this->select()
 		->setIntegrityCheck(false)
 		->from(array('e' => 'main_empskills'),array('id'=>'e.id','skillname'=>'e.skillname','yearsofexp'=>'e.yearsofexp','year_skill_last_used'=>'DATE_FORMAT(e.year_skill_last_used,"'.DATEFORMAT_MYSQL.'")'))
-		->joinInner(array('c'=>'main_competencylevel'),'e.competencylevelid=c.id',array('competencylevelid'=>'c.competencylevel'))
+		->joinLeft(array('c'=>'main_competencylevel'),'e.competencylevelid=c.id AND c.isactive = 1',array('competencylevelid'=>'c.competencylevel'))
 		->where($where)
 		->order("$by $sort")
 		->limitPage($pageNo, $perPage);
-		//echo $empskillsData->__toString(); //die;
+		
 		return $empskillsData;
 	}
 	/*	Purpose:	TO get drop down for search filters.Getting all competency levels from main_competencylevel table.
@@ -53,7 +53,7 @@ class Default_Model_Empskills extends Zend_Db_Table_Abstract
 								from main_competencylevel as c
 								where c.isactive=1 ");	
 		$data = $Data->fetchAll();
-		//echo "Emp competency Levels Arr : <pre>";print_r($data);die;
+		
 		return $data;
 	}
 	public function getsingleEmpSkillsData($id)
@@ -130,7 +130,7 @@ class Default_Model_Empskills extends Zend_Db_Table_Abstract
 						'jsFillFnName' => '',
 						'searchArray' => $searchArray,
 						'add'=>'add',
-						'menuName'=>'Employee skills',
+						'menuName'=>'Skills',
 						'formgrid'=>'true',
 						'unitId'=>$exParam1,
 						'dashboardcall'=>$dashboardcall,

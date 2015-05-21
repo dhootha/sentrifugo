@@ -200,17 +200,21 @@ $GLOBALS['qry10'] = "CREATE TRIGGER `main_employeeleavetypes_aft_upd` AFTER UPDA
 				    END";
 
 /* Trigger structure for table `main_employees_aft_ins` */
-$GLOBALS['qry11'] = "CREATE TRIGGER `main_employees_aft_ins` AFTER INSERT ON `main_employees` FOR EACH ROW BEGIN
-					declare user_id,username,role_name,rep_name,emp_status,bunit_name,dept_name,job_name,pos_name,prefix_name,
+$GLOBALS['qry11'] = "CREATE TRIGGER `main_employees_aft_ins` AFTER INSERT ON `main_employees` 
+				    FOR EACH ROW BEGIN
+					declare user_id,fname,lname,username,role_name,rep_name,emp_status,bunit_name,dept_name,job_name,pos_name,prefix_name,
 						createdbyname,holidaygrp,modifiedbyname,emailid,cnumber,bgstatus,empid,mode_entry,omode_entry,sel_date,
 				                ref_by_name,img_src
 						varchar(250);
 					declare ref_by_id,role_id int(11);
-					select userfullname,emailaddress,contactnumber,backgroundchk_status,employeeId,modeofentry,other_modeofentry,selecteddate,candidatereferredby,
+					select firstname,lastname,userfullname,emailaddress,contactnumber,backgroundchk_status,employeeId,modeofentry,other_modeofentry,selecteddate,candidatereferredby,
 				               profileimg,emprole  
-						into username,emailid,cnumber,bgstatus,empid,mode_entry,omode_entry,sel_date,ref_by_id,img_src,role_id 
+						into fname,lname,username,emailid,cnumber,bgstatus,empid,mode_entry,omode_entry,sel_date,ref_by_id,img_src,role_id 
 					from main_users where id = new.user_id;
 					select userfullname into rep_name from main_users where id = new.reporting_manager;
+				/*
+					select employemnt_status into emp_status from tbl_employmentstatus where id = (select workcodename 
+					from main_employmentstatus where id = new.emp_status_id);*/
 					select employemnt_status into emp_status from tbl_employmentstatus where id = new.emp_status_id	;
 					set user_id = new.user_id;
 					set bunit_name = null;
@@ -237,7 +241,7 @@ $GLOBALS['qry11'] = "CREATE TRIGGER `main_employees_aft_ins` AFTER INSERT ON `ma
 					emp_status_name, businessunit_id, businessunit_name, department_id, department_name, jobtitle_id, 
 					jobtitle_name, position_id, position_name, years_exp, holiday_group, holiday_group_name, 
 					prefix_id, prefix_name, extension_number, office_number, office_faxnumber, emprole, 
-					emprole_name, userfullname, emailaddress, contactnumber, backgroundchk_status, 	employeeId, 
+					emprole_name, firstname,lastname,userfullname, emailaddress, contactnumber, backgroundchk_status, 	employeeId, 
 					modeofentry, other_modeofentry, selecteddate, candidatereferredby, referer_name, profileimg, 
 					createdby, createdby_name, modifiedby, createddate, modifieddate, isactive)
 					values	(	
@@ -245,24 +249,27 @@ $GLOBALS['qry11'] = "CREATE TRIGGER `main_employees_aft_ins` AFTER INSERT ON `ma
 					emp_status,new.businessunit_id,	bunit_name,new.department_id,dept_name,new.jobtitle_id, 
 					job_name, new.position_id, pos_name,new.years_exp, new.holiday_group, holidaygrp, 
 					new.prefix_id, 	prefix_name, new.extension_number, new.office_number, new.office_faxnumber,role_id, 
-					role_name,username, emailid,cnumber,bgstatus,empid, 
+					role_name,fname,lname,username, emailid,cnumber,bgstatus,empid, 
 					mode_entry,omode_entry,	sel_date, ref_by_id, ref_by_name,img_src, 
 					new.createdby, 	createdbyname, new.modifiedby,new.createddate, new.modifieddate, new.isactive
 					);
 				    END";
 
 /* Trigger structure for table `main_employees_aft_upd` */
-$GLOBALS['qry12'] = "CREATE TRIGGER `main_employees_aft_upd` AFTER UPDATE ON `main_employees` FOR EACH ROW BEGIN
-					declare username,role_name,rep_name,emp_status,bunit_name,dept_name,job_name,pos_name,prefixname,
+$GLOBALS['qry12'] = "CREATE TRIGGER `main_employees_aft_upd` AFTER UPDATE ON `main_employees` 
+				    FOR EACH ROW BEGIN
+					declare fname,lname,username,role_name,rep_name,emp_status,bunit_name,dept_name,job_name,pos_name,prefixname,
 						createdbyname,holidaygrp,modifiedbyname,emailid,cnumber,bgstatus,empid,mode_entry,omode_entry,sel_date,
 				                ref_by_name,img_src
 						varchar(250);
 					declare ref_by_id,role_id int(11);
-					select userfullname,emailaddress,contactnumber,backgroundchk_status,employeeId,modeofentry,other_modeofentry,selecteddate,candidatereferredby,
+					select firstname,lastname,userfullname,emailaddress,contactnumber,backgroundchk_status,employeeId,modeofentry,other_modeofentry,selecteddate,candidatereferredby,
 				               profileimg,emprole  
-						into username,emailid,cnumber,bgstatus,empid,mode_entry,omode_entry,sel_date,ref_by_id,img_src,role_id 
+						into fname,lname,username,emailid,cnumber,bgstatus,empid,mode_entry,omode_entry,sel_date,ref_by_id,img_src,role_id 
 					from main_users where id = new.user_id;
 					select userfullname into rep_name from main_users where id = new.reporting_manager;
+					/*select employemnt_status into emp_status from tbl_employmentstatus where id = (select workcodename 
+					from main_employmentstatus where id = new.emp_status_id);*/
 					select employemnt_status into emp_status from tbl_employmentstatus where id = new.emp_status_id	;
 					set bunit_name = null;
 					if new.businessunit_id is not null then
@@ -290,7 +297,7 @@ $GLOBALS['qry12'] = "CREATE TRIGGER `main_employees_aft_upd` AFTER UPDATE ON `ma
 				        department_name = dept_name, jobtitle_id = new.jobtitle_id,jobtitle_name = job_name, position_id = new.position_id, 
 				        position_name = pos_name, years_exp = new.years_exp, holiday_group = new.holiday_group, holiday_group_name = holidaygrp, 
 					prefix_id = new.prefix_id, prefix_name = prefixname, extension_number = new.extension_number, office_number = new.office_number, 
-					office_faxnumber = new.office_faxnumber, emprole = role_id, emprole_name = role_name, userfullname = username, 
+					office_faxnumber = new.office_faxnumber, emprole = role_id, emprole_name = role_name, firstname=fname, lastname=lname,userfullname = username, 
 					emailaddress = emailid, contactnumber = cnumber, backgroundchk_status = bgstatus,employeeId = empid, 
 					modeofentry = mode_entry, other_modeofentry = omode_entry, selecteddate = sel_date, candidatereferredby = ref_by_id,
 					referer_name = ref_by_name, profileimg = img_src,  modifiedby = new.modifiedby, modifieddate = new.modifieddate, isactive = new.isactive
@@ -323,38 +330,28 @@ $GLOBALS['qry14'] = "CREATE TRIGGER `main_holidaygroups_aft_ins` AFTER UPDATE ON
 				    END";
 
 /* Trigger structure for table `main_identitycodes` */
-$GLOBALS['qry15'] = "CREATE TRIGGER `main_identitycodes_aft_upd` AFTER UPDATE ON `main_identitycodes` FOR EACH ROW BEGIN
+$GLOBALS['qry15'] = "CREATE TRIGGER `main_identitycodes_aft_upd` AFTER UPDATE ON `main_identitycodes` 
+				    FOR EACH ROW BEGIN
 				    if old.employee_code != new.employee_code then 
 				    begin
-					update main_users set employeeId = replace(employeeId,left(employeeId,4),new.employee_code),modifieddate = utc_timestamp() where left(employeeId,4) = old.employee_code;
+					update main_users set employeeId = replace(employeeId,SUBSTRING(employeeId,1,CHAR_LENGTH(old.employee_code)),new.employee_code),modifieddate = utc_timestamp() where SUBSTRING(employeeId,1,CHAR_LENGTH(old.employee_code)) = old.employee_code;
 				    end;
 				    end if;
 				    if old.backgroundagency_code != new.backgroundagency_code then 
 				    begin
-					update main_users set employeeId = replace(employeeId,left(employeeId,4),new.backgroundagency_code),modifieddate = utc_timestamp() where left(employeeId,4) = old.backgroundagency_code;
-				    end;
-				    end if;
-				    if old.vendors_code != new.vendors_code then 
-				    begin
-					update main_users set employeeId = replace(employeeId,left(employeeId,4),new.vendors_code),modifieddate = utc_timestamp() where left(employeeId,4) = old.vendors_code;
-				    end;
-				    end if;
-				    if old.staffing_code != new.staffing_code then 
-				    begin
-					update main_users set employeeId = replace(employeeId,left(employeeId,4),new.staffing_code),modifieddate = utc_timestamp() where left(employeeId,4) = old.staffing_code;
+					update main_users set employeeId = replace(employeeId,SUBSTRING(employeeId,1,CHAR_LENGTH(old.backgroundagency_code)),new.backgroundagency_code),modifieddate = utc_timestamp() where SUBSTRING(employeeId,1,CHAR_LENGTH(old.backgroundagency_code)) = old.backgroundagency_code;
 				    end;
 				    end if;
 				    if old.users_code != new.users_code then 
 				    begin
-					update main_users set employeeId = replace(employeeId,left(employeeId,4),new.users_code),modifieddate = utc_timestamp() where left(employeeId,4) = old.users_code;
+					update main_users set employeeId = replace(employeeId,SUBSTRING(employeeId,1,CHAR_LENGTH(old.users_code)),new.users_code),modifieddate = utc_timestamp() where SUBSTRING(employeeId,1,CHAR_LENGTH(old.users_code)) = old.users_code;
 				    end;
 				    end if;	
 				    if old.requisition_code != new.requisition_code then 
 				    begin
-					update main_requisition r set r.requisition_code = replace(r.requisition_code,left(r.requisition_code,4),new.requisition_code),r.modifiedon = utc_timestamp() where left(r.requisition_code,4) = old.requisition_code;
+					update main_requisition r set r.requisition_code = replace(r.requisition_code,left(r.requisition_code,LOCATE('/',r.requisition_code)),CONCAT(new.requisition_code,'/')),r.modifiedon = utc_timestamp() where left(r.requisition_code,LOCATE('/',r.requisition_code)) = CONCAT(old.requisition_code,'/');
 				    end;
 				    end if;
-					
 				    END";
 
 /* Trigger structure for table `main_interviewdetails` */
@@ -510,7 +507,7 @@ $GLOBALS['qry22'] = 'CREATE TRIGGER `main_leaverequest_aft_ins` AFTER INSERT ON 
 				    END';
 
 /* Trigger structure for table `main_leaverequest_aft_upd` */
-$GLOBALS['qry23'] = 'CREATE `main_leaverequest_aft_upd` AFTER UPDATE ON `main_leaverequest` FOR EACH ROW BEGIN
+$GLOBALS['qry23'] = 'CREATE TRIGGER `main_leaverequest_aft_upd` AFTER UPDATE ON `main_leaverequest` FOR EACH ROW BEGIN
 				    declare user_name,repmanager_name,leave_type_name,dept_name,buss_unit_name varchar(200);
 				    declare dept_id,bunit_id bigint(20);
 				    #select userfullname into user_name from main_users where id = new.user_id;
@@ -685,7 +682,8 @@ $GLOBALS['qry30'] = "CREATE TRIGGER `main_states_aft_upd` AFTER UPDATE ON `main_
 				    END";
 
 /* Trigger structure for table `main_users_aft_upd` */
-$GLOBALS['qry31'] = "CREATE TRIGGER `main_users_aft_upd` AFTER UPDATE ON `main_users` FOR EACH ROW BEGIN
+$GLOBALS['qry31'] = "CREATE TRIGGER `main_users_aft_upd` AFTER UPDATE ON `main_users` 
+				    FOR EACH ROW BEGIN
 				    declare groupid int(11);
 				    
 				    select group_id into groupid from main_roles where id = old.emprole;
@@ -723,6 +721,14 @@ $GLOBALS['qry31'] = "CREATE TRIGGER `main_users_aft_upd` AFTER UPDATE ON `main_u
 					# start of main_userloginlog
 					update main_userloginlog set userfullname = new.userfullname where userid = new.id;
 					# end of main_userloginlog
+					#start of main_sdrequests_summary
+					update main_sd_requests_summary set raised_by_name = new.userfullname,modifieddate = utc_timestamp() where raised_by = new.id;
+					update main_sd_requests_summary set executor_name = new.userfullname,modifieddate = utc_timestamp() where executor_id = new.id;
+					update main_sd_requests_summary set reporting_manager_name = new.userfullname,modifieddate = utc_timestamp() where reporting_manager_id = new.id;
+					update main_sd_requests_summary set approver_1_name = new.userfullname,modifieddate = utc_timestamp() where approver_1 = new.id;	
+					update main_sd_requests_summary set approver_2_name = new.userfullname,modifieddate = utc_timestamp() where approver_2 = new.id;
+					update main_sd_requests_summary set approver_3_name = new.userfullname,modifieddate = utc_timestamp() where approver_3 = new.id;
+					# end of main_sdrequests_summary	
 				    end;
 				    end if;
 				    end;
@@ -756,6 +762,9 @@ $GLOBALS['qry31'] = "CREATE TRIGGER `main_users_aft_upd` AFTER UPDATE ON `main_u
 					    #start of main_employees_summary
 				            update main_employees_summary set profileimg = new.profileimg,modifieddate = utc_timestamp() where user_id = new.id; 
 				            #end of main_employees_summary
+					    #start of main_request_history
+				            update main_request_history set emp_profileimg = new.profileimg,modifieddate = utc_timestamp() where emp_id = new.id; 
+				            #end of main_request_history
 				        end;
 				        end if;
 				    end;
@@ -771,7 +780,7 @@ $GLOBALS['qry31'] = "CREATE TRIGGER `main_users_aft_upd` AFTER UPDATE ON `main_u
 				        end if;
 				    end;
 				    end if;#end of if of background check status
-				    if old.contactnumber != new.contactnumber then
+				if old.contactnumber != new.contactnumber then
 				    begin
 					if (groupid != 5 or groupid is null) then 
 				        begin
@@ -795,6 +804,92 @@ $GLOBALS['qry32'] = "CREATE TRIGGER `main_weekdays_aftr_upd` AFTER UPDATE ON `ma
 			        WHERE (lm.weekend_endday = new.day_name AND lm.isactive=1);
 			    	END";
 
+/* Trigger structure for table `main_sd_depts_aft_upd` */
+$GLOBALS['qry33'] = "CREATE TRIGGER `main_sd_depts_aft_upd` AFTER UPDATE ON `main_sd_depts` FOR EACH ROW BEGIN
+					if old.service_desk_name != new.service_desk_name then 
+        			begin 
+           				update main_sd_requests_summary set service_desk_name = new.service_desk_name,modifieddate = utc_timestamp() where service_desk_id = new.id;
+        			end;
+        			end if;
+    				END";
+
+/* Trigger structure for table `main_sd_reqtypes_aft_upd` */
+$GLOBALS['qry34'] = "CREATE TRIGGER `main_sd_reqtypes_aft_upd` AFTER UPDATE ON `main_sd_reqtypes` FOR EACH ROW BEGIN
+					if old.service_request_name != new.service_request_name then 
+				        begin 
+				           update main_sd_requests_summary set service_request_name = new.service_request_name,modifieddate = utc_timestamp() where service_request_id = new.id;
+				        end;
+				        end if;
+				    END";
+
+/* Trigger structure for table `main_sd_request_aft_ins` */
+$GLOBALS['qry35'] = "CREATE TRIGGER `main_sd_request_aft_ins` AFTER INSERT ON `main_sd_requests` 
+				    FOR EACH ROW BEGIN
+					declare x_service_desk_name,x_service_request_name,x_raised_by_name,x_executor_name,
+						x_reporting_manager_name,x_approver_1_name,x_approver_2_name,x_approver_3_name,raised_empid,raised_img
+						varchar(250);
+					
+					select service_desk_name into x_service_desk_name from main_sd_depts where id = new.service_desk_id;
+					select service_request_name into x_service_request_name from main_sd_reqtypes where id = new.service_request_id;
+					select userfullname,employeeId,profileimg into x_raised_by_name,raised_empid,raised_img from main_employees_summary where user_id = new.raised_by;
+					select userfullname into x_executor_name from main_employees_summary where user_id = new.executor_id;
+					select userfullname into x_reporting_manager_name from main_employees_summary where user_id = new.reporting_manager_id;
+					select userfullname into x_approver_1_name from main_employees_summary where user_id = new.approver_1;
+					select userfullname into x_approver_2_name from main_employees_summary where user_id = new.approver_2;
+					select userfullname into x_approver_3_name from main_employees_summary where user_id = new.approver_3;
+					
+					insert into main_sd_requests_summary (
+					sd_requests_id, service_desk_id, service_desk_name, service_desk_conf_id, service_request_name, service_request_id,
+					priority, description, attachment, status, raised_by, raised_by_name, ticket_number, executor_id, executor_name, executor_comments,
+					reporting_manager_id, reporting_manager_name, approver_status_1, approver_status_2, approver_status_3, reporting_manager_status,
+					approver_1, approver_1_name, approver_2, approver_2_name, approver_3, approver_3_name, isactive, createdby, modifiedby,
+					createddate, modifieddate,raised_by_empid,approver_1_comments,approver_2_comments,approver_3_comments,reporting_manager_comments,
+					to_mgmt_comments,to_manager_comments
+					)
+					values	(	
+					new.id, new.service_desk_id, x_service_desk_name, new.service_desk_conf_id, x_service_request_name, new.service_request_id,
+					new.priority, new.description, new.attachment, new.status, new.raised_by, x_raised_by_name, new.ticket_number, new.executor_id,
+					x_executor_name, new.executor_comments,	new.reporting_manager_id, x_reporting_manager_name, new.approver_status_1,
+					new.approver_status_2, new.approver_status_3, new.reporting_manager_status, new.approver_1, x_approver_1_name, new.approver_2,
+					x_approver_2_name, new.approver_3, x_approver_3_name, new.isactive, new.createdby, new.modifiedby, new.createddate, new.modifieddate,
+				        raised_empid,new.approver_1_comments,new.approver_2_comments,new.approver_3_comments,new.reporting_manager_comments,
+					new.to_mgmt_comments,new.to_manager_comments
+					);
+					insert into main_request_history(request_id,description,emp_id,emp_name,createdby,modifiedby,createddate,modifieddate,isactive,emp_profileimg)
+					value (new.id,concat(CONCAT(UCASE(LEFT(x_service_desk_name, 1)), SUBSTRING(x_service_desk_name, 2)) ,' Request has been raised by '),new.raised_by,CONCAT(UCASE(LEFT(x_raised_by_name, 1)), SUBSTRING(x_raised_by_name, 2)),new.createdby,new.createdby,new.createddate,new.modifieddate,new.isactive,raised_img);
+				    END";
+
+
+/* Trigger structure for table `main_sd_request_aft_upd` */
+$GLOBALS['qry36'] = "CREATE TRIGGER `main_sd_request_aft_upd` AFTER UPDATE ON `main_sd_requests` 
+				    FOR EACH ROW BEGIN
+					declare x_service_desk_name,x_service_request_name,x_raised_by_name,x_executor_name,
+						x_reporting_manager_name,x_approver_1_name,x_approver_2_name,x_approver_3_name
+						varchar(250);
+					
+					select service_desk_name into x_service_desk_name from main_sd_depts where id = new.service_desk_id;
+					select service_request_name into x_service_request_name from main_sd_reqtypes where id = new.service_request_id;
+					select userfullname into x_raised_by_name from main_employees_summary where user_id = new.raised_by;
+					select userfullname into x_executor_name from main_employees_summary where user_id = new.executor_id;
+					select userfullname into x_reporting_manager_name from main_employees_summary where user_id = new.reporting_manager_id;
+					select userfullname into x_approver_1_name from main_employees_summary where user_id = new.approver_1;
+					select userfullname into x_approver_2_name from main_employees_summary where user_id = new.approver_2;
+					select userfullname into x_approver_3_name from main_employees_summary where user_id = new.approver_3;
+					
+					update main_sd_requests_summary set
+					service_desk_id = new.service_desk_id, service_desk_name = x_service_desk_name, service_desk_conf_id = new.service_desk_conf_id,
+					service_request_name = x_service_request_name, service_request_id = new.service_request_id, priority = new.priority,
+					description = new.description, attachment = new.attachment, status = new.status, raised_by = new.raised_by,
+					raised_by_name = x_raised_by_name, ticket_number = new.ticket_number, executor_id = new.executor_id, executor_name = x_executor_name,
+					executor_comments = new.executor_comments, reporting_manager_id = new.reporting_manager_id, reporting_manager_name = x_reporting_manager_name,
+					approver_status_1 = new.approver_status_1, approver_status_2 = new.approver_status_2, approver_status_3 = new.approver_status_3,
+					reporting_manager_status = new.reporting_manager_status, approver_1 = new.approver_1, approver_1_name = x_approver_1_name,
+					approver_2 = new.approver_2, approver_2_name = x_approver_2_name, approver_3 = new.approver_3, approver_3_name = x_approver_3_name,
+					isactive = new.isactive, createdby = new.createdby, modifiedby = new.modifiedby, createddate = new.createddate, modifieddate = new.modifieddate
+					,approver_1_comments = new.approver_1_comments,approver_2_comments = new.approver_2_comments,approver_3_comments = new.approver_3_comments,reporting_manager_comments = new.reporting_manager_comments,
+					to_mgmt_comments = new.to_mgmt_comments,to_manager_comments = new.to_manager_comments
+					where sd_requests_id = new.id;
+				    END";
 
 $msgarray = array();
 if(count($_POST) > 0)
@@ -810,79 +905,65 @@ if(count($_POST) > 0)
 		if($hostname !='' && $username !='' && $dbname !='' )
 		{
                     try{
-			//$mysqlConnection = @mysql_connect($hostname, $username, $password);
                         $mysqlPDO = new PDO('mysql:host='.$hostname.';dbname='.$dbname.'',$username, $password);
-			if (!$mysqlPDO)
-			{
-                            $msgarray['error'] = 'Could not connect to specified database' ;
-			}
-			else
-			{
-				//$mysqlselectdb = @mysql_select_db($dbname, $mysqlConnection);
-				
-					$query = "";
-					$file_content = file('hrms.sql');
-					foreach($file_content as $sql_line){
-							if(trim($sql_line) != "" && strpos($sql_line, "--") === false)
+							if (!$mysqlPDO)
 							{
-								$query .= $sql_line;
-								if (substr(rtrim($query), -1) == ';'){
-								//echo $query;
-								//$result = $mysqlselectdb.mysql_query($query);
-                                                                $result = $mysqlPDO->query($query);
-								$query = "";
-								}
-							}
-						}
-					/* We can use mysqli or PDO */	
-					//$mysqli = new mysqli($hostname, $username, $password,$dbname);	
-					
-					$check = 0;
-					for($t=1;$t<=32;$t++)
-					{
-						//$mysqli->multi_query($GLOBALS['qry'.$t]);
-						$mysqlPDO->query($GLOBALS['qry'.$t]);
-						$check++;
-					}
-					//mysql_query($sql,$mysqlConnection);
-					
-				
-						
-						if(!$result)
-						{
-							$msgarray['error'] = 'Could not write tables to specified database' ;
-						}else
-						{
-							if($check == 32)
-							{
-								$constantresult = writeDBconstants($hostname,$username,$password,$dbname);
-								if($constantresult == 'true')
-								{
-									//header("Location: index.php?s=".sapp_Global::_encrypt(3)."");
-?>
-									 <script type="text/javascript" language="javascript">
-					                    window.location= "index.php?s=<?php echo sapp_Global::_encrypt(3);?>";
-					                </script>
-<?php 									
-                                                                        
-								}else
-								{
-									$msgarray['error'] = 'Some error occured' ;
-								}
+				                            $msgarray['error'] = 'Could not connect to specified database' ;
 							}
 							else
 							{
-								$msgarray['error'] = 'Some error occured' ;
+									$query = "";
+									$file_content = file('hrms.sql');
+									foreach($file_content as $sql_line){
+											if(trim($sql_line) != "" && strpos($sql_line, "--") === false)
+											{
+												$query .= $sql_line;
+												if (substr(rtrim($query), -1) == ';'){
+				                                                                $result = $mysqlPDO->query($query);
+												$query = "";
+												}
+											}
+										}
+									/* We can use mysqli or PDO */	
+									$check = 0;
+									for($t=1;$t<=36;$t++)
+									{
+										$mysqlPDO->query($GLOBALS['qry'.$t]);
+										$check++;
+									}
+										if(!$result)
+										{
+											$msgarray['error'] = 'Could not write tables to specified database' ;
+										}else
+										{
+											if($check == 36)
+											{
+												$constantresult = writeDBconstants($hostname,$username,$password,$dbname);
+												if($constantresult == 'true')
+												{
+				?>
+													 <script type="text/javascript" language="javascript">
+									                    window.location= "index.php?s=<?php echo sapp_Global::_encrypt(3);?>";
+									                </script>
+				<?php 									
+				                                                                        
+												}else
+												{
+													$msgarray['error'] = 'Some error occured. '.$constantresult ;
+												}
+											}
+											else
+											{
+												$msgarray['error'] = 'Some error occured while installing triggers.' ;
+											}
+										}
+					
 							}
-						}
-	
-			}
                     }
                     catch (PDOException $e)
                     {                        
-                        $msgarray['error'] = "Some error occured.Check the credentials";
+                        $msgarray['error'] = "Some error occured. ".$e->getMessage();
                     }
-			//@mysql_close($mysqlConnection);
 		}
                 else
 		{
@@ -922,11 +1003,7 @@ function writeDBconstants($hostname,$username,$password,$dbname)
 			}
 			catch (Exception $e)
 			{
-				/*echo "Exception";
-				 echo $errorMsg = 'Error on line '.$e->getLine().' in '.$e->getFile().': <b>'.$e->getMessage().'</b>';
-				 echo $e->getMessage()."<br/>";
-				 echo $e->getTraceAsString();
-				 exit; */
+				return $e->getMessage();
 			}
 		}	
 }

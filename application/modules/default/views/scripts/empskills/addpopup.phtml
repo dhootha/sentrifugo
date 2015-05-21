@@ -92,7 +92,7 @@ if($this->emptyFlag != 0)
    		</div>     
 </form>
 <?php } ?>
-<script>
+<script type='text/javascript'>
 <?php if($this->successmessage != '') { ?>
         setTimeout(function(){
 		    closeiframepopup('<?php echo $this->controllername; ?>',''); 
@@ -100,15 +100,15 @@ if($this->emptyFlag != 0)
 <?php } ?>
 </script>
 
-<script>
+<script type='text/javascript'>
 $(document).ready(function(){
 	
-var yearrange = <?php echo "'".date("Y", strtotime("-30 years")).':'.date('Y')."'"; ?>;
+//var yearrange = <?php echo "'".date("Y", strtotime("-30 years")).':'.date('Y')."'"; ?>;
+     var yearrange = <?php echo "'".YEAR.':'.date('Y')."'"; ?>;
 	$('#year_skill_last_used').datepicker({
 					showOn:'both',
 					maxDate: new Date, 
 				    yearRange: yearrange,
-					//dateFormat: 'mm-dd-yy',
 					dateFormat:"<?php echo DATEFORMAT_JS;?>",
 					buttonImage: "<?php echo $this->baseUrl("public/media/images/cal.jpg");?>",
 					buttonImageOnly: true,
@@ -119,7 +119,6 @@ var yearrange = <?php echo "'".date("Y", strtotime("-30 years")).':'.date('Y')."
                     onClose:function(){
                                     $('#year_skill_last_used').trigger('blur');
                                 } 					
-					//minDate: 1  
 	});
 	
 	 });

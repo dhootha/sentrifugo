@@ -126,11 +126,10 @@ class Default_UsermanagementController extends Zend_Controller_Action
                         $form->populate($data);
                         $identity_arr = array(
                                 $identity_codes['backgroundagency_code'] => "Background Agency (".$identity_codes['backgroundagency_code'].")",
-                                //$identity_codes['vendors_code'] => "Vendors (".$identity_codes['vendors_code'].")",
-                                //$identity_codes['staffing_code'] => "Staffing (".$identity_codes['staffing_code'].")",
                                 $identity_codes['users_code'] => "Users (".$identity_codes['users_code'].")",
                             );
-                        $id_arr = preg_split('/-/', $data['employeeId']);
+                        //$id_arr = preg_split('/-/', $data['employeeId']);
+                        $id_arr = preg_split('/(?=\d)/', $data['employeeId'], 2);
                         $form->employeeId->setValue($identity_arr[$id_arr[0]]);        
                         $this->view->controllername = $objName;
                         $this->view->id = $id;
@@ -196,23 +195,13 @@ class Default_UsermanagementController extends Zend_Controller_Action
         $roles_arr = $role_model->getRolesListForUsers('');        
       
         $form->emprole->addMultiOptions(array(''=>'Select Role')+$roles_arr);
-        
-        //echo "<pre>";print_r($identity_codes);echo "</pre>";
         $emp_identity_code = isset($identity_codes['backgroundagency_code'])?$identity_codes['backgroundagency_code']:"";
         
         $identity_arr = array();
         if($emp_identity_code!='')
         {            
-            /*$identity_arr = array(
-                //$identity_codes['backgroundagency_code'] => "Background Agency (".$identity_codes['backgroundagency_code'].")",
-                $identity_codes['vendors_code'] => "Vendors (".$identity_codes['vendors_code'].")",
-                $identity_codes['staffing_code'] => "Staffing (".$identity_codes['staffing_code'].")",
-                $identity_codes['users_code'] => "Users (".$identity_codes['users_code'].")",
-            );*/
             $identity_arr = array(               
-                //$identity_codes['staffing_code'] => "Staffing (".$identity_codes['staffing_code'].")",
                 $identity_codes['users_code'] => "Users (".$identity_codes['users_code'].")",
-                //$identity_codes['vendors_code'] => "Vendors (".$identity_codes['vendors_code'].")"
             );
         }
         else 
@@ -229,7 +218,6 @@ class Default_UsermanagementController extends Zend_Controller_Action
             $data = $user_model->getUserDataById($id); 
             if(count($data) >0)
             {
-                //echo '<pre>';print_r($data); exit;
                 if($data['jobtitle_id'] != ''){
                   $this->_redirect('/employee/edit/id/'.$id);
                 }
@@ -237,10 +225,10 @@ class Default_UsermanagementController extends Zend_Controller_Action
                 $role_data = $role_model->getRoleDataById($data['emprole']);   
 
                 $data['emplockeddate'] = sapp_Global::change_date($data['emplockeddate'], 'view');
-                //$data['selecteddate'] = sapp_Global::change_date($data['selecteddate'], 'view');
                 $form->populate($data);
                 $this->view->data = $data;
-                $id_arr = preg_split('/-/', $data['employeeId']);
+                //$id_arr = preg_split('/-/', $data['employeeId']);
+                $id_arr = preg_split('/(?=\d)/', $data['employeeId'], 2);
                 $identity_arr[$identity_codes['backgroundagency_code']] = "Background Agency (".$identity_codes['backgroundagency_code'].")";
                 if(isset($identity_arr[$id_arr[0]]) && !empty($identity_arr[$id_arr[0]])){
                  $empIDSetVal = $identity_arr[$id_arr[0]];
@@ -255,7 +243,6 @@ class Default_UsermanagementController extends Zend_Controller_Action
                     $roles_arr = $role_model->getRolesListForUsers($id,$empIDSetVal);        
                     $form->emprole->addMultiOptions(array(''=>'Select Role')+$roles_arr);
                 }
-            //print_r($id_arr);
             }
             else 
             {
@@ -280,7 +267,6 @@ class Default_UsermanagementController extends Zend_Controller_Action
         {
             if($emp_identity_code == '')
             {
-                //$this->view->nodata = "identity";
                 $err_messages['employeeId'] = "Identity codes are not configured yet.";
             }
             if(count($roles_arr) == 0)
@@ -300,8 +286,6 @@ class Default_UsermanagementController extends Zend_Controller_Action
      */
     public function saveupdateAction()
     {
-         //echo "<pre>";print_r($this->getRequest()->getPost());echo "</pre>";         
-         //$this->_helper->json(array());
          
          $auth = Zend_Auth::getInstance();
          if($auth->hasIdentity())
@@ -323,9 +307,11 @@ class Default_UsermanagementController extends Zend_Controller_Action
             {
                 $id = $this->_request->getParam('id');                
                 $employeeId = $this->_request->getParam('employeeId',null);                                
-                $userfullname = $this->_request->getParam('userfullname',null);
+                //$userfullname = $this->_request->getParam('userfullname',null);
+                $firstname = $this->_request->getParam('firstname',null);
+                $lastname = $this->_request->getParam('lastname',null);
+                $userfullname = $firstname.' '.$lastname;
                 $entrycomments = $this->_request->getParam("entrycomments",null);                
-                //$selecteddate = $this->_request->getParam("selecteddate",null);
                 $emailaddress = $this->_request->getParam("emailaddress",null);                
                 $emprole = $this->_request->getParam("emprole",null);
                 $emplockeddate = $this->_request->getParam("emplockeddate",null);
@@ -336,19 +322,17 @@ class Default_UsermanagementController extends Zend_Controller_Action
                 
                 $data = array(
                             'emprole' => $emprole,
+                			'firstname' => $firstname,
+                			'lastname' => $lastname,
                             'userfullname' => $userfullname,
                             'emailaddress' => $emailaddress,                            
                             'modifiedby'=>$loginUserId,
                             'modifieddate'=> gmdate("Y-m-d H:i:s"),
-                            //'emptemplock' => $emptemplock,
-                            //'empreasonlocked' => $empreasonlocked,
-                            //'emplockeddate' => sapp_Global::change_date($emplockeddate,'database'),
                             'emppassword' => md5($emppassword),
-                            //'employeeId' => $employeeId,                            
                             'entrycomments' => $entrycomments,                            
-                            //'selecteddate' => sapp_Global::change_date($selecteddate,'database'),  
                             'userstatus' => 'old',
                         );
+                        
                 if($emplockeddate == '')
                 {
                     unset($data['emplockeddate']);
@@ -389,8 +373,6 @@ class Default_UsermanagementController extends Zend_Controller_Action
 							}
 						}
                     }
-                    //echo "<pre>";print_r($data);echo "</pre>";         
-                    //$this->_helper->json(array());
                     $where = array('id=?'=>$id);  
                     unset($data['emppassword']);
                     $messages['message'] = 'User updated successfully.';
@@ -417,7 +399,7 @@ class Default_UsermanagementController extends Zend_Controller_Action
                 }
                 else
                 {
-                    $employeeId = $employeeId."-".str_pad($Id, 4, '0', STR_PAD_LEFT);
+                    $employeeId = $employeeId.str_pad($Id, 4, '0', STR_PAD_LEFT);
                     $user_model->SaveorUpdateUserData(array('employeeId'=>$employeeId), "id = ".$Id);
                     $tableid = $Id; 
                     $base_url = 'http://'.$this->getRequest()->getHttpHost() . $this->getRequest()->getBaseUrl();
@@ -450,11 +432,8 @@ class Default_UsermanagementController extends Zend_Controller_Action
                 {
                     if($data['isactive'] == 1)
                     {
-                        //$act_str = array("Activated" => gmdate("Y-m-d H:i:s"));
                         $logarr = array('userid' => $loginUserId,
 											'recordid' =>$tableid,
-						//'childrecordid' => $childrecordId,
-						//'date' => $date->get('yyyy-MM-dd HH:mm:ss')
 											'date' => gmdate("Y-m-d H:i:s"),
                                              'isactive' => 1
 						);
@@ -462,17 +441,13 @@ class Default_UsermanagementController extends Zend_Controller_Action
                     }
                     else 
                     {
-                       // $act_str = array("Inactivated"=> gmdate("Y-m-d H:i:s"));
                         $logarr = array('userid' => $loginUserId,
 											'recordid' =>$tableid,
-						//'childrecordid' => $childrecordId,
-						//'date' => $date->get('yyyy-MM-dd HH:mm:ss')
 											'date' => gmdate("Y-m-d H:i:s"),
                                              'isactive' => 0
 						);
 						$jsonlogarr = json_encode($logarr);
                     }
-                    //$result = sapp_Global::logManager($objID,4,$loginUserId,$tableid,'',$act_str);
                     $id = $logmanagermodel->addOrUpdateLogManager($objID,4,$jsonlogarr,$loginUserId,$tableid);
                 }
                 $messages['result']='saved';
@@ -514,7 +489,6 @@ class Default_UsermanagementController extends Zend_Controller_Action
 			$agencyroles = $agencylistmodel->getagencyrole();
 			$userData = $user_model->getUserDataById($id);			
 			$user_role = $userData['emprole'];
-			/* Checking for - if the deleted user is an agency */
 			foreach($agencyroles as $agrole)
 			{
 				if($agrole['id'] == $user_role)
@@ -558,7 +532,7 @@ class Default_UsermanagementController extends Zend_Controller_Action
             $messages['msgtype'] = 'error';
         }
         $this->_helper->json($messages);
-    }// end of delete action
+    }
     public function getemailofuserAction()
     {
         $cand_id = $this->_getParam('cand_id',null);
@@ -571,7 +545,6 @@ class Default_UsermanagementController extends Zend_Controller_Action
 	
 	public function generateBaseurl()
 	{
-		
 		$baseUrl = DOMAIN;
 		$baseUrl = rtrim($baseUrl,'/');	
 		return $baseUrl;
@@ -607,7 +580,6 @@ class Default_UsermanagementController extends Zend_Controller_Action
 				$options['cron'] = 'yes';
 				$result = sapp_Global::_sendEmail($options);
 			}
-			/* Mail to Agency */
 			$options['subject'] = APPLICATION_NAME.' : Agency Activated';
 			$options['header'] = 'Agency Activated';
 			$options['toEmail'] = $agencyData['emailaddress'];  
@@ -624,7 +596,6 @@ class Default_UsermanagementController extends Zend_Controller_Action
 		}
 		else if($flag == 'inactivated')
 		{
-			/* Mail to all HRs and Management*/
 			$emailids = $agencylistmodel->getAllHRManagementEMails();			
 			foreach($emailids as $email)
 			{
@@ -649,7 +620,6 @@ class Default_UsermanagementController extends Zend_Controller_Action
 				$options['cron'] = 'yes';
 				$result = sapp_Global::_sendEmail($options);
 			}
-			/* Mail to Agency */
 			$options['subject'] = APPLICATION_NAME.' :: Agency is deleted';
 			$options['header'] = 'Agency Deleted';
 			$options['toEmail'] = $agencyData['emailaddress'];  
@@ -664,5 +634,5 @@ class Default_UsermanagementController extends Zend_Controller_Action
 			$result = sapp_Global::_sendEmail($options);
 		}
 	}
-}//end of class
+}
 

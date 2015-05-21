@@ -45,25 +45,27 @@ class Default_ReportsController extends Zend_Controller_Action
 		$ajaxContext->addActionContext('agencylistreport', 'html')->initContext();
 		$ajaxContext->addActionContext('getinterviewroundsdata', 'html')->initContext();
 		$ajaxContext->addActionContext('empscreening', 'html')->initContext();		
-		$ajaxContext->addActionContext('empauto', 'json')->initContext();
-		$ajaxContext->addActionContext('holidaygroupreports', 'html')->initContext();
-		$ajaxContext->addActionContext('leavesreport', 'html')->initContext();
-		$ajaxContext->addActionContext('businessunits', 'html')->initContext();
-		$ajaxContext->addActionContext('departments', 'html')->initContext();
-		$ajaxContext->addActionContext('getempreportdata', 'html')->initContext();
-		$ajaxContext->addActionContext('leavesreporttabheader', 'json')->initContext();
-		$ajaxContext->addActionContext('userlogreport', 'html')->initContext();
-		$ajaxContext->addActionContext('activitylogreport', 'html')->initContext();
-		$ajaxContext->addActionContext('getactiveuserdata', 'html')->initContext();
-		$ajaxContext->addActionContext('rolesgroupdata', 'html')->initContext();
-                $ajaxContext->addActionContext('getrolepopup', 'html')->initContext();
-		$ajaxContext->addActionContext('emprolesgroupdata', 'html')->initContext();
-		$ajaxContext->addActionContext('requisitonstatusreport', 'html')->initContext();
-		$ajaxContext->addActionContext('agencylistreport', 'html')->initContext();
-		$ajaxContext->addActionContext('getinterviewroundsdata', 'html')->initContext();
-		$ajaxContext->addActionContext('empscreening', 'html')->initContext();
-                $ajaxContext->addActionContext('emprolesgrouppopup', 'html')->initContext();
-
+	//	$ajaxContext->addActionContext('empauto', 'json')->initContext();
+	//	$ajaxContext->addActionContext('holidaygroupreports', 'html')->initContext();
+		//$ajaxContext->addActionContext('leavesreport', 'html')->initContext();
+		//$ajaxContext->addActionContext('businessunits', 'html')->initContext();
+		//$ajaxContext->addActionContext('departments', 'html')->initContext();
+		//$ajaxContext->addActionContext('getempreportdata', 'html')->initContext();
+		//$ajaxContext->addActionContext('leavesreporttabheader', 'json')->initContext();
+		//$ajaxContext->addActionContext('userlogreport', 'html')->initContext();
+		//$ajaxContext->addActionContext('activitylogreport', 'html')->initContext();
+		//$ajaxContext->addActionContext('getactiveuserdata', 'html')->initContext();
+		//$ajaxContext->addActionContext('rolesgroupdata', 'html')->initContext();
+        $ajaxContext->addActionContext('getrolepopup', 'html')->initContext();
+	//	$ajaxContext->addActionContext('emprolesgroupdata', 'html')->initContext();
+	//	$ajaxContext->addActionContext('requisitonstatusreport', 'html')->initContext();
+	//	$ajaxContext->addActionContext('agencylistreport', 'html')->initContext();
+	//	$ajaxContext->addActionContext('getinterviewroundsdata', 'html')->initContext();
+	//	$ajaxContext->addActionContext('empscreening', 'html')->initContext();
+        $ajaxContext->addActionContext('emprolesgrouppopup', 'html')->initContext();
+		$ajaxContext->addActionContext('getsddata', 'html')->initContext();
+		$ajaxContext->addActionContext('getselectedappraisaldata','html')->initContext();
+		$ajaxContext->addActionContext('performancereport', 'html')->initContext();
 	}
 
 	/**
@@ -134,9 +136,299 @@ class Default_ReportsController extends Zend_Controller_Action
             $this->view->group_id = $group_id;
             $this->view->role_id = $role_id;
         }
+	/** 
+	** performance appraisal reports
+	** by default displays all employee ratings for the current year
+	** parameterized by year, business unit, department, quarter, reporting manager 
+	**/
+	public function performancereportAction()
+	{
+		try{
+			$form = new Default_Form_performancereport();
+			$norec_arr = array();
+			$dept_model = new Default_Model_Departments();
+			$dept_data = $dept_model->getdepts_interview_report();
+			$appraisalRatings_model = new Default_Model_Appraisalemployeeratings();
+			$department = $this->_request->getParam('department_id');
+			$businessunit = $this->_request->getParam('businessunit_id');
+			$reportingmanager = $this->_request->getParam('reporting_manager');
+			$fromyear = $this->_request->getParam('fromyear');
+			$toyear = $this->_request->getParam('toyear');
+			$employeeid = $this->_request->getParam('hiddenemployeename');
+			$nofilters = 0;
+			$appraisalData = array();
+			$curdate = date('Y-m-d');
+			//if all the filters are empty
+			if($department == '' && $reportingmanager == '' && ($businessunit == '' || $businessunit == 0) && $fromyear == '' && $toyear == '' && $employeeid == '')
+			{
+				$fromyear = date('Y');
+				$toyear = date('Y',strtotime("$curdate +1 year"));
+				$appraisalData = $appraisalRatings_model->getappraisalidsforperformance($fromyear,$toyear,$department,$reportingmanager,$businessunit,$employeeid);
+				//when no filters are there and if there is no data for current year, checking for previous year
+				if(empty($appraisalData))
+				{
+					$fromyear = $fromyear-1;
+					$toyear = $toyear-1;
+					$appraisalData = $appraisalRatings_model->getappraisalidsforperformance($fromyear,$toyear,$department,$reportingmanager,$businessunit,$employeeid);
+				}
+			}
+			else
+			{
+				$appraisalData = $appraisalRatings_model->getappraisalidsforperformance($fromyear,$toyear,$department,$reportingmanager,$businessunit,$employeeid);
+			}
+			//getting the employees count with consolidated rating group by consolidated rating
+			$emp_count_data = $appraisalRatings_model->getEmpCountWithConsolidatedRatings($fromyear,$toyear,$department,$reportingmanager,$businessunit,$appraisalData,$employeeid);
+			$maxrating = 0;
+			$noofboxes = 0;
+			$ratingsarray = array();
+			if(isset($emp_count_data) && !empty($emp_count_data))
+			{
+				//making the array with rating as key
+				foreach($emp_count_data as $emp_count)
+				{
+					$ratingsarray[$emp_count['consolidated_rating']] = $emp_count;
+				}
+			}
+			//get the max rating to calculate the number of boxes
+			if(isset($ratingsarray) && !empty($ratingsarray))
+			{
+				$maxrating = max(array_keys($ratingsarray));
+				if($maxrating <= 5)
+				{
+					$noofboxes = 5;
+				}
+				else
+				{
+					$noofboxes = 10;				
+				}
+			}		
+			//getting the employees data
+			$emp_data = $appraisalRatings_model->getEmpRatings($fromyear,$toyear,$department,$reportingmanager,$businessunit,$appraisalData,$employeeid);
+			$emp_grouped_data = array();
+			if($noofboxes > 0)
+			{
+				for($i=1;$i<=$noofboxes;$i++)
+				{
+					$emp_inner_data = array();
+					foreach($emp_data as $emp)
+					{
+						if($emp['consolidated_floor_rating']==$i)
+						{
+							array_push($emp_inner_data,$emp);
+						}
+					}
+					$emp_grouped_data[$i] = $emp_inner_data;
+				}
+			}
+			//getting business units
+			$bu_model = new Default_Model_Businessunits();
+            $bu_arr = $bu_model->getBU_report();
+            if(!empty($bu_arr))
+            {
+                foreach ($bu_arr as $bu)
+                {
+                    $form->businessunit_id->addMultiOption($bu['id'],utf8_encode($bu['bu_name']));
+                }
+            }
+            else
+            {
+                $norec_arr['businessunit_id'] = 'Business Units are not added yet.';
+            }			
+			$this->view->emp_data = $emp_data;
+			$this->view->emp_grouped_data = $emp_grouped_data;
+			$this->view->ratingsarray = $ratingsarray;
+			$this->view->noofboxes = $noofboxes;
+			$this->view->messages = $norec_arr;
+			$this->view->fromyear = $fromyear;
+			$this->view->toyear = $toyear;
+			$this->view->form = $form;
+		}
+		catch(Exception $e)
+		{
+			print_r($e);
+		}
+	}
+	
+	/**
+	** displays previous emp appraisals based on emp id,
+	** on click of individual emp record in heat map report
+	**/
+	public function previousappraisalsAction($empId="")
+	{
+		try
+		{
+			if(empty($empId))
+			{
+				$empId = $this->_request->getParam('id'); 
+			}
+			
+			/** 
+			** 1. get employee details
+			**/
+				$empModel = new Default_Model_Employee();
+				$employeeDetails = $empModel->getEmp_from_summary($empId);
+				
+			/** 
+			** 2. get employee appraisal details
+			**/
+				$empAppraisalModel = new Default_Model_Appraisalemployeeratings();
+				$empAppraisalDetails = $empAppraisalModel->getEmpAppraisalData($empId);
+				
+			/** 
+			** 3. display employee graph
+			**/
+
+			/** 
+			** 4. By default, display latest appraisal ratings and questions
+			**/
+
+			$this->view->employeeData = $employeeDetails;
+			$this->view->empAppraisalDetails = $empAppraisalDetails;			
+		}
+		catch(Exception $e)
+		{
+			print_r($e);
+		}
+	}
+
+	/**
+	** get individual 
+	**/
+	public function getselectedappraisaldataAction()
+	{
+		try
+		{
+		
+			$appId = $this->_request->getParam('appId');
+			$empId = $this->_request->getParam('empId');
+			$empAppraisalData = "";$questionsData = "";$categoriesData = "";$empData = "";$ratingsData = "";
+			if($appId && $empId)
+			{
+				$empAppraisalModel = new Default_Model_Appraisalemployeeratings();
+				$empAppraisals = $empAppraisalModel->getSelectedAppraisalData($appId,$empId);
+				$configId = isset($empAppraisals[0]['pa_configured_id'])?$empAppraisals[0]['pa_configured_id']:0;
+				// get rating details using configuration id
+				$appEmpRatingsModel = new Default_Model_Appraisalemployeeratings();
+				$ratingsData = $appEmpRatingsModel->getAppRatingsDataByConfgId($configId,$appId);
+				$ratingType = "";
+				if(!empty($ratingsData))
+					$ratingType = $ratingsData[0]['rating_type'];
+				
+				$ratingText = array();
+				$ratingTextDisplay = array();
+				$ratingValues = array();
+				foreach ($ratingsData as $rd){
+					$ratingText[] = $rd['rating_text'];
+					$ratingTextDisplay[$rd['id']] = $rd['rating_text'];
+					$ratingValues[$rd['id']] = $rd['rating_value']; 
+				}				
+				//$empAppraisalData = $empAppraisalModel->getEmpQuestionsData($appId,$empId);
+				if(!empty($empAppraisals))
+				{
+					if(!empty($empAppraisals[0]['employee_response']))
+					{
+						$empResponse = json_decode($empAppraisals[0]['employee_response']);
+						$empResponseArray = get_object_vars($empResponse);
+						$strQuestionIds = implode(",",array_keys($empResponseArray));
+						$questionsData = $empAppraisalModel->getQuestionsData($strQuestionIds);
+											
+						$tmpRatingIdsObject = array_values($empResponseArray);
+						$tmpRatingIdsArr = array();
+						foreach($tmpRatingIdsObject as $ratingArr)
+						{
+							$tmpRatings = get_object_vars($ratingArr);
+							$tmpRatingIdsArr[] = $tmpRatings['rating_id'];
+						}
+						if(!empty($empAppraisals[0]['manager_response']))
+						{
+							$managerResponse = json_decode($empAppraisals[0]['manager_response']);
+							$managerResponseArray = get_object_vars($managerResponse);
+							$managerRatingIdsObject = array_values($managerResponseArray);
+							
+							foreach($managerRatingIdsObject as $ratingArr)
+							{
+								$tmpRatings = get_object_vars($ratingArr);
+								$tmpRatingIdsArr[] = $tmpRatings['rating'];
+							}
+						}
+						$tmpRatingIdsStr = (!empty($tmpRatingIdsArr))?implode(",",$tmpRatingIdsArr):"";
+
+						if(!empty($tmpRatingIdsStr))
+						{
+							$ratingsData = $empAppraisalModel->getRatingsData($tmpRatingIdsStr);
+						}
+
+						if(!empty($ratingsData))
+						{
+							$r = 0;
+							foreach($ratingsData as $rdata)
+							{
+								$ratingsData[$rdata['id']] = $rdata;
+								unset($ratingsData[$r]);
+								$r++;
+							}
+						}						
+					}
+					$strCategories = $empAppraisals[0]['category_id'];
+					$categoriesData = $empAppraisalModel->getCategories($strCategories);
+
+					
+
+					/** for getting line managers name, business unit, department details
+					**
+					$strEmpId = $empId.',';
+
+					if(!empty($empAppraisals[0]['line_manager_1']))
+					{
+							$strEmpId .= $empAppraisals[0]['line_manager_1'];
+							$strEmpId .= ',';
+					}
+					if(!empty($empAppraisals[0]['line_manager_2']))
+					{
+						$strEmpId .= $empAppraisals[0]['line_manager_2'];
+						$strEmpId .= ',';
+					}
+					if(!empty($empAppraisals[0]['line_manager_3']))
+					{
+						$strEmpId .= $empAppraisals[0]['line_manager_3'];
+						$strEmpId .= ',';
+					}
+					if(!empty($empAppraisals[0]['line_manager_4']))
+					{
+						$strEmpId .= $empAppraisals[0]['line_manager_4'];
+						$strEmpId .= ',';
+					}
+					if(!empty($empAppraisals[0]['line_manager_5']))
+					{
+						$strEmpId .= $empAppraisals[0]['line_manager_5'];
+						$strEmpId .= ',';
+					}
+					
+					$strEmpId = trim($strEmpId,",");
+					$empData = $empAppraisalModel->getEmployeeData($strEmpId);
+					**/
+
+				}
+			}
+			
+			$this->view->selectedAppraisals = $empAppraisals;
+			$this->view->categoriesData = $categoriesData;
+			$this->view->empData = $empData;
+			$this->view->questionsData = $questionsData;
+			$this->view->ratingsData = $ratingsData;
+			$this->view->ratingType = $ratingType;
+			$this->view->ratingTextDisplay = $ratingTextDisplay;
+			$this->view->ratingText = json_encode($ratingText);
+			$this->view->ratingValues = $ratingValues;			
+		}
+		catch(Exception $e)
+		{
+			print_r($e);
+		}
+	}
+
 	public function getinterviewroundsdataAction()
 	{
-		//echo "<pre>";print_r($this->_getAllParams());echo "</pre>";
 		$param_arr = array();
 		$param_arr['interview_date'] = $this->_getParam('interview_date',null);
 		$param_arr['requisition_id'] = $this->_getParam('req_id',null);
@@ -247,7 +539,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			$norec_arr['req_id'] = "No approved requisitions.";
 		}
 
-		//$form->interview_date->setValue(sapp_Global::change_date(date('Y-m-d'),'view'));
 		$this->view->messages = $norec_arr;
 		$this->view->form = $form;
 	}
@@ -284,7 +575,7 @@ class Default_ReportsController extends Zend_Controller_Action
 		$filename = "Roles&Group&Employees.xlsx";
 		$cell_name="";
 		$objPHPExcel->getActiveSheet()->getColumnDimension($letters[$count])->setWidth(60);
-		// Make first row Headings bold and highlighted in Excel.
+		
 		foreach ($cols_param_arr as $names)
 		{
 			$i = 1;
@@ -316,7 +607,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			$cell_name = $letters[$count1].$i;
 			$value = $key;
 			$mcell_name = $letters[$count1].($i+count($emproles));
-			//echo "c==".$cell_name;echo "mc==".$mcell_name;echo "<hr/>";
 			$value = html_entity_decode($value,ENT_QUOTES,'UTF-8');
 			$prange = $cell_name.":".$mcell_name;
 			$objPHPExcel->getActiveSheet()->mergeCells($prange);
@@ -329,9 +619,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			//end of role count
 			//for employee count
 			$cell_name = $letters[$count1+1].($i);
-			//$mcell_name = $letters[$count1+1].($i);
-			//$prange = $cell_name.":".$mcell_name;
-			//$objPHPExcel->getActiveSheet()->mergeCells($prange);
 			$objPHPExcel->getActiveSheet()->SetCellValue($cell_name, array_sum($emproles));
 			//end of for employee count
 			//for role names
@@ -345,14 +632,11 @@ class Default_ReportsController extends Zend_Controller_Action
 				$cell_name = $letters[$j+1].$k;
 				$value = html_entity_decode($cnt,ENT_QUOTES,'UTF-8');
 				$objPHPExcel->getActiveSheet()->SetCellValue($cell_name, $value);
-				//$j++;
 				$k++;
 			}
 			//end of for role names
-			//$i++;
 			$i = $i +count($emproles)+1;
 		}
-		//exit;
 		sapp_Global::clean_output_buffer();
 		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 		header("Content-Disposition: attachment; filename=\"$filename\"");
@@ -426,7 +710,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		$sort_type = $this->_getParam('sort_type',null);
 
 		$cols_param_arr = $this->_getParam('cols_arr',array());
-		//echo "<pre>";print_r($cols_param_arr);echo "</pre>";
 		$user_model = new Default_Model_Usermanagement();
 
 		$user_data_org = $user_model->getdata_user_report($search_arr,$per_page,$page_no,$sort_name,$sort_type);
@@ -441,7 +724,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			$userd['isactive'] = $userd['isactive'] == 1?"Active":"Inactive";
 			$mod_user_data[] = $userd;
 		}
-		//echo "<pre>";print_r($mod_user_data);echo "</pre>";exit;
 		sapp_Global::export_to_excel($mod_user_data,$cols_param_arr,"Users&Employees.xlsx");
 
 		exit;
@@ -465,7 +747,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		if(isset($param_arr['sort_type']))unset($param_arr['sort_type']);
 		if(isset($param_arr['per_page']))unset($param_arr['per_page']);
 		unset($param_arr['module']);unset($param_arr['controller']);unset($param_arr['action']);
-		//echo "<pre>";print_r($cols_param_arr);echo "</pre>";exit;
 
 		if(count($cols_param_arr) == 0)
 		$cols_param_arr = $this->empreport_heplper1('mandatory');
@@ -529,7 +810,6 @@ class Default_ReportsController extends Zend_Controller_Action
 				}
 				$value = html_entity_decode($value,ENT_QUOTES,'UTF-8');
 				$objPHPExcel->getActiveSheet()->SetCellValue($cell_name, $value);
-				// $objPHPExcel->getActiveSheet()->getColumnDimensionByColumn($cell_name)->setAutoSize(true);
 				$count1++;
 			}
 			$i++;
@@ -575,7 +855,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		$data = array('grid_no'=>1, 'project_name'=>'', 'object_name'=>'Groups & Roles Report', 'grid_count'=>1,'file_name'=>'Groups&Roles.pdf');
 
 		$pdf = $this->_helper->PdfHelper->generateReport($field_names, $roles_data, $field_widths, $data);
-		//exit;
 		$this->_helper->json(array('file_name'=>$data['file_name']));
 	}
 	public function activeuserrptpdfAction()
@@ -594,7 +873,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		$sort_type = $this->_getParam('sort_type',null);
 
 		$cols_param_arr = $this->_getParam('cols_arr',array());
-		//echo "<pre>";print_r($cols_param_arr);echo "</pre>";
 		$user_model = new Default_Model_Usermanagement();
 
 		$user_data_org = $user_model->getdata_user_report($search_arr,$per_page,$page_no,$sort_name,$sort_type);
@@ -634,7 +912,7 @@ class Default_ReportsController extends Zend_Controller_Action
 
 		$pdf = $this->_helper->PdfHelper->generateReport($field_names, $mod_user_data, $field_widths, $data);
 
-		//exit;
+		
 		$this->_helper->json(array('file_name'=>$data['file_name']));
 	}
 	/**
@@ -656,7 +934,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		if(isset($param_arr['sort_type']))unset($param_arr['sort_type']);
 		if(isset($param_arr['per_page']))unset($param_arr['per_page']);
 		unset($param_arr['module']);unset($param_arr['controller']);unset($param_arr['action']);
-		//echo "<pre>";print_r($cols_param_arr);echo "</pre>";exit;
 		if(count($cols_param_arr) == 0)
 		$cols_param_arr = $this->empreport_heplper1('mandatory');
 		$employee_model = new Default_Model_Employee();
@@ -687,7 +964,7 @@ class Default_ReportsController extends Zend_Controller_Action
 
 		$pdf = $this->_helper->PdfHelper->generateReport($field_names, $emp_arr, $field_widths, $data);
 
-		//exit;
+		
 		$this->_helper->json(array('file_name'=>$data['file_name']));
 	}
 	/**
@@ -737,7 +1014,6 @@ class Default_ReportsController extends Zend_Controller_Action
 
 		$pdf = $this->_helper->PdfHelper->generateReport($field_names, $req_arr, $field_widths, $data);
 
-		//exit;
 		$this->_helper->json(array('file_name'=>$data['file_name']));
 	}
 
@@ -777,7 +1053,6 @@ class Default_ReportsController extends Zend_Controller_Action
                                                                          'user_cnt' => $emp['user_cnt'],
                                                                          'role_id' => $emp['role_id']);                    
                 }
-                //echo "<pre>";print_r($emproles_arr);echo "</pre>";
             }
             $cols_param_arr = array('group_name' => 'Group','rolename' => 'Role','user_cnt' => 'Users count');
             $this->view->emproles_arr = $emproles_arr;
@@ -819,7 +1094,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		$sort_type = $this->_getParam('sort_type',null);
 
 		$cols_param_arr = $this->_getParam('cols_arr',array());
-		//echo "<pre>";print_r($cols_param_arr);echo "</pre>";
 		$user_model = new Default_Model_Usermanagement();
 
 		$user_data_org = $user_model->getdata_user_report($search_arr,$per_page,$page_no,$sort_name,$sort_type);
@@ -854,8 +1128,7 @@ class Default_ReportsController extends Zend_Controller_Action
 		$param_arr = $this->_getAllParams();
 		$cols_param_arr = $this->_getParam('cols_arr',array());
 		if(isset($param_arr['cols_arr']))
-		unset($param_arr['cols_arr']);
-		//echo "<pre>";print_r($param_arr['cols_arr']);echo "</pre>";exit;
+                    unset($param_arr['cols_arr']);
 		$page_no = isset($param_arr['page_no'])?$param_arr['page_no']:1;
 		$per_page = isset($param_arr['per_page'])?$param_arr['per_page']:PERPAGE;
 		$sort_name = $param_arr['sort_name'];
@@ -878,7 +1151,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		if(count($cols_param_arr)  == 0)
 		$cols_param_arr = $mandatory_array;
 		$mandatory_array = array_keys($mandatory_array);
-		//echo "<pre>";print_r($emp_arr);echo "</pre>";
 		$this->view->emp_arr = $emp_arr;
 		$this->view->page_cnt = $page_cnt;
 		$this->view->per_page = $per_page;
@@ -912,6 +1184,9 @@ class Default_ReportsController extends Zend_Controller_Action
                         'backgroundchk_status' => 'Background Check Status',
                         'other_modeofentry' => 'Mode Of Entry(Other)',
                         'referer_name' => 'Referred By',
+                        'currencyname' => 'Salary Currency',
+                        'freqtype' => 'Pay Frequency',
+                        'salary' => 'Salary',
 
 		);
 		$mandatory_array = array(
@@ -941,89 +1216,355 @@ class Default_ReportsController extends Zend_Controller_Action
 		if($term != '')
 		{
 			$emp_arr = $emp_model->getAutoReportEmp($term);
-			//echo"<pre>";print_r($emp_arr);exit;
 			if(count($emp_arr)>0)
 			{
 				$output = array();
 				foreach($emp_arr as $emp)
 				{
-					/* if(file_exists(USER_PREVIEW_UPLOAD_PATH.'//'.$emp['profileimg']))
-					 {
-					 //$profilepic = USER_PREVIEW_UPLOAD_PATH.'//'.$emp['profileimg'];
-					 $profilepic = "<img id='prof_image' width='28' height='28' border='0' src='".DOMAIN."'/public/uploads/profile/".$emp['profileimg']."'>";
-					 }
-					 else
-					 {
-					 //$profilepic = MEDIA_PATH.'images/profile_pic.png';
-					 $profilepic = "<img id='prof_image' width='28' height='28' border='0' src='".MEDIA_PATH."'images/profile_pic.png'>";
-					 }*/
-
 					$output[] = array('id' => $emp['user_id'],'value' => $emp['emp_name'],'label' => $emp['emp_name'],'profile_img' => $emp['profileimg']);
 				}
-				//echo "<pre>";print_r($emp_arr);echo "</pre>";
 			}
-			//$output = array(array('id'=>'1','value'=>'1','label'=>'1'),array('id'=>'2','value'=>'2','label'=>'2'),array('id'=>'3','value'=>'3','label'=>'3'));
 		}
 		$this->_helper->json($output);
 	}
-	public function employeereportAction()
+	
+	public function servicedeskreportAction()
 	{
-		$norec_arr = array();
-		$form = new Default_Form_Employeereport();
-		$requi_model = new Default_Model_Requisition();
-		$employmentstatusModel = new Default_Model_Employmentstatus();
-		$role_model = new Default_Model_Roles();
-		$departmentsmodel = new Default_Model_Departments();
-
-		$roles_arr = $role_model->getRolesList_EMP();
-		$job_data = $requi_model->getJobTitleList();
-		//$employmentStatusData = $employmentstatusModel->getempstatusActivelist();
-		$employmentStatusData = $employmentstatusModel->getempstatuslist();
-		if(count($job_data)==0)
-		{
-			$norec_arr['jobtitle_id'] = "Job titles are not configured yet.";
-			$norec_arr['position_id'] = "Positions are not configured yet.";
-		}
-		if(count($employmentStatusData)==0)
-		{
-			$norec_arr['emp_status_id'] = "Employment status is not configured yet.";
-		}
-		$form->jobtitle_id->addMultiOptions(array(''=>'Select Job Title')+$job_data);
-		if(count($employmentStatusData) > 0)
-		{
-			$form->emp_status_id->addMultiOption('','Select Employment Status');
-			foreach ($employmentStatusData as $employmentStatusres)
-			{
-				$form->emp_status_id->addMultiOption($employmentStatusres['workcodename'],$employmentStatusres['statusname']);
-			}
-		}
-		if(sizeof($roles_arr) > 0)
-		{
-			$form->emprole->addMultiOptions(array(''=>'Select Role')+$roles_arr);
-		}
-		else
-		{
-			$norec_arr['emprole'] = 'Roles are not added yet.';
-		}
-
-		$departmentlistArr = $departmentsmodel->getDepartmentWithCodeList();
-			
-		if(!empty($departmentlistArr))
-		{
-			foreach ($departmentlistArr as $departmentlistres)
-			{
-				$form->department_id->addMultiOption($departmentlistres['id'],utf8_encode($departmentlistres['unitcode'].$departmentlistres['deptname']));
-			}
-		}
-		else
-		{
-			$norec_arr['department_id'] = 'Departments are not added yet.';
-		}
+		$norec_arr = array();		
+		$form = new Default_Form_Servicedeskreport();		
+		$servicedeskdepartmentmodel = new Default_Model_Servicedeskdepartment();		
+		
+		$sdDepts = $servicedeskdepartmentmodel->getSDDepartmentData();
+		if(count($sdDepts)==0)
+			$norec_arr['service_desk_id'] = "Categories are not configured yet.";
+		else {
+			foreach($sdDepts as $option)
+				$form->service_desk_id->addMultiOption($option['id'], $option['service_desk_name']);
+		}		
+		
 		$this->view->form = $form;
 		$this->view->messages = $norec_arr;
-		//$this->view->columns_array = $columns_array;
-		//$this->view->mandatory_array = $mandatory_array;
 	}
+	
+	public function getsddataAction()
+	{
+		$param_arr = $this->_getAllParams();
+		$cols_param_arr = $this->_getParam('cols_arr',array());
+		if(isset($param_arr['cols_arr']))
+		unset($param_arr['cols_arr']);
+		$page_no = isset($param_arr['page_no'])?$param_arr['page_no']:1;
+		$per_page = isset($param_arr['per_page'])?$param_arr['per_page']:PERPAGE;
+		$sort_name = $param_arr['sort_name'];
+		$sort_type = $param_arr['sort_type'];
+		if(isset($param_arr['page_no']))unset($param_arr['page_no']);
+		if(isset($param_arr['sort_name']))unset($param_arr['sort_name']);
+		if(isset($param_arr['sort_type']))unset($param_arr['sort_type']);
+		if(isset($param_arr['per_page']))unset($param_arr['per_page']);
+		unset($param_arr['module']);unset($param_arr['controller']);unset($param_arr['action']);unset($param_arr['format']);
+		
+		$reports_model = new Default_Model_Reports();
+		$sd_data = $reports_model->get_sd_report($param_arr, $per_page, $page_no, $sort_name, $sort_type);
+		$page_cnt = $sd_data['page_cnt'];
+		$sd_data_arr = $sd_data['rows'];		
+		
+		$columns_array = $this->sdreportcolumns('all');
+		
+		$mandatory_array = $this->sdreportcolumns('mandatory');
+		
+		if(count($cols_param_arr) == 0)
+		$cols_param_arr = $mandatory_array;
+		$mandatory_array = array_keys($mandatory_array);
+		
+		$this->view->sd_data_arr = $sd_data_arr;
+		$this->view->page_cnt = $page_cnt;
+		$this->view->per_page = $per_page;
+		$this->view->page_no = $page_no;
+		$this->view->cols_param_arr = $cols_param_arr;
+		$this->view->sort_name = $sort_name;
+		$this->view->sort_type = $sort_type;
+		$this->view->columns_array = $columns_array;
+	}
+	
+	public function sdreportcolumns($type)
+	{
+		$columns_array = array(
+						'ticket_number' => 'Ticket#',
+						'raised_by_name' => 'Raised by',
+						'createddate' => 'Raised on',
+                        'service_desk_name' => 'Category',
+                        'service_request_name' => 'Request Type',
+                        'priority' => 'Priority',
+                        'description' => 'Description',
+                        'status' => 'Status',
+                        'executor_name' => 'Executor',
+                        'executor_comments' => 'Executor Comments',
+                        'reporting_manager_name' => 'Reporting Manager',
+						'reporting_manager_status' => 'Reporting Manager Status',
+						'approver_1_name' => 'Approver 1',
+                        'approver_status_1' => 'Approver 1 Status',
+						'approver_2_name' => 'Approver 2',
+                        'approver_status_2' => 'Approver 2 Status',
+						'approver_3_name' => 'Approver 3',
+                        'approver_status_3' => 'Approver 3 Status',
+		);
+		$mandatory_array = array(
+						'ticket_number' => 'Ticket#',
+						'raised_by_name' => 'Raised by',
+						'createddate' => 'Raised on',
+                        'service_desk_name' => 'Category',
+                        'service_request_name' => 'Request Type',
+                        'priority' => 'Priority',
+                        'description' => 'Description',
+                        'status' => 'Status',
+		);
+		if($type == 'all')
+			return $columns_array;
+		else
+			return $mandatory_array;
+	}
+	
+	public function servicedeskpdfAction()
+	{
+		$this->_helper->layout->disableLayout();
+		$param_arr = $this->_getAllParams();
+
+		$cols_param_arr = $this->_getParam('cols_arr',array());
+		if(isset($param_arr['cols_arr']))	unset($param_arr['cols_arr']);
+		$page_no = isset($param_arr['page_no'])?$param_arr['page_no']:1;
+		$per_page = isset($param_arr['per_page'])?$param_arr['per_page']:PERPAGE;
+		$sort_name = $param_arr['sort_name'];
+		$sort_type = $param_arr['sort_type'];
+		if(isset($param_arr['page_no']))unset($param_arr['page_no']);
+		if(isset($param_arr['sort_name']))unset($param_arr['sort_name']);
+		if(isset($param_arr['sort_type']))unset($param_arr['sort_type']);
+		if(isset($param_arr['per_page']))unset($param_arr['per_page']);
+		unset($param_arr['module']);unset($param_arr['controller']);unset($param_arr['action']);
+
+		if(count($cols_param_arr) == 0)
+			$cols_param_arr = $this->sdreportcolumns('mandatory');
+		
+		$reports_model = new Default_Model_Reports();
+		$sd_data = $reports_model->get_sd_report($param_arr, $per_page, $page_no, $sort_name, $sort_type);
+		$sd_arr = $sd_data['rows'];
+		
+		for($x=0; $x<sizeof($sd_arr); $x++){
+			if(array_key_exists("priority",$sd_arr[$x])){
+				$pri = '';
+	            if($sd_arr[$x]['priority'] == 1)
+	            	$pri='Low';
+	            elseif($sd_arr[$x]['priority'] == 2)
+	            	$pri='Medium';
+	            else
+	            	$pri='High';
+	            $sd_arr[$x]['priority'] = $pri;
+			}
+		}
+		
+		$field_names = array();
+		$field_widths = array();
+		$data['field_name_align'] = array();
+
+		foreach($cols_param_arr as $column_key => $column_name)
+		{
+			$field_names[] = array(
+									'field_name'=>$column_key,
+                                    'field_label'=>$column_name
+			);
+			$field_widths[] = 25;
+			$data['field_name_align'][] = 'C';
+		}
+		if(count($cols_param_arr) != 7)
+		{
+			$totalPresentFieldWidth = array_sum($field_widths);
+			foreach($field_widths as $key => $width)
+			{
+				$field_widths[$key] = ($width*180)/$totalPresentFieldWidth;
+			}
+		}
+		$data = array('grid_no'=>1, 'project_name'=>'', 'object_name'=>'Service Request Management Report', 'grid_count'=>1,'file_name'=>'ServiceDeskReport.pdf');
+
+		$pdf = $this->_helper->PdfHelper->generateReport($field_names, $sd_arr, $field_widths, $data);
+
+		$this->_helper->json(array('file_name'=>$data['file_name']));
+	}
+	
+	public function servicedeskexcelAction()
+	{
+		$this->_helper->layout->disableLayout();
+		$param_arr = $this->_getAllParams();
+
+		$cols_param_arr = $this->_getParam('cols_arr',array());
+		if(isset($param_arr['cols_arr']))	unset($param_arr['cols_arr']);
+		$page_no = isset($param_arr['page_no'])?$param_arr['page_no']:1;
+		$per_page = isset($param_arr['per_page'])?$param_arr['per_page']:PERPAGE;
+		$sort_name = $param_arr['sort_name'];
+		$sort_type = $param_arr['sort_type'];
+		if(isset($param_arr['page_no']))unset($param_arr['page_no']);
+		if(isset($param_arr['sort_name']))unset($param_arr['sort_name']);
+		if(isset($param_arr['sort_type']))unset($param_arr['sort_type']);
+		if(isset($param_arr['per_page']))unset($param_arr['per_page']);
+		unset($param_arr['module']);unset($param_arr['controller']);unset($param_arr['action']);
+
+		if(count($cols_param_arr) == 0)
+			$cols_param_arr = $this->sdreportcolumns('mandatory');
+		
+		$reports_model = new Default_Model_Reports();
+		$sd_model_data = $reports_model->get_sd_report($param_arr, $per_page, $page_no, $sort_name, $sort_type);
+		$sd_arr = $sd_model_data['rows'];
+
+		require_once 'Classes/PHPExcel.php';
+		require_once 'Classes/PHPExcel/IOFactory.php';
+		$objPHPExcel = new PHPExcel();
+
+		$letters = range('A','Z');
+		$count =0;
+		$filename = "ServiceDeskReport.xlsx";
+		$cell_name="";
+			
+		// Make first row Headings bold and highlighted in Excel.
+		foreach ($cols_param_arr as $names)
+		{
+			$i = 1;
+			$cell_name = $letters[$count].$i;
+			$names = html_entity_decode($names,ENT_QUOTES,'UTF-8');
+
+			$objPHPExcel->getActiveSheet()->SetCellValue($cell_name, $names);
+			// Make bold cells
+			$objPHPExcel->getActiveSheet()->getStyle($cell_name)->getFont()->setBold(true);
+			$objPHPExcel->getActiveSheet()->getStyle($cell_name)->applyFromArray( array(
+									        'fill' => array(
+									            'type' => PHPExcel_Style_Fill::FILL_SOLID,
+									            'color' => array('rgb' => '82CAFF')
+			)
+			)
+			);
+			$objPHPExcel->getActiveSheet()->getColumnDimension($letters[$count])->setAutoSize(true);
+			$i++;
+			$count++;
+		}
+
+		// Display field/column values in Excel.
+		$i = 2;
+		foreach($sd_arr as $sd_data)
+		{
+			$count1 =0;
+			foreach ($cols_param_arr as $column_key => $column_name)
+			{
+				// display field/column values
+				$cell_name = $letters[$count1].$i;
+
+
+				if($column_key == 'priority')
+				{
+					$pri = '';
+	            	if($sd_data['priority'] == 1)
+	            		$pri='Low';
+	            	elseif($sd_data['priority'] == 2)
+	            		$pri='Medium';
+	            	else
+	            		$pri='High';
+					$value = isset($sd_data['priority'])?$pri:"";
+				}
+				else
+				{
+					$value = isset($sd_data[$column_key])?$sd_data[$column_key]:"";
+				}
+				$value = html_entity_decode($value,ENT_QUOTES,'UTF-8');
+				$objPHPExcel->getActiveSheet()->SetCellValue($cell_name, $value);
+				$count1++;
+			}
+			$i++;
+		}
+			
+		sapp_Global::clean_output_buffer();
+		header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+		header("Content-Disposition: attachment; filename=\"$filename\"");
+		header('Cache-Control: max-age=0');
+		sapp_Global::clean_output_buffer();
+			
+		$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+		$objWriter->save('php://output');
+
+		exit;
+	}
+	
+	public function employeereportAction()
+	{
+            $norec_arr = array();
+            $form = new Default_Form_Employeereport();
+            $requi_model = new Default_Model_Requisition();
+            $employmentstatusModel = new Default_Model_Employmentstatus();
+            $role_model = new Default_Model_Roles();
+            $departmentsmodel = new Default_Model_Departments();
+            $bu_model = new Default_Model_Businessunits();
+
+            $roles_arr = $role_model->getRolesList_EMP();
+            $job_data = $requi_model->getJobTitleList();
+            $employmentStatusData = $employmentstatusModel->getempstatuslist();
+            if(count($job_data)==0)
+            {
+                $norec_arr['jobtitle_id'] = "Job titles are not configured yet.";
+                $norec_arr['position_id'] = "Positions are not configured yet.";
+            }
+            if(count($employmentStatusData)==0)
+            {
+                $norec_arr['emp_status_id'] = "Employment status is not configured yet.";
+            }
+            $form->jobtitle_id->addMultiOptions(array(''=>'Select Job Title')+$job_data);
+            if(count($employmentStatusData) > 0)
+            {
+				$form->emp_status_id->addMultiOption('','Select Employment Status');
+				foreach ($employmentStatusData as $employmentStatusres)
+				{
+						$form->emp_status_id->addMultiOption($employmentStatusres['workcodename'],$employmentStatusres['statusname']);
+				}
+            }
+            if(sizeof($roles_arr) > 0)
+            {
+                    $form->emprole->addMultiOptions(array(''=>'Select Role')+$roles_arr);
+            }
+            else
+            {
+                    $norec_arr['emprole'] = 'Roles are not added yet.';
+            }
+                        
+            $bu_arr = $bu_model->getBU_report();
+            if(!empty($bu_arr))
+            {
+                foreach ($bu_arr as $bu)
+                {
+                    $form->businessunit_id->addMultiOption($bu['id'],utf8_encode($bu['bu_name']));
+                }
+            }
+            else
+            {
+                $norec_arr['businessunit_id'] = 'Business Units are not added yet.';
+            }
+            
+            $this->view->form = $form;
+            $this->view->messages = $norec_arr;
+	}
+        
+        public function getdeptsempAction()
+        {
+            $bu_id = $this->_getParam('bu_id',null);
+            $options = "";
+            if(!empty($bu_id))
+            {
+                $bu_id = implode(',', $bu_id);
+                
+                $dept_model = new Default_Model_Departments();
+                $dept_data = $dept_model->getDepartmentWithCodeList_bu($bu_id);
+                if(!empty($dept_data))
+                {
+                    foreach($dept_data as $dept)
+                    {
+                        $options .= sapp_Global::selectOptionBuilder($dept['id'], $dept['unitcode']." ".$dept['deptname']);
+                    }
+                }
+            }
+            $this->_helper->json(array('options' => $options));
+        }
 	/**
 	 * @name indexAction
 	 *
@@ -1035,8 +1576,7 @@ class Default_ReportsController extends Zend_Controller_Action
 
 	public function indexAction(){
 
-		//$msg = "Feature will be available soon.";
-		//$this->view->message = $msg;
+		
 		$repModel = new Default_Model_Reports();
 		$reqStats = $repModel->getRequisitionStats();
 		$loginscountStr = $daysStr = '';
@@ -1048,14 +1588,13 @@ class Default_ReportsController extends Zend_Controller_Action
 		{
 			$initializedCount = $reqStats[0]['initiated_req'] + $reqStats[0]['approved_req'] + $reqStats[0]['rejected_req'] + $reqStats[0]['closed_req'] + $reqStats[0]['onhold_req'] + $reqStats[0]['complete_req'] + $reqStats[0]['inprocess_req'];
                         if($initializedCount > 0)
-                            $reqStatsStr = '["New",'.$reqStats[0]['initiated_req'].'],["Approved",'.$reqStats[0]['approved_req'].'],["Rejected",'.$reqStats[0]['rejected_req'].'],["Closed",'.$reqStats[0]['closed_req'].'],["On-hold",'.$reqStats[0]['onhold_req'].'],["Complete",'.$reqStats[0]['complete_req'].'],["In-process",'.$reqStats[0]['inprocess_req'].']';
+                            $reqStatsStr = '["New",'.$reqStats[0]['initiated_req'].'],["Approved",'.$reqStats[0]['approved_req'].'],["Rejected",'.$reqStats[0]['rejected_req'].'],["Closed",'.$reqStats[0]['closed_req'].'],["On-hold",'.$reqStats[0]['onhold_req'].'],["Complete",'.$reqStats[0]['complete_req'].'],["In progress",'.$reqStats[0]['inprocess_req'].']';
                         else 
                             $reqStatsStr = '';
 		}
 
 		/**  User logins by day **/
 		$userloginStats = $repModel->getUserloginStats();
-		//echo '<pre>';print_r($userloginStats);
 		if($userloginStats)
 		{
                     $k = 0;
@@ -1079,14 +1618,11 @@ class Default_ReportsController extends Zend_Controller_Action
 
 		/**  Employee Stats **/
 		$empStats = $repModel->getEmpStats();
-                //print_r($empStats);
 		$empStatsStr = '[]';
 		if($empStats)
 		{
                     $new_empstats = $empStats[0];
                     $stat_cnt = array_sum($new_empstats);
-                    //$empStatsStr = '["Active",'.$empStats[0]['active'].'],["In-active",'.$empStats[0]['inactive'].'],["Left",'.$empStats[0]['left'].'],["Resigned",'.$empStats[0]['resigned'].'],["Deleted",'.$empStats[0]['deleted'].'],["Suspended",'.$empStats[0]['suspended'].']';
-                    //the above was commented by k.rama krishna on 09-jan - 2013
                     if($stat_cnt > 0)                        
                         $empStatsStr = '["Active",'.$empStats[0]['active'].'],["In-active",'.$empStats[0]['inactive'].'],["Left",'.$empStats[0]['left'].'],["Resigned",'.$empStats[0]['resigned'].'],["Suspended",'.$empStats[0]['suspended'].']';
                     else 
@@ -1155,12 +1691,7 @@ class Default_ReportsController extends Zend_Controller_Action
 		{
 			for($i =0; $i < sizeof($empDeptRes); $i++)
 			{
-				//$empDeptStr .= '["'.$empDeptRes[$i]['deptname'].'",'.$empDeptRes[$i]['cnt'].']';
 				$empDeptStr[]= '["'.$empDeptRes[$i]['deptcode'].'",'.$empDeptRes[$i]['cnt'].']';
-				/*if($i < (sizeof($activityByDate) - 1))
-				 {
-					$empDeptStr.= ',';
-					}*/
 			}
 		}				
 		$empDeptStr = implode(',', $empDeptStr);
@@ -1246,7 +1777,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			$totalcount = '';
 			$lastpage = '';
 		}
-		//echo "<pre>";print_r($getHolidayAndEmpResult);exit;
 		$this->view->holidayreport = $getHolidayAndEmpResult;
 		$this->view->holidayreportcount = $getHolidayAndEmpCount;
 		$this->view->pageno = $pageno;
@@ -1261,7 +1791,6 @@ class Default_ReportsController extends Zend_Controller_Action
 	{
 		$this->_helper->layout->disableLayout();
 		$param_arr = $this->_getAllParams();
-		//echo"<pre>";print_r($param_arr);exit;
 		if(isset($param_arr['cols_arr']))
 		unset($param_arr['cols_arr']);
 		$page_no = isset($param_arr['pageno'])?intval($param_arr['pageno']):1;
@@ -1284,10 +1813,8 @@ class Default_ReportsController extends Zend_Controller_Action
 
 		$cols_param = array('groupname','dates','employee');
 		$selectColumns = $cols_param;
-		//echo"<pre>";print_r($cols_param);
 			
 		$getHolidayAndEmpResult = $reportsmodel->getEmpHolidayResult($sort_name,$sort_type,$page_no,$per_page);
-		// echo"<pre>";print_r($getHolidayAndEmpResult);exit;
 		$field_names = array();
 		$field_widths = array();
 		$fieldwidth = '';
@@ -1337,8 +1864,6 @@ class Default_ReportsController extends Zend_Controller_Action
 	{
 		$this->_helper->layout->disableLayout();
 		$param_arr = $this->_getAllParams();
-
-		//echo"<pre>";print_r($param_arr);exit;
 			
 		$page_no = isset($param_arr['pageno'])?intval($param_arr['pageno']):1;
 		$per_page = isset($param_arr['perpage'])?intval($param_arr['perpage']):PERPAGE;
@@ -1363,8 +1888,6 @@ class Default_ReportsController extends Zend_Controller_Action
 
 		$getHolidayAndEmpResult = $reportsmodel->getEmpHolidayResult($sort_name,$sort_type,$page_no,$per_page);
 		$emp_arr = $getHolidayAndEmpResult;
-		//echo"<pre>";print_r($emp_arr);
-		//echo"<pre>";print_r($cols_param_arr);//exit;
 		require_once 'Classes/PHPExcel.php';
 		require_once 'Classes/PHPExcel/IOFactory.php';
 		$objPHPExcel = new PHPExcel();
@@ -1423,7 +1946,6 @@ class Default_ReportsController extends Zend_Controller_Action
 					}
 					$value = html_entity_decode($value,ENT_QUOTES,'UTF-8');
 					$objPHPExcel->getActiveSheet()->SetCellValue($cell_name, $value);
-					// $objPHPExcel->getActiveSheet()->getColumnDimensionByColumn($cell_name)->setAutoSize(true);
 					$count1++;
 				}
 				$i++;
@@ -1477,7 +1999,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		$sortby = $columnsortby;
 
 		if($employeename !='')
-		//$searchQuery .= 'mu.userfullname = "'.$employeename.'" AND ';
 		$searchQuery .= 'l.user_id = "'.$employeename.'" AND ';
 		if($department !='')
 		$searchQuery .= 'l.department_id = "'.$department.'" AND ';
@@ -1493,7 +2014,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		$leavestatusArr = $reportsmodel->getEmpLeaveHistory($sortby, $by,$pageno,$perpage,$searchQuery);
 		$leavestatusCount = $reportsmodel->getEmpLeaveHistoryCount($searchQuery);
 		$departmentlistArr = $departmentsmodel->getDepartmentWithCodeList();
-		//echo"<pre>";print_r($leavestatusArr);exit;
 			
 		if(!empty($departmentlistArr))
 		{
@@ -1518,17 +2038,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			$lastpage = '';
 		}
 
-		/*$leavesReportsession = new Zend_Session_Namespace('leavesreportsession');
-		 //$selectColumns = array();
-		 if(!empty($leavesReportsession->leavesReportObject))
-		 {
-		 $selectColumns = $leavesReportsession->leavesReportObject;
-
-		 }else
-		 {
-		 $selectColumns = array('employeename','leavetype','leaveday','leavestatus','deptname','from_date','to_date','reason','reportingmanagername','appliedleavescount','applieddate');
-		 }*/
-			
 		$selectColumnLabels = array();
 		$leavesheaderarr = array('employeename'=>'Leave Applied By',
 	                         'leavetype'=>'Leave Type',
@@ -1560,23 +2069,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			}
 
 		}
-
-		//echo"<pre>";print_r($selectColumns);exit;
-		//$finalArray = $this->createLeaveHistoryReportFinalArray($leavestatusArr,$selectColumns);
-		//$leavestatusArr = $finalArray;
-		//echo"<pre>";print_r($selectColumns);
-		//echo"<pre>";print_r($leavestatusArr);
-		/*if($this->getRequest()->getPost())
-		 {
-			if($this->_request->getParam('generatereport') == 'pdf')
-			{
-			if(!empty($leavestatusArr) && !empty($selectColumns))
-			{
-
-			$this->generateLeaveHistoryPDF($leavestatusArr,$selectColumns);
-			}
-			}
-			}*/
 			
 		$this->view->selectColumnLabels = $selectColumnLabels;
 		$this->view->leavesheaderarr = $leavesheaderarr;
@@ -1590,15 +2082,12 @@ class Default_ReportsController extends Zend_Controller_Action
 		$this->view->lastpage = $lastpage;
 		$this->view->msgarray = $msgarray;
 		$this->view->form = $leavestatusform;
-
-		//echo "<pre>";print_r($leavestatusArr);exit;
 	}
 
 	public function getpdfreportleavesAction()
 	{
 		$this->_helper->layout->disableLayout();
 		$param_arr = $this->_getAllParams();
-		//echo"<pre>";print_r($param_arr);exit;
 		if(isset($param_arr['cols_arr']))
 		unset($param_arr['cols_arr']);
 		$page_no = isset($param_arr['pageno'])?intval($param_arr['pageno']):1;
@@ -1622,7 +2111,6 @@ class Default_ReportsController extends Zend_Controller_Action
 
 		$cols_param = explode(',',$param_arr['checkedheaders']);
 		$selectColumns = $cols_param;
-		//echo"<pre>";print_r($cols_param);exit;
 		$leavesheaderarr = array('employeename'=>'Leave Applied By',
 	                         'leavetype'=>'Leave Type',
 							 'leaveday'=>'Leave Duration',
@@ -1646,7 +2134,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			
 			
 		if($employeename !='')
-		//$searchQuery .= 'mu.userfullname = "'.$employeename.'" AND ';
 		$searchQuery .= 'l.user_id = "'.$employeename.'" AND ';
 		if($department !='')
 		$searchQuery .= 'l.department_id = "'.$department.'" AND ';
@@ -1760,13 +2247,11 @@ class Default_ReportsController extends Zend_Controller_Action
 				$field_widths[$key] = ($width*180)/$totalPresentFieldWidth;
 			}
 		}
-		//print_r($field_widths); exit;
 			
 		$data = array('grid_no'=>1, 'project_name'=>'', 'object_name'=>'Leaves Report', 'grid_count'=>1,'file_name'=>'leavesreport.pdf');
 			
 			
 		$pdf = $this->_helper->PdfHelper->generateReport($field_names, $finalArray, $field_widths, $data);
-		//echo"<pre>";print_r($data); exit;
 		return $this->_helper->json(array('file_name'=>$data['file_name']));
 
 	}
@@ -1775,7 +2260,6 @@ class Default_ReportsController extends Zend_Controller_Action
 	{
 		$this->_helper->layout->disableLayout();
 		$param_arr = $this->_getAllParams();
-		//echo"<pre>";print_r($param_arr);exit;
 		if(isset($param_arr['cols_arr']))
 		unset($param_arr['cols_arr']);
 		$page_no = isset($param_arr['pageno'])?intval($param_arr['pageno']):1;
@@ -1793,7 +2277,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		$reportsmodel = new Default_Model_Reports();
 
 		$cols_param = explode(',',$param_arr['checkedheaders']);
-		//echo"<pre>";print_r($cols_param);exit;
 		$leavesheaderarr = array('employeename'=>'Leave Applied By',
 	                         'leavetype'=>'Leave Type',
 							 'leaveday'=>'Leave Duration',
@@ -1817,7 +2300,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			
 			
 		if($employeename !='')
-		//$searchQuery .= 'mu.userfullname = "'.$employeename.'" AND ';
 		$searchQuery .= 'l.user_id = "'.$employeename.'" AND ';
 		if($department !='')
 		$searchQuery .= 'l.department_id = "'.$department.'" AND ';
@@ -1829,14 +2311,9 @@ class Default_ReportsController extends Zend_Controller_Action
 			$searchQuery .= 'DATE(l.createddate) = "'.$from_date.'" AND ';
 		}
 		$searchQuery = rtrim($searchQuery," AND");
-			
-			
-		//$departmentsArr = $reportsmodel->getDepartmentsInfo($sort_name,$sort_type,$page_no,$per_page,$searchQuery,'');
 		$leavestatusArr = $reportsmodel->getEmpLeaveHistory($sort_name, $sort_type,$page_no,$per_page,$searchQuery);
 
 		$emp_arr = $leavestatusArr;
-		//echo"<pre>";print_r($emp_arr);
-		//echo"<pre>";print_r($cols_param_arr);exit;
 		require_once 'Classes/PHPExcel.php';
 		require_once 'Classes/PHPExcel/IOFactory.php';
 		$objPHPExcel = new PHPExcel();
@@ -1901,7 +2378,6 @@ class Default_ReportsController extends Zend_Controller_Action
 				}
 				$value = html_entity_decode($value,ENT_QUOTES,'UTF-8');
 				$objPHPExcel->getActiveSheet()->SetCellValue($cell_name, $value);
-				// $objPHPExcel->getActiveSheet()->getColumnDimensionByColumn($cell_name)->setAutoSize(true);
 				$count1++;
 			}
 			$i++;
@@ -1924,7 +2400,6 @@ class Default_ReportsController extends Zend_Controller_Action
 	{
 		$this->_helper->layout->disableLayout();
 		$checkedheaders = $this->_request->getParam('checkedheaders');
-		//$leavesheaderArray = array('Leave Applied By','Leave Type','Leave Duration','Leave Status','Department','From Date','To Date','Reason','Reporting Manager','Leave Count','Applied On');
 
 		if($checkedheaders !='')
 		{
@@ -1963,7 +2438,6 @@ class Default_ReportsController extends Zend_Controller_Action
 					$leavesReportsession = new Zend_Session_Namespace('leavesreportsession');
 					if(!empty($leavesReportsession->leavesReportObject) && isset($leavesReportsession->leavesReportObject))
 					{
-						//echo"<pre>";print_r($leavesReportsession->leavesReportObject);
 						unset($leavesReportsession->leavesReportObject);
 						$leavesReportsession->leavesReportObject = array();
 						for($i=0;$i<sizeof($checkedheadersarray);$i++)
@@ -2024,7 +2498,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			
 		$leavemgmtArr = $reportsmodel->getLeaveManagementSummary($sortby, $by,$pageno,$perpage,$searchQuery);
 		$leavemgmtCount = $reportsmodel->getLeaveManagementCount($searchQuery);
-		//echo"<pre>";print_r($leavemgmtCount);exit;
 		$departmentlistArr = $departmentsmodel->getDepartmentWithCodeList();
 		if(!empty($departmentlistArr))
 		{
@@ -2117,15 +2590,12 @@ class Default_ReportsController extends Zend_Controller_Action
 		$this->view->lastpage = $lastpage;
 		$this->view->msgarray = $msgarray;
 		$this->view->form = $leavemanagementform;
-
-		//echo "<pre>";print_r($leavestatusArr);exit;
 	}
 
 	public function getpdfreportleavemanagementAction()
 	{
 		$this->_helper->layout->disableLayout();
 		$param_arr = $this->_getAllParams();
-		//echo"<pre>";print_r($param_arr);exit;
 		if(isset($param_arr['cols_arr']))
 		unset($param_arr['cols_arr']);
 		$page_no = isset($param_arr['pageno'])?intval($param_arr['pageno']):1;
@@ -2146,7 +2616,6 @@ class Default_ReportsController extends Zend_Controller_Action
 
 		$cols_param = explode(',',$param_arr['checkedheaders']);
 		$selectColumns = $cols_param;
-		//echo"<pre>";print_r($cols_param);exit;
 		$leavesheaderarr = array('cal_startmonthname'=>'Start Month',
 	                         'weekend_startday'=>'Week-end 1',
 							 'weekend_endday'=>'Week-end 2',
@@ -2177,7 +2646,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		$searchQuery .= 'l.weekend_endday = '.$weekend_endday.' AND ';
 
 		$searchQuery = rtrim($searchQuery," AND");
-		//$leavestatusArr = $reportsmodel->getEmpLeaveHistory($sort_name, $sort_type,$page_no,$per_page,$searchQuery);
 		$leavemgmtArr = $reportsmodel->getLeaveManagementSummary($sort_name, $sort_type,$page_no,$per_page,$searchQuery);
 		$this->generateLeaveManagementHistoryPDF($leavemgmtArr,$selectColumns,$headersize);
 			
@@ -2260,13 +2728,11 @@ class Default_ReportsController extends Zend_Controller_Action
 				$field_widths[$key] = ($width*180)/$totalPresentFieldWidth;
 			}
 		}
-		//print_r($field_widths); exit;
 			
 		$data = array('grid_no'=>1, 'project_name'=>'', 'object_name'=>'Leave Management Report', 'grid_count'=>1,'file_name'=>'leavemanagementreport.pdf');
 			
 			
 		$pdf = $this->_helper->PdfHelper->generateReport($field_names, $finalArray, $field_widths, $data);
-		//echo"<pre>";print_r($data); exit;
 		return $this->_helper->json(array('file_name'=>$data['file_name']));
 
 	}
@@ -2275,7 +2741,6 @@ class Default_ReportsController extends Zend_Controller_Action
 	{
 		$this->_helper->layout->disableLayout();
 		$param_arr = $this->_getAllParams();
-		//echo"<pre>";print_r($param_arr);exit;
 		if(isset($param_arr['cols_arr']))
 		unset($param_arr['cols_arr']);
 		$page_no = isset($param_arr['pageno'])?intval($param_arr['pageno']):1;
@@ -2327,8 +2792,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		$leavemgmtArr = $reportsmodel->getLeaveManagementSummary($sort_name, $sort_type,$page_no,$per_page,$searchQuery);
 
 		$emp_arr = $leavemgmtArr;
-		//echo"<pre>";print_r($emp_arr);
-		//echo"<pre>";print_r($cols_param_arr);exit;
 		require_once 'Classes/PHPExcel.php';
 		require_once 'Classes/PHPExcel/IOFactory.php';
 		$objPHPExcel = new PHPExcel();
@@ -2401,7 +2864,7 @@ class Default_ReportsController extends Zend_Controller_Action
 				}
 				$value = html_entity_decode($value,ENT_QUOTES,'UTF-8');
 				$objPHPExcel->getActiveSheet()->SetCellValue($cell_name, $value);
-				// $objPHPExcel->getActiveSheet()->getColumnDimensionByColumn($cell_name)->setAutoSize(true);
+				
 				$count1++;
 			}
 			$i++;
@@ -2503,7 +2966,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		$reportsmodel = new Default_Model_Reports();
 		$this->_helper->layout->disableLayout();
 		$param_arr = $this->_getAllParams();
-		//echo "<pre>"; print_r($param_arr); die;
 		if(isset($param_arr['cols_arr']))	unset($param_arr['cols_arr']);
 		$page_no = isset($param_arr['pageno'])?intval($param_arr['pageno']):1;
 		$per_page = isset($param_arr['perpage'])?intval($param_arr['perpage']):PERPAGE;
@@ -2583,7 +3045,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		$reportsmodel = new Default_Model_Reports();
 		$this->_helper->layout->disableLayout();
 		$param_arr = $this->_getAllParams();
-		//echo "<pre>"; print_r($param_arr); die;
 		if(isset($param_arr['cols_arr']))	unset($param_arr['cols_arr']);
 		$page_no = isset($param_arr['pageno'])?intval($param_arr['pageno']):1;
 		$per_page = isset($param_arr['perpage'])?intval($param_arr['perpage']):PERPAGE;
@@ -2637,21 +3098,20 @@ class Default_ReportsController extends Zend_Controller_Action
 		$country = $param_arr['country'];
 		$startdate = $param_arr['startdate'];
 		if($bunitname !='')
-		$searchQuery .= 'b.unitid = "'.$bunitname.'" AND ';
+		$searchQuery .= 'd.unitid = "'.$bunitname.'" AND ';
 		if($bunitcode !='')
-			$searchQuery .= 'b.id = "'.$bunitcode.'" AND ';
+			$searchQuery .= 'd.id = "'.$bunitcode.'" AND ';
 		if($country !='')
-		$searchQuery .= 'b.country = '.$country.' AND ';
+		$searchQuery .= 'd.country = '.$country.' AND ';
 		if($startdate !='')
 		{
 			$startdate = sapp_Global::change_date($startdate,'database');
-			$searchQuery .= 'DATE(b.startdate) = "'.$startdate.'" AND ';
+			$searchQuery .= 'DATE(d.startdate) = "'.$startdate.'" AND ';
 		}
 		$searchQuery = rtrim($searchQuery," AND");
 			
 		$businessunitsArr = $reportsmodel->getBusinessUnitsInfo($sort_name,$sort_type,$page_no,$per_page,$searchQuery,$funorder);
 		$finalArray = $this->createBusinessunitsReportFinalArray($businessunitsArr,$cols_param);
-		//echo "<pre>"; print_r($finalArray); die;
 		$this->generateBusinessunitsPDF($finalArray,$cols_param);
 
 	}
@@ -2739,7 +3199,6 @@ class Default_ReportsController extends Zend_Controller_Action
 				$field_widths[$key] = ($width*180)/$totalPresentFieldWidth;
 			}
 		}
-		//print_r($field_widths); exit;
 
 		$data = array('grid_no'=>1, 'project_name'=>'', 'object_name'=>'Business Unit Report', 'grid_count'=>1,'file_name'=>'businessunitreport.pdf');
 
@@ -2755,7 +3214,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			$reportsmodel = new Default_Model_Reports();
 			$msgarray = array();
 			$selectColumns = array();
-			//$perPage = PERPAGE;
 			$searchQuery = '';
 
 			$bunitname = $this->_request->getParam('bunitname');
@@ -2798,7 +3256,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			
             $countryModal = new Default_Model_Countries();
 	    	$countriesData = $countryModal->fetchAll('isactive=1','country')->toArray();
-			//echo"<pre>";print_r($countriesData);exit;
 			
 			if(!empty($countriesData))
 			{
@@ -2820,7 +3277,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			}
 			else
 			{
-				//$selectColumnLabels = array('unitname'=>'Business Unit','unitcode'=>'Code');
 				foreach($businessunitLabelsArr as $key=>$val)
 				{
 					foreach($selectColumns as $column)
@@ -2892,7 +3348,6 @@ class Default_ReportsController extends Zend_Controller_Action
 
 		$reportsModel = new Default_Model_Reports();
 		$departmentsmodel = new Default_Model_Departments();
-		//echo"<pre>";print_r($columnArray);exit;
 		if(!empty($dataArray))
 		{
 			foreach($dataArray as $key => $curr)
@@ -2922,8 +3377,6 @@ class Default_ReportsController extends Zend_Controller_Action
 				}
 			}
 		}
-		//echo"<pre>";print_r(explode(",",implode(",",$columnArray)));exit;
-		//echo"<pre>";print_r($departmentArray);exit;
 
 		if(!empty($empleavetypesArray)){
 			$empleavetypesArray = $reportsModel->getEmpLeaveNamesByIds($empleavetypesArray);
@@ -2938,7 +3391,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		if(!empty($departmentArray)){
 			$departmentnamesArr = $departmentsmodel->getDepartmentNameFromDeptString($departmentArray);
 		}
-		//echo"<pre>";print_r($departmentnamesArr);exit;
 
 		$finalArray = array();
 		if(!empty($dataArray))
@@ -2981,7 +3433,6 @@ class Default_ReportsController extends Zend_Controller_Action
 				}
 			}
 		}
-		//echo"<pre>";print_r($finalArray);exit;
 		return $finalArray;
 	}
 
@@ -3089,12 +3540,10 @@ class Default_ReportsController extends Zend_Controller_Action
 			$selectFields = array('userfullname'=>'User','employeeId'=>'Employee ID','group_id'=>'Group','emprole'=>'Role','emailaddress'=>'Email','empipaddress'=>'Ip Address');
 			$selectColumns = array_keys($selectFields);
 			
-			//if($this->getRequest()->getPost()){
 				if (($this->_request->getParam('fields') != '')){
-					$selectColumns = explode(',',$this->_request->getParam('fields')); //print_r($selectColumns); exit;
+					$selectColumns = explode(',',$this->_request->getParam('fields')); 
 					array_push($selectColumns,'logindatetime');
 				}
-		//print_r($_POST);exit;
 		
 				$searchQuery = '';
 				if($this->_request->getParam('emp_role') != ''){
@@ -3124,7 +3573,6 @@ class Default_ReportsController extends Zend_Controller_Action
 					$searchQuery = rtrim($searchQuery," AND");
 				}
 		
-				//	echo $searchQuery; exit;
 		
 				$pageNo = 1;
 		
@@ -3165,7 +3613,6 @@ class Default_ReportsController extends Zend_Controller_Action
 					}
 		
 				}
-			//}
 			if($this->getRequest()->getPost() || $this->_request->getParam('generatereport',null) != ''){
 				$this->_helper->layout->disableLayout();
 
@@ -3191,14 +3638,12 @@ class Default_ReportsController extends Zend_Controller_Action
 
 			$finalArray = $this->createreportuserlogfinalArray($userLogData,$selectColumns);
 
-			//echo '<pre>'; print_r($finalArray); exit;
 
 			if($this->getRequest()->getPost()){
 
-				// To generate PDF START
 				if($this->_request->getParam('generatereport') == 'pdf'){
 					if (($this->_request->getParam('fields') != '')){
-						$selectColumns = explode(',',$this->_request->getParam('fields')); //print_r($selectColumns); exit;
+						$selectColumns = explode(',',$this->_request->getParam('fields')); 
 						array_push($selectColumns,'logindatetime');
 					}
 					$field_names = array();
@@ -3272,8 +3717,7 @@ class Default_ReportsController extends Zend_Controller_Action
 					$message = $this->_helper->PdfHelper->generateReport($field_names, $finalArray, $field_widths, $data);
 					$this->_helper->json(array('file_name'=>$data['file_name']));
 
-				}// To generate PDF END
-
+				}
 
 			}
 			if($this->_request->getParam('generatereport') == 'xcel'){ //xcel generation
@@ -3290,14 +3734,11 @@ class Default_ReportsController extends Zend_Controller_Action
 					}
 				}
 				$selectColumnLabels['logindatetime'] = 'Login Time';
-				//print_r($selectColumnLabels); exit;
-				//print_r($finalArray); exit;
 				sapp_Global::export_to_excel($finalArray,$selectColumnLabels,'Userlog Report.xlsx');
 
 				exit;
 			}
 
-			//echo '<pre>'; print_r($finalArray); exit;
 			$logreport_form = new Default_Form_logreport();
 			$this->view->form = $logreport_form;
 
@@ -3349,9 +3790,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			}
 		}
 
-		//$userModel = new Default_Model_Users();
-		//$userImgArray = $userModel->getUserImageByIds($userArray);
-
 		if(!empty($empRoleArray)){
 			$roleModel = new Default_Model_Roles();
 			$roleNameArray = $roleModel->getEmpRoleNamesByIds($empRoleArray);
@@ -3392,7 +3830,6 @@ class Default_ReportsController extends Zend_Controller_Action
 
 			}
 		}
-		//echo '<pre>'; print_r($finalArray); exit;
 		return $finalArray;
 	}
 
@@ -3427,7 +3864,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			$dcode = intval($this->_request->getParam('hiddendeptcode'));
 			$deptname = intval($this->_request->getParam('hiddendeptname'));
 		}
-		//echo $bunitname.$dcode.$deptname;
 
 		if($checkedheaders != '')
 		$selectColumns = explode(',',$checkedheaders);
@@ -3451,14 +3887,13 @@ class Default_ReportsController extends Zend_Controller_Action
 			$searchQuery .= 'DATE(d.startdate) = "'.$startdate.'" AND ';
 		}
 
-		$searchQuery = rtrim($searchQuery," AND"); //die;
+		$searchQuery = rtrim($searchQuery," AND"); 
 		$selectColumnLabels = array();
 
 		$DepartmentLabelsArr = array('deptname'=>'Department','deptcode'=>'Code','unitname'=>'Business Unit','startdate'=>'Started on','empcount'=>'# Emp','address'=>'Address','ccity'=>'City','sstate'=>'State','ccountry'=>'Country','status'=>'Status');
 		
 		$countryModal = new Default_Model_Countries();
 	    	$countriesData = $countryModal->fetchAll('isactive=1','country')->toArray();
-			//echo"<pre>";print_r($countriesData);exit;
 			
 			if(!empty($countriesData))
 			{
@@ -3519,7 +3954,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		/* END */
 		$departmentsArr = $reportsmodel->getDepartmentsInfo($sortby,$by,$pageno,$perpage,$searchQuery,$funorder);
 		$departmentsCount = $reportsmodel->getDepartmentsCount($searchQuery);
-		//echo "<pre>"; print_r($departmentsArr); echo "</pre>"; echo $departmentsCount;die;
 		if($departmentsCount > 0)
 		{
 			$lastpage =  ceil($departmentsCount/$perpage);
@@ -3537,7 +3971,7 @@ class Default_ReportsController extends Zend_Controller_Action
 			if($this->_request->getParam('generatereport') == 'pdf')
 			{
 
-				//return;
+				
 			}
 			else if($this->_request->getParam('generatereport') == 'excel')
 			{
@@ -3636,7 +4070,6 @@ class Default_ReportsController extends Zend_Controller_Action
 		$searchQuery = rtrim($searchQuery," AND");
 			
 		$departmentsArr = $reportsmodel->getDepartmentsInfo($sort_name,$sort_type,$page_no,$per_page,$searchQuery,$funorder);
-		//$departmentsCount = $reportsmodel->getDepartmentsCount($searchQuery);
 			
 		$finalArray = $this->createDepartmentsReportFinalArray($departmentsArr,$cols_param);
 
@@ -3733,7 +4166,6 @@ class Default_ReportsController extends Zend_Controller_Action
 				$field_widths[$key] = ($width*180)/$totalPresentFieldWidth;
 			}
 		}
-		//print_r($field_widths); exit;
 			
 		$data = array('grid_no'=>1, 'project_name'=>'', 'object_name'=>'Departments', 'grid_count'=>1,'file_name'=>'departmentreport.pdf');
 
@@ -3823,12 +4255,10 @@ class Default_ReportsController extends Zend_Controller_Action
 		$searchQuery = rtrim($searchQuery," AND");
 			
 		$departmentsArr = $reportsmodel->getDepartmentsInfo($sort_name,$sort_type,$page_no,$per_page,$searchQuery,$funorder);
-		//$departmentsCount = $reportsmodel->getDepartmentsCount($searchQuery);
 			
 		$finalArray = $this->createDepartmentsReportFinalArray($departmentsArr,$cols_param);
 
 		$emp_arr = $finalArray;
-		// $this->excelgeneration($finalArray,$cols_param_arr,'Departments Report');
 		sapp_Global::export_to_excel($finalArray,$cols_param_arr,"DepartmentsReport.xlsx");
 		exit;
 	}
@@ -3927,7 +4357,6 @@ class Default_ReportsController extends Zend_Controller_Action
 				}
 				$value = html_entity_decode($value,ENT_QUOTES,'UTF-8');
 				$objPHPExcel->getActiveSheet()->SetCellValue($cell_name, $value);
-				// $objPHPExcel->getActiveSheet()->getColumnDimensionByColumn($cell_name)->setAutoSize(true);
 				$count1++;
 			}
 			$i++;
@@ -4263,7 +4692,6 @@ class Default_ReportsController extends Zend_Controller_Action
 			            		}
 			            		$value = html_entity_decode($value,ENT_QUOTES,'UTF-8');
 			            		$objPHPExcel->getActiveSheet()->SetCellValue($cell_name, $value);
-			            		// $objPHPExcel->getActiveSheet()->getColumnDimensionByColumn($cell_name)->setAutoSize(true);
 			            		$count1++;
 			            	}
 			            	$i++;
@@ -4502,7 +4930,7 @@ class Default_ReportsController extends Zend_Controller_Action
 			}
 
 			$form->jobtitle->addMultiOptions(array(''=>'Select Job Title')+$job_data);
-			//$data = $requi_model->getYearFirstRequisitionRaised();
+			
 			// Requisiton's Raised in limit from  past 10 years to next two years 
 			$raised_in_years1 = range(date('Y', strtotime('-10 years')), date('Y', strtotime('+2 years')));
 			$raised_in_years2 = array_combine($raised_in_years1, $raised_in_years1);
@@ -4651,7 +5079,7 @@ class Default_ReportsController extends Zend_Controller_Action
 			else
 			$perPage = PERPAGE;
 
-			$selectFields = array('menuname'=>'Menu','username'=>'User','empId'=>'Employee ID','useraction'=>'Action','modifieddate'=>'Modified Date');
+			$selectFields = array('menuname'=>'Menu','username'=>'User Name','empId'=>'Employee ID','useraction'=>'Action','modifieddate'=>'Modified Date');
 			$selectColumns = array_keys($selectFields);
 
 			$action = array('1'=>'Add','2' => 'Edit', '3' => 'Delete','5' =>'Cancel');
@@ -4673,11 +5101,8 @@ class Default_ReportsController extends Zend_Controller_Action
 					$perPage = intval($this->_request->getParam('per_page'));
 				}
 				if (($this->_request->getParam('fields') != '')){
-					$selectColumns = explode(',',$this->_request->getParam('fields')); //print_r($selectColumns); exit;
+					$selectColumns = explode(',',$this->_request->getParam('fields')); 
 				}
-
-					
-				//echo $perPage; exit;
 				$finalArray = array();
 				//POST with empty search fields
 				if($this->_request->getParam('hiddenusername') == '' && $this->_request->getParam('menu') == '' && $this->_request->getParam('useraction') == '' && $this->_request->getParam('modifieddate') == ''){
@@ -4711,7 +5136,6 @@ class Default_ReportsController extends Zend_Controller_Action
 								$funorder = 'FIND_IN_SET(menuId,"'.$menunameorder.'")';
 							}
 						}
-						//echo $sortby; exit;
 					}
 					$activityLogData = $logmanager_model->getLogManagerDataReport($by,$funorder,$pageNo, $perPage, $searchData,array('*'));
 					$activityLogCount = $activitylog_model->getLogManagerCount();
@@ -4740,8 +5164,6 @@ $menuArray = array();
 
 					$menuNameArray = $activitylog_model->getMenuNamesByIds($menuArray);
 					$userNameArray = $activitylog_model->getuserNamesByIds($userArray);
-					//echo '<pre>';print_r($activityLogData); exit;
-
 
 					if(count($activityLogData) > 0){
 						foreach($activityLogData as $key =>$activitylog)
@@ -4777,16 +5199,13 @@ $menuArray = array();
 						$date1 = str_replace('-', '/', $date);
 						$onedayafter = date('Y-m-d',strtotime($date1 . "+1 days"));
 						$onedaybefore = date('Y-m-d',strtotime($date1 . "-1 days"));
-						//$searchQuery .= ' log_details Like "%'.$date.'% " AND';
 						$searchQuery .= '(log_details Like "%'.$onedaybefore.'%" or log_details Like "%'.$date.'%" or log_details Like "%'.$onedayafter.'%")';
 					}
 					if($searchQuery != ''){
 						$searchQuery = rtrim($searchQuery," AND");
 					}
 
-					//echo $searchQuery; exit;
 					$activityLogData = $logmanager_model->getLogManagerDataReport('last_modifieddate','Desc','', '', $searchQuery,array('*'));
-					//echo '<pre>'; print_r($activityLogData); exit;
 
 					/*looping jsonlogs */
 					if(count($activityLogData) > 0){
@@ -4795,7 +5214,7 @@ $menuArray = array();
 						$logJsonArray = array();
 						$jsonCount = 0;
 						$index = 0;
-						foreach($activityLogData as $activitylog){ //print_r($activitylog); exit;
+						foreach($activityLogData as $activitylog){ 
 
 							$logdetails = '{"testjson":['.$activitylog['log_details'].']}';
 							$logarr = @get_object_vars(json_decode($logdetails));
@@ -4817,7 +5236,6 @@ $menuArray = array();
 										$currArrayTemp = sapp_Global::getGMTformatdate($currArray['date']);
 										$pos = strpos($currArrayTemp, $date);
 										$flag = ($pos !== false)?false:true;
-										//echo $currArray['date'].'-serachdate-'.$date.'-flag-'.$flag."<br>";
 									}
 
 									if(($this->_request->getParam('hiddenusername') != '' && $username != $currArray['userid']) || $flag){
@@ -4843,14 +5261,9 @@ $menuArray = array();
 									$index ++;
 								}
 							}
-  // echo '<pre>'; print_r($logJsonArray);
 						}
- //exit;
-						//echo '<pre>'; print_r($logJsonArray); exit;
 						$menuNameArray = $activitylog_model->getMenuNamesByIds($menuArray);
 						$userNameArray = $activitylog_model->getuserNamesByIds($userArray);
-						//echo '<pre>'; print_r($menuNameArray);
-
 						$lastpage =  ceil(count($logJsonArray)/$perPage);
 						$endIndex = intval($perPage);
 
@@ -4875,8 +5288,6 @@ $menuArray = array();
 
 									/* only perpage no of rows */
 									$splitArray = array_slice($logJsonArray,$startIndex,$endIndex);
-									//print_r($splitArray);
-
 									foreach($splitArray as $key => $logjson){
 										if(in_array('menuname',$selectColumns))
 										$finalArray[$key]['menuname'] = isset($menuNameArray[(string)$logjson['menu']])?$menuNameArray[(string)$logjson['menu']]['name']:'';
@@ -4931,10 +5342,9 @@ $menuArray = array();
 					}
 				}
 
-				//echo '<pre>'; print_r($finalArray);  exit;
 				if($this->getRequest()->getPost()){
 					// To generate PDF START
-					if($this->_request->getParam('generatereport') == 'pdf'){ //echo '<pre>'; print_r($_POST); exit;
+					if($this->_request->getParam('generatereport') == 'pdf'){ 
 						$this->generateActivityLogPdf($finalArray,$selectColumns);
 					}
 
@@ -4950,18 +5360,15 @@ $menuArray = array();
 							$selectColumnLabels[$key] = $val;
 						}
 					}
-					//print_r($finalArray); exit;
 					sapp_Global::export_to_excel($finalArray,$selectColumnLabels,'Activitylog Report.xlsx');
 					exit;
 				}
 				$activitylogreport_form = new Default_Form_activitylogreport();
 				$this->view->form = $activitylogreport_form;
-				//echo '<pre>';print_r($finalArray); exit;
 				$this->view->totalselectfields = $selectFields;
 				$this->view->tabkeys = implode(',',$selectColumns);
 
 				$this->view->activitylogData = $finalArray;
-				//$this->view->totalCount = $activityLogCount;
 				$this->view->pageNo = $pageNo;
 				$this->view->perPage = $perPage;
 				$this->view->sortBy = $sortby;
@@ -5028,9 +5435,6 @@ $menuArray = array();
 				$field_widths[$key] = ($width*180)/$totalPresentFieldWidth;
 			}
 		}
-		//print_r($field_widths); exit;
-		//$pdf = $this->_helper->PdfHelper->generateReport($field_names, $finalArray, $field_widths, $data);
-		//	return;
 		$message = $this->_helper->PdfHelper->generateReport($field_names, $finalArray, $field_widths, $data);
 		$this->_helper->json(array('file_name'=>$data['file_name']));
 	}
@@ -5069,8 +5473,8 @@ $menuArray = array();
 			}
 
 			if (($this->_getParam('fields') != '')){
-				$selectColumns = explode(',',$this->_request->getParam('fields')); // exit;
-			}//print_r($selectColumns);
+				$selectColumns = explode(',',$this->_request->getParam('fields')); 
+			}
 
 
 			$searchQuery = '';
@@ -5101,14 +5505,12 @@ $menuArray = array();
 					}
 				  $searchbgcheck = ($searchbgcheck != '')?substr($searchbgcheck, 0, -3).')':$searchbgcheck;				
 				}
-				//echo $searchbgcheck; exit;
 				$searchQuery .= $searchbgcheck .' AND';
 			}
 
 			if($searchQuery != ''){
 				$searchQuery = rtrim($searchQuery," AND");
 			}
-			//	echo $searchQuery; exit;
 
 			$pageNo = 1;
 
@@ -5171,20 +5573,19 @@ $menuArray = array();
 				$finalArray = $this->createagencylistreportfinalArray($agencylistData,$selectColumns);
 			}
 
-			if($this->getRequest()->getPost()){//echo '<pre>'; print_r($_POST); exit;
+			if($this->getRequest()->getPost()){
 				// To generate PDF START
 				if (($this->_getParam('fields') != '')){
 					$selectColumns = explode(',',$this->_request->getParam('fields')); // exit;
 				}
-				if($this->_request->getParam('generatereport') == 'pdf'){ //echo '<pre>'; print_r($_POST); exit;
+				if($this->_request->getParam('generatereport') == 'pdf'){ 
 					$this->generateAgencyListPdf($finalArray,$selectColumns);
 				}
 
 			}
 			if($this->_getParam('generatereport') == 'xcel'){ //xcel generation
-				//echo "<pre>";print_r($this->_getAllParams());echo "</pre>";exit;
 				if (($this->_getParam('fields') != '')){
-					$selectColumns = explode(',',$this->_request->getParam('fields')); // exit;
+					$selectColumns = explode(',',$this->_request->getParam('fields')); 
 				}
 				foreach($selectFields as $key=>$val)
 				{
@@ -5194,7 +5595,6 @@ $menuArray = array();
 						$selectColumnLabels[$key] = $val;
 					}
 				}
-				//print_r($finalArray); exit;
 				sapp_Global::export_to_excel($finalArray,$selectColumnLabels,'Agencylist Report.xlsx');
 				exit;
 			}
@@ -5222,8 +5622,6 @@ $menuArray = array();
 
 	public function createagencylistreportfinalArray($agencylistData,$selectColumns,$bgchecksortOrder = ''){
 
-		//echo '<pre>';
-		//print_r($agencylistData); exit;
 		$reportsmodel = new Default_Model_Reports();
 		$finalArray = array();
 		$bgcheckArray = array();
@@ -5245,7 +5643,6 @@ $menuArray = array();
 			if(!empty($bgcheckArray)){
 				$bgcheckNameArray = $reportsmodel->getBgCheckNamesByIds($bgcheckArray);
 			}
-			//print_r($bgcheckNameArray); exit;
 
 			foreach($agencylistData as $key => $agencylist)
 			{
@@ -5266,7 +5663,7 @@ $menuArray = array();
 				}
 				if(in_array("bg_checktype", $selectColumns)){
 					$screeningtype = '';
-					if(isset($agencylist['bg_checktype'])){ //echo $agencylist['bg_checktype']; exit;
+					if(isset($agencylist['bg_checktype'])){ 
 						$screeninglistarray = explode(',',$agencylist['bg_checktype']);
 						foreach($screeninglistarray as $bgcheck){
 							if(isset($bgcheckNameArray[$bgcheck])){
@@ -5284,8 +5681,6 @@ $menuArray = array();
 			$bgcheckorder = ($bgchecksortOrder == 'asc')?SORT_ASC:SORT_DESC;
 			array_multisort($bg_checktypeSortArray, $bgcheckorder,$finalArray);
 		}
-
-		//echo '<pre>'; print_r($finalArray); exit;
 		return $finalArray;
 	}
 
@@ -5351,9 +5746,6 @@ $menuArray = array();
 				$field_widths[$key] = ($width*180)/$totalPresentFieldWidth;
 			}
 		}
-		//print_r($field_widths); exit;
-		//$pdf = $this->_helper->PdfHelper->generateReport($field_names, $finalArray, $field_widths, $data);
-		//	return;
 		$message = $this->_helper->PdfHelper->generateReport($field_names, $finalArray, $field_widths, $data);
 		$this->_helper->json(array('file_name'=>$data['file_name']));
 	}
@@ -5432,11 +5824,6 @@ $menuArray = array();
 		$searchQuery = '';
 		if($checkedheaders != '')
 		$selectColumns = explode(',',$checkedheaders);
-		/*if(!empty($selectColumns))
-		 {
-			array_unshift($selectColumns ,'specimen_flag_name');
-			array_unshift($selectColumns ,'specimen_name');
-			}*/
 
 		if($columnby !='')
 		$by = $columnby;
@@ -5462,7 +5849,6 @@ $menuArray = array();
 				}
 				$searchbgcheck = ($searchbgcheck != '')?substr($searchbgcheck, 0, -3).')':$searchbgcheck;
 			}
-			//echo $searchbgcheck; exit;
 			$searchQuery .= $searchbgcheck .' AND';
 		}
 		if($process_status !='')
@@ -5483,12 +5869,11 @@ $menuArray = array();
 		}
 		else
 		{
-			//$selectColumnLabels = array('specimen_name'=>'Specimen','specimen_flag_name'=>'Specimen type');
 			foreach($empscreeningLabelsArr as $key=>$val)
 			{
 				foreach($selectColumns as $column)
 				{
-					if($column == $key) // && $key != 'specimen_name' && $key != 'specimen_flag_name'
+					if($column == $key) 
 					$selectColumnLabels[$key] = $val;
 				}
 			}
@@ -5505,7 +5890,6 @@ $menuArray = array();
 			$lastpage = '';
 			$empscreeningCount = '';
 		}
-		//$finalArray = $this->createBusinessunitsReportFinalArray($empscreeningArr,$selectColumns);
 		$finalArray = $this->createEmpscreeningReportFinalArray($empscreeningArr,$selectColumns);
 
 		$empscreeningArr = $finalArray;
@@ -5526,7 +5910,6 @@ $menuArray = array();
 
 	public function createEmpscreeningReportFinalArray($dataArray,$columnArray)
 	{
-		//echo "<pre>"; print_r($dataArray);print_r($columnArray);echo "</pre>";
 		$finalArray = array();
 		if(!empty($dataArray))
 		{
@@ -5619,8 +6002,6 @@ $menuArray = array();
 	public function getexportdata($param_arr)
 	{
 		$reportsmodel = new Default_Model_Reports();
-		//echo "<pre>"; print_r($param_arr); die;
-
 		if(isset($param_arr['cols_arr']))	unset($param_arr['cols_arr']);
 		$page_no = isset($param_arr['pageno'])?intval($param_arr['pageno']):1;
 		$per_page = isset($param_arr['perpage'])?intval($param_arr['perpage']):PERPAGE;
@@ -5666,7 +6047,7 @@ $menuArray = array();
 		$searchQuery .= 'specimen_name = "'.$empname.'" AND ';
 		if($agencyname !='')
 		$searchQuery .= 'agencyname = "'.$agencyname.'" AND ';
-		if(!empty($screeningtype))// != '' && ($screeningtype != 'null'))
+		if(!empty($screeningtype))
 		{
 			$searchbgcheck = '(';
 
@@ -5680,7 +6061,6 @@ $menuArray = array();
 				}
 				$searchbgcheck = ($searchbgcheck != '')?substr($searchbgcheck, 0, -3).')':$searchbgcheck;
 			}
-			//echo $searchbgcheck; exit;
 			$searchQuery .= $searchbgcheck .' AND';
 		}
 		if($process_status !='')
@@ -5703,7 +6083,6 @@ $menuArray = array();
 		$param_arr = $this->_getAllParams();
 		$ar = $this->getexportdata($param_arr);
 		$this->generateEmpscreeningPDF($ar ['finalar'],$ar['cols']);
-		//$this->generateEmpscreeningPDF($finalArray,$cols_param);
 	}
 	public function generateEmpscreeningPDF($finalArray,$selectColumns)
 	{
@@ -5782,11 +6161,12 @@ $menuArray = array();
 				$field_widths[$key] = ($width*180)/$totalPresentFieldWidth;
 			}
 		}
-		//print_r($field_widths); exit;
 
 		$data = array('grid_no'=>1, 'project_name'=>'', 'object_name'=>'Employee/Candidate Screening Report', 'grid_count'=>1,'file_name'=>'empscreening.pdf');
 
 		$pdf = $this->_helper->PdfHelper->generateReport($field_names, $finalArray, $field_widths, $data);
 		return $this->_helper->json(array('file_name'=>$data['file_name']));
 	}
+
+	
 }

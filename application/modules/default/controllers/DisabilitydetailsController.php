@@ -35,7 +35,6 @@ class Default_DisabilitydetailsController extends Zend_Controller_Action
 
 	public function indexAction()
 	{
-		//echo "Here in controller";//die;
 	}
 
 	public function addAction()
@@ -123,9 +122,7 @@ class Default_DisabilitydetailsController extends Zend_Controller_Action
 						{	//TO dispaly EMployee Profile information.....
 							$usersModel = new Default_Model_Users();
 							$employeeData = $usersModel->getUserDetailsByIDandFlag($id);
-							//echo "Employee Data : <pre>";print_r($employeeData);die;
 							$data = $empDisabilitydetailsModel->getempDisabilitydetails($id);
-							//echo "<pre>Edit data :: ";print_r($data);die;
 							if(!empty($data))
 							{
 								$empDisabilitydetailsform->setDefault("id",$data[0]["id"]);
@@ -178,15 +175,24 @@ class Default_DisabilitydetailsController extends Zend_Controller_Action
 		$date = new Zend_Date();
 		if($empDisabilitydetailsform->isValid($this->_request->getPost()))
 		{
+			$post_values = $this->_request->getPost();
+           	 if(isset($post_values['id']))
+                unset($post_values['id']);
+             if(isset($post_values['user_id']))
+                unset($post_values['user_id']);
+             if(isset($post_values['submit']))	
+                unset($post_values['submit']);
+           $new_post_values = array_filter($post_values);
+           $user_id = $this->getRequest()->getParam('userid');
+           if(!empty($new_post_values))
+           {
 			$empDisabilitydetailsModel = new Default_Model_Disabilitydetails();
 			$id = $this->_request->getParam('id');
-			$user_id = $this->getRequest()->getParam('userid');
-			//Post values ..
+			//$user_id = $this->getRequest()->getParam('userid');
 			$disability_type = $this->_request->getParam('disability_type');
 			$disabiity_name =$this->_request->getParam('disability_name');
 			$description =$this->_request->getParam('disability_description');
 			$other_disability_type=$this->_request->getParam('other_disability_type');
-
 			$data = array(  'other_disability_type'=>$other_disability_type,
 								'disability_type'=>$disability_type,
 								'disability_name'=>$disabiity_name,
@@ -194,10 +200,7 @@ class Default_DisabilitydetailsController extends Zend_Controller_Action
 								'user_id'=>$user_id,
 								'modifiedby'=>$loginUserId,
 			                    'modifieddate'=>gmdate("Y-m-d H:i:s")
-			  				//'modifieddate'=>$date->get('yyyy-MM-dd HH:mm:ss')
 			);
-
-			//echo "<pre> Post vals ";print_r($data);die;
 			if($id!='')
 			{
 				$where = array('user_id=?'=>$user_id);
@@ -207,7 +210,6 @@ class Default_DisabilitydetailsController extends Zend_Controller_Action
 			{
 				$data['createdby'] = $loginUserId;
 				$data['createddate'] = gmdate("Y-m-d H:i:s");
-				//$data['createddate'] = $date->get('yyyy-MM-dd HH:mm:ss');
 				$where = '';
 				$actionflag = 1;
 			}
@@ -225,9 +227,11 @@ class Default_DisabilitydetailsController extends Zend_Controller_Action
 			$menumodel = new Default_Model_Menu();
 			$menuidArr = $menumodel->getMenuObjID('/employee');
 			$menuID = $menuidArr[0]['id'];
-			//echo "<pre>";print_r($menuidArr);exit;
 			$result = sapp_Global::logManager($menuID,$actionflag,$loginUserId,$user_id);
-			//echo $result;exit;
+         }else
+         {
+         	$this->_helper->getHelper("FlashMessenger")->addMessage(array("error"=>FIELDMSG));
+         }	
 			$this->_redirect('disabilitydetails/edit/userid/'.$user_id);
 		}
 		else
@@ -242,7 +246,6 @@ class Default_DisabilitydetailsController extends Zend_Controller_Action
 					break;
 				}
 			}
-			//echo "<br/>msgArr <pre>";print_r($msgarray);die;
 			return $msgarray;
 		}
 
@@ -293,11 +296,8 @@ class Default_DisabilitydetailsController extends Zend_Controller_Action
 							}
 						}
 						$data = $empDisabilitydetailsModel->getempDisabilitydetails($id);
-						//echo "<pre>";print_r($data);exit;
-						//TO dispaly EMployee Profile information.....
 						$usersModel = new Default_Model_Users();
 						$employeeData = $usersModel->getUserDetailsByIDandFlag($id);
-						//echo "Employee Data : <pre>";print_r($employeeData);die;
 						if(!empty($data))
 						{
 							$empDisabilitydetailsform->setDefault('user_id',$data[0]['user_id']);

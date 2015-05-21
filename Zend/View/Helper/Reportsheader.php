@@ -33,15 +33,15 @@ class Zend_View_Helper_Reportsheader extends Zend_View_Helper_Abstract {
 	{
 	     $reportsheader = '';
 		  
-		    $reportsheader ='<div class="reports-block-area">';			
+		    $reportsheader ='<div class="reports-block-area" >';			// id="scroller"
                          if($module != 'main')
                             $reportsheader .='<div class="reports-back-btn-div"><a href="'.BASE_URL.'/welcome" class="sprite reports-back-btn">Back to Dashboard</a><a href="'.BASE_URL.'/reports" class="sprite reports-back-btn">Back to Analytics</a>';
                          else 
-                             $reportsheader .='<div class="back-page-div"><a href="'.BASE_URL.'/welcome" class="sprite reports-back-btn ">Back to Dashboard</a>';
+                             $reportsheader .='<div class="back-page-div-report"><a href="'.BASE_URL.'/welcome" class="sprite reports-back-btn ">Back to Dashboard</a>';
 			 $reportsheader .='</div>';
-            $reportsheader .='<div class="reports-ctrl">';
+            $reportsheader .='<div style="" id="menu-shadow" class="menu-head "><ul class="reports-ctrl" id="scroller" >';
             //$reportsheader .='<div class="reports-div" onclick="changereportsscreen(\'organizationreport\');">';
-            $reportsheader .='<div class="reports-div" id="organisation_rpt_div" >';
+            $reportsheader .='<li class="reports-div" id="organisation_rpt_div" >';
 			if($module == 'organization')
 			{ 							 
 			$reportsheader .='<span class="reports-sprite org-report-selected"></span>';
@@ -51,10 +51,10 @@ class Zend_View_Helper_Reportsheader extends Zend_View_Helper_Abstract {
 			$reportsheader .='<span class="reports-sprite org-report"></span>';
 			$reportsheader .='<p class="one-line">Organization</p>'; 
 			}
-			$reportsheader .='</div>';
+			$reportsheader .='</li>';
 			
             //$reportsheader .='<div class="reports-div" id="usermanagement_rpt_div" onclick="changereportsscreen(\'mangementreport\');">';
-                    $reportsheader .='<div class="reports-div" id="usermanagement_rpt_div" >';
+                    $reportsheader .='<li class="reports-div" id="usermanagement_rpt_div" >';
 			if($module == 'management')
 			{
 			$reportsheader .='<span class="reports-sprite user-report-selected"></span>';
@@ -64,11 +64,11 @@ class Zend_View_Helper_Reportsheader extends Zend_View_Helper_Abstract {
 			$reportsheader .='<span class="reports-sprite user-report"></span>';
 			$reportsheader .='<p class="one-line">Users</p>';
             } 			
-			$reportsheader .='</div>';
+			$reportsheader .='</li>';
 			
 			
             //$reportsheader .='<div class="reports-div" id="employees_rpt_div" onclick="changereportsscreen(\'employeereport\');">';
-                        $reportsheader .='<div class="reports-div" id="employees_rpt_div" >';
+                        $reportsheader .='<li class="reports-div" id="employees_rpt_div" >';
 			if($module == 'employeereport')
 			{
 		    $reportsheader .='<span class="reports-sprite emp-report-selected"></span>';
@@ -78,10 +78,10 @@ class Zend_View_Helper_Reportsheader extends Zend_View_Helper_Abstract {
 			$reportsheader .='<span class="reports-sprite emp-report"></span>';
 			$reportsheader .='<p class="one-line">Employees</p>';
 			}
-		    $reportsheader .='</div>';
+		    $reportsheader .='</li>';
 			
             //$reportsheader .='<div class="reports-div" id="requisition_rpt_div" onclick="changereportsscreen(\'requisitionstatusreport\');">';
-                    $reportsheader .='<div class="reports-div" id="requisition_rpt_div" >';
+                    $reportsheader .='<li class="reports-div" id="requisition_rpt_div" >';
 			if($module == 'requisitionstatusreport')
 			{
 			$reportsheader .='<span class="reports-sprite resource-repor-selected"></span>';
@@ -91,10 +91,10 @@ class Zend_View_Helper_Reportsheader extends Zend_View_Helper_Abstract {
 			$reportsheader .='<span class="reports-sprite resource-report"></span>';
 	        $reportsheader .='<p class="reports-text">Resource<br />Requisition</p>';
 			}
-		    $reportsheader .='</div>';
+		    $reportsheader .='</li>';
 			
             //$reportsheader .='<div class="reports-div" id = "leaves_rpt_div" onclick="changereportsscreen(\'leavesreport\');" >';
-                    $reportsheader .='<div class="reports-div" id = "leaves_rpt_div" >';
+                    $reportsheader .='<li class="reports-div" id = "leaves_rpt_div" >';
 			if($module == 'leavesreport')
 			{
 			$reportsheader .='<span class="reports-sprite leave-report-selected"></span>';
@@ -104,11 +104,11 @@ class Zend_View_Helper_Reportsheader extends Zend_View_Helper_Abstract {
 			$reportsheader .='<span class="reports-sprite leave-report"></span>';
 			$reportsheader .='<p class="reports-text">Employee<br />Leaves</p>';
 			}
-			$reportsheader .='</div>';
+			$reportsheader .='</li>';
 			
 			
             //$reportsheader .='<div class="reports-div" id="holiday_rpt_div" onclick="changereportsscreen(\'holidaygroupreports\');" >';
-                        $reportsheader .='<div class="reports-div" id="holiday_rpt_div"  >';
+                        $reportsheader .='<li class="reports-div" id="holiday_rpt_div"  >';
 			if($module == 'holidayreport')
 			{
 			$reportsheader .='<span class="reports-sprite holiday-report-selected"></span>';
@@ -118,10 +118,10 @@ class Zend_View_Helper_Reportsheader extends Zend_View_Helper_Abstract {
 			$reportsheader .='<span class="reports-sprite holiday-report"></span>';
 			$reportsheader .='<p class="one-line">Holidays</p>';
 			}
-			$reportsheader .='</div>';
+			$reportsheader .='</li>';
 			
             //$reportsheader .='<div class="reports-div" id="background_rpt_div" onclick="changereportsscreen(\'backgroundchecksreport\');">';
-                        $reportsheader .='<div class="reports-div" id="background_rpt_div" >';
+                        $reportsheader .='<li class="reports-div" id="background_rpt_div" >';
 			if($module == 'backgroundreport')
 			{
 			$reportsheader .='<span class="reports-sprite background-report-selected"></span>';
@@ -131,10 +131,10 @@ class Zend_View_Helper_Reportsheader extends Zend_View_Helper_Abstract {
 			$reportsheader .='<span class="reports-sprite background-report"></span>';
 		    $reportsheader .='<p class="reports-text">Background<br />Checks</p>';
 			}
-			$reportsheader .='</div>';
+			$reportsheader .='</li>';
 			
             //$reportsheader .='<div class="reports-div" id="logs_rpt_div" onclick="changereportsscreen(\'activitylogreport\');" >';
-                        $reportsheader .='<div class="reports-div" id="logs_rpt_div"  >';
+                        $reportsheader .='<li class="reports-div" id="logs_rpt_div"  >';
 			if($module == 'logreport')
 			{
 			$reportsheader .='<span class="reports-sprite logs-report-selected"></span>';
@@ -144,10 +144,33 @@ class Zend_View_Helper_Reportsheader extends Zend_View_Helper_Abstract {
 			$reportsheader .='<span class="reports-sprite logs-report"></span>';
 			$reportsheader .='<p class="one-line">Audit Logs</p>';
 			}
-			$reportsheader .='</div>';
+			$reportsheader .='</li>';
 			
+			$reportsheader .='<li class="reports-div" id="servicedesk_rpt_div" >';
+			if($module == 'servicedeskreport')
+			{
+		    $reportsheader .='<span class="reports-sprite servicedesk-report-selected"></span>';
+			$reportsheader .='<p class="one-line selected-report">Service Request</p>';
+			}else
+            {
+			$reportsheader .='<span class="reports-sprite servicedesk-report"></span>';
+			$reportsheader .='<p class="one-line">Service Request</p>';
+			}
+		    $reportsheader .='</li>';			
 			
-            $reportsheader .='</div>';           
+			$reportsheader .='<li class="reports-div" id="performance_rpt_div" >';
+			if($module == 'performancereport')
+			{
+		    $reportsheader .='<span class="reports-sprite performance-report-selected"></span>';
+			$reportsheader .='<p class="reports-text selected-report">Performance Appraisal</p>';
+			}else
+            {
+			$reportsheader .='<span class="reports-sprite performance-report"></span>';
+			$reportsheader .='<p class="reports-text">Performance Appraisal</p>';
+			}
+		    $reportsheader .='</li>';
+
+            $reportsheader .='</ul></div>';           
             
             $reportsheader .='<div class="reports-grid-ctrl">';
 

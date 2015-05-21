@@ -35,7 +35,6 @@ class Default_VisaandimmigrationdetailsController extends Zend_Controller_Action
 
 	public function indexAction()
 	{
-		//echo "Here in controller";die;
 	}
 
 	public function addAction()
@@ -66,10 +65,8 @@ class Default_VisaandimmigrationdetailsController extends Zend_Controller_Action
 		  	$visaandimmigrationdetailsModel = new Default_Model_Visaandimmigrationdetails();
 		  	if($id)
 		  	{
-		  		//To display Employee Profile information......
 		  		$usersModel = new Default_Model_Users();
 		  		$employeeData = $usersModel->getUserDetailsByIDandFlag($id);
-		  		//echo "Employee Data : <pre>";print_r($employeeData);die;
 
 		  		$this->view->id=$id;
 		  		$visaandimmigrationDetailsform->setAttrib('action',DOMAIN.'visaandimmigrationdetails/add/userid/'.$id);
@@ -210,97 +207,86 @@ class Default_VisaandimmigrationdetailsController extends Zend_Controller_Action
 		$date = new Zend_Date();
 		if($visaandimmigrationDetailsform->isValid($this->_request->getPost()))
 		{
-			$visaandimmigrationdetailsModel = new Default_Model_Visaandimmigrationdetails();
-			$id = $this->_request->getParam('id');
-			$user_id = $this->_request->getParam('userid');
-			$passport_num = $this->_request->getParam('passport_number');
-			$passport_issue_date = $this->_request->getParam('passport_issue_date',null);
-			$passport_expiry_date = $this->_request->getParam('passport_expiry_date',null);
-			$visa_number = $this->_request->getParam('visa_number');
-			$visa_type = $this->_request->getParam('visa_type');
-			$visa_issue_date = $this->_request->getParam('visa_issue_date',null);
-			$visa_expiry_date = $this->_request->getParam('visa_expiry_date',null);
-			$inine_status = $this->_request->getParam('inine_status');
-			$inine_review_date = $this->_request->getParam('inine_review_date',null);
-			$issuing_authority = $this->_request->getParam('issuing_authority');
-			$ininetyfour_status = $this->_request->getParam('ininetyfour_status');
-			$ininetyfour_expiry_date = $this->_request->getParam('ininetyfour_expiry_date',null);
-
-			// Date Formats....
-			/*$passport_issueDate = explode("-",$passport_issue_date);
-				$passport_issue = $passport_issueDate[2]."-".$passport_issueDate[0]."-".$passport_issueDate[1];
-
-				$passport_expiryDate = explode("-",$passport_expiry_date);
-				$passport_expiry = $passport_expiryDate[2]."-".$passport_expiryDate[0]."-".$passport_expiryDate[1];
-
-				$visa_issueDate = explode("-",$visa_issue_date);
-				$visa_issue = $visa_issueDate[2]."-".$visa_issueDate[0]."-".$visa_issueDate[1];
-
-				$visa_expiryDate = explode("-",$visa_expiry_date);
-				$visa_expiry = $visa_expiryDate[2]."-".$visa_expiryDate[0]."-".$visa_expiryDate[1];
-
-				$inine_reviewDate = explode("-",$inine_review_date);
-				$inine_review = $inine_reviewDate[2]."-".$inine_reviewDate[0]."-".$inine_reviewDate[1];
-
-				$ininetyfour_expiryDate = explode("-",$ininetyfour_expiry_date);
-				$ininetyfour_expiry = $ininetyfour_expiryDate[2]."-".$ininetyfour_expiryDate[0]."-".$ininetyfour_expiryDate[1];*/
-
-			$passport_issue = sapp_Global::change_date($passport_issue_date, 'database');
-			$passport_expiry = sapp_Global::change_date($passport_expiry_date, 'database');
-			$visa_issue = sapp_Global::change_date($visa_issue_date, 'database');
-			$visa_expiry = sapp_Global::change_date($visa_expiry_date, 'database');
-			$inine_review = sapp_Global::change_date($inine_review_date, 'database');
-			$ininetyfour_expiry = sapp_Global::change_date($ininetyfour_expiry_date, 'database');
-
-			$data = array(  'passport_number'=>$passport_num,
-								'passport_issue_date'=>$passport_issue,
-								'passport_expiry_date'=>$passport_expiry,
-								'visa_number'=>$visa_number,
-								'visa_type'=>$visa_type,
-								'visa_issue_date'=>$visa_issue,
-								'visa_expiry_date'=>$visa_expiry,
-								'inine_status'=>$inine_status,
-								'inine_review_date'=>$inine_review,
-								'issuing_authority'=>$issuing_authority,
-								'ininetyfour_status'=>$ininetyfour_status,
-								'ininetyfour_expiry_date'=>$ininetyfour_expiry,
-								'user_id'=>$user_id,
-								'modifiedby'=>$loginUserId,
-								'modifieddate'=>gmdate("Y-m-d H:i:s")
-			//'modifieddate'=>$date->get('yyyy-MM-dd HH:mm:ss')
-			);
-			//echo "id & User Id >> ".$id." >> ".$user_id;
-			//echo "<pre> Post vals ";print_r($data);die;
-			if($id!='')
-			{
-				$where = array('user_id=?'=>$user_id);
-				$actionflag = 2;
-			}
-			else
-			{
-				$data['createdby'] = $loginUserId;
-				$data['createddate'] = gmdate("Y-m-d H:i:s");
-				//$data['createddate'] = $date->get('yyyy-MM-dd HH:mm:ss');
-				$where = '';
-				$actionflag = 1;
-			}
-			$Id = $visaandimmigrationdetailsModel->SaveorUpdatevisaandimmigrationDetails($data, $where);
-			if($Id == 'update')
-			{
-				$tableid = $id;
-				$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee visa details updated successfully."));
-			}
-			else
-			{
-				$tableid = $Id;
-				$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee visa details added successfully."));
-			}
-			$menumodel = new Default_Model_Menu();
-			$menuidArr = $menumodel->getMenuObjID('/employee');
-			$menuID = $menuidArr[0]['id'];
-			//echo "<pre>";print_r($menuidArr);exit;
-			$result = sapp_Global::logManager($menuID,$actionflag,$loginUserId,$user_id);
-			//echo $result;exit;
+			$post_values = $this->_request->getPost();
+           	if(isset($post_values['id']))
+            	unset($post_values['id']);
+            if(isset($post_values['user_id']))
+                unset($post_values['user_id']);
+            if(isset($post_values['submit']))	
+                unset($post_values['submit']);
+           	$new_post_values = array_filter($post_values);
+           	$user_id = $this->_request->getParam('userid');
+           	if(!empty($new_post_values))
+           	{ 
+				$visaandimmigrationdetailsModel = new Default_Model_Visaandimmigrationdetails();
+				$id = $this->_request->getParam('id');
+				$passport_num = $this->_request->getParam('passport_number');
+				$passport_issue_date = $this->_request->getParam('passport_issue_date',null);
+				$passport_expiry_date = $this->_request->getParam('passport_expiry_date',null);
+				$visa_number = $this->_request->getParam('visa_number');
+				$visa_type = $this->_request->getParam('visa_type');
+				$visa_issue_date = $this->_request->getParam('visa_issue_date',null);
+				$visa_expiry_date = $this->_request->getParam('visa_expiry_date',null);
+				$inine_status = $this->_request->getParam('inine_status');
+				$inine_review_date = $this->_request->getParam('inine_review_date',null);
+				$issuing_authority = $this->_request->getParam('issuing_authority');
+				$ininetyfour_status = $this->_request->getParam('ininetyfour_status');
+				$ininetyfour_expiry_date = $this->_request->getParam('ininetyfour_expiry_date',null);
+	
+				$passport_issue = sapp_Global::change_date($passport_issue_date, 'database');
+				$passport_expiry = sapp_Global::change_date($passport_expiry_date, 'database');
+				$visa_issue = sapp_Global::change_date($visa_issue_date, 'database');
+				$visa_expiry = sapp_Global::change_date($visa_expiry_date, 'database');
+				$inine_review = sapp_Global::change_date($inine_review_date, 'database');
+				$ininetyfour_expiry = sapp_Global::change_date($ininetyfour_expiry_date, 'database');
+	
+				$data = array(  'passport_number'=>$passport_num,
+									'passport_issue_date'=>$passport_issue,
+									'passport_expiry_date'=>$passport_expiry,
+									'visa_number'=>$visa_number,
+									'visa_type'=>$visa_type,
+									'visa_issue_date'=>$visa_issue,
+									'visa_expiry_date'=>$visa_expiry,
+									'inine_status'=>$inine_status,
+									'inine_review_date'=>$inine_review,
+									'issuing_authority'=>$issuing_authority,
+									'ininetyfour_status'=>$ininetyfour_status,
+									'ininetyfour_expiry_date'=>$ininetyfour_expiry,
+									'user_id'=>$user_id,
+									'modifiedby'=>$loginUserId,
+									'modifieddate'=>gmdate("Y-m-d H:i:s")
+				);
+				if($id!='')
+				{
+					$where = array('user_id=?'=>$user_id);
+					$actionflag = 2;
+				}
+				else
+				{
+					$data['createdby'] = $loginUserId;
+					$data['createddate'] = gmdate("Y-m-d H:i:s");
+					$where = '';
+					$actionflag = 1;
+				}
+				$Id = $visaandimmigrationdetailsModel->SaveorUpdatevisaandimmigrationDetails($data, $where);
+				if($Id == 'update')
+				{
+					$tableid = $id;
+					$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee visa details updated successfully."));
+				}
+				else
+				{
+					$tableid = $Id;
+					$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee visa details added successfully."));
+				}
+				$menumodel = new Default_Model_Menu();
+				$menuidArr = $menumodel->getMenuObjID('/employee');
+				$menuID = $menuidArr[0]['id'];
+				$result = sapp_Global::logManager($menuID,$actionflag,$loginUserId,$user_id);
+			 
+			} else {
+           		$this->_helper->getHelper("FlashMessenger")->addMessage(array("error"=>FIELDMSG));
+			}			 
 			$this->_redirect('visaandimmigrationdetails/edit/userid/'.$user_id);
 		}
 		else
@@ -315,7 +301,6 @@ class Default_VisaandimmigrationdetailsController extends Zend_Controller_Action
 					break;
 				}
 			}
-			//echo "<br/>msgArr <pre>";print_r($msgarray);die;
 			return $msgarray;
 		}
 

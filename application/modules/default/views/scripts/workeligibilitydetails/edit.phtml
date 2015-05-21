@@ -20,12 +20,11 @@
  ********************************************************************************/
 ?>
 
-<?php 	//echo "Rows > ".$this->rowexist ."<br/>";echo "Emp data <pre>";print_r($this->empdata);die;
+<?php 	
 if(empty($this->empdata)){?>
    <div class="ml-alert-1-info m1-info-set">
 				<div class="style-1-icon info"></div>
 				<?php if($this->rowexist == 'norows'){?>
-					<!--No record exists-->
 						No data found.
 				<?php }else{?>
 						Employee deleted
@@ -69,12 +68,11 @@ if($this->emptyFlag != 0)
 				echo $this->form->user_id; 
 				echo $this->form->emptyFlag; 
 				echo $this->form->issuingauthflag; 
-				//echo "errorflag > ".$this->form->emptyFlag->getValue();
 		?>
         <div class="total-form-controller">
 		 
 			<div class="new-form-ui">
-			  <label class="required">Document Type </label>
+			  <label>Document Type </label>
 			<div class="division"><?php echo $this->form->documenttype_id; ?>
                             <?php if(isset($this->msgarray['documenttype_id'])){?>
 			   <span class="errors" id="errors-<?php echo $this->form->documenttype_id->getId(); ?>"><?php echo $this->msgarray['documenttype_id'];?></span>
@@ -87,7 +85,7 @@ if($this->emptyFlag != 0)
 			</div>
 			
 			<div class="new-form-ui">
-			  <label class="required">Document Issued Date <img class="tooltip" title="<?php echo DATE_DESCRIPTION;?>" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"> </label>
+			  <label>Document Issued Date <img class="tooltip" title="<?php echo DATE_DESCRIPTION;?>" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"> </label>
 			<div class="division"><?php echo $this->form->doc_issue_date; ?></div>
 			<?php if(isset($this->msgarray['doc_issue_date'])){?>
 			   <span class="errors" id="errors-<?php echo $this->form->doc_issue_date->getId(); ?>"><?php echo $this->msgarray['doc_issue_date'];?></span>
@@ -97,14 +95,14 @@ if($this->emptyFlag != 0)
 			
 			
 			<div class="new-form-ui">
-			  <label class="required">Document Expiry Date <img class="tooltip" title=" <?php echo DATE_DESCRIPTION;?>" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"> </label>
+			  <label>Document Expiry Date <img class="tooltip" title=" <?php echo DATE_DESCRIPTION;?>" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"> </label>
 			<div class="division"><?php echo $this->form->doc_expiry_date; ?></div>
 			 <?php if(isset($this->msgarray['doc_expiry_date'])){?>
 			   <span class="errors" id="errors-<?php echo $this->form->doc_expiry_date->getId(); ?>"><?php echo $this->msgarray['doc_expiry_date'];?></span>
 			<?php }?>
 			</div>
 			<div class="new-form-ui">
-			  <label class="required">Issuing Authority Name <img class="tooltip" title="Start with alphabets and accepts spaces,numbers,hyphens and ampersand" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"></label>
+			  <label>Issuing Authority Name <img class="tooltip" title="Start with alphabets and accepts spaces,numbers,hyphens and ampersand" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"></label>
 			<div class="division"><?php echo $this->form->issuingauth_name; ?></div>
 			
 			  <?php if(isset($this->msgarray['issuingauth_name'])){?>
@@ -113,7 +111,7 @@ if($this->emptyFlag != 0)
 			</div>
 			
 			<div class="new-form-ui" >
-			  <label class="required">Issuing Authority Country</label>
+			  <label>Issuing Authority Country</label>
 			<div class="division"><?php echo $this->form->issuingauth_country; ?>
 			<?php if(isset($this->msgarray['issuingauth_country'])){?>
 			   <span class="errors" id="errors-<?php echo $this->form->issuingauth_country->getId(); ?>"><?php echo $this->msgarray['issuingauth_country'];?></span>
@@ -162,7 +160,7 @@ if($this->emptyFlag != 0)
 			</div>
 			
 			<div class="new-form-ui">
-			  <label class="required">Issuing Authority Postal Code</label>
+			  <label>Issuing Authority Postal Code</label>
 			<div class="division"><?php echo $this->form->issuingauth_postalcode; ?></div>
 			 <?php if(isset($this->msgarray['issuingauth_postalcode'])){?>
 			   <span class="errors" id="errors-<?php echo $this->form->issuingauth_postalcode->getId(); ?>"><?php echo $this->msgarray['issuingauth_postalcode'];?></span>
@@ -172,7 +170,6 @@ if($this->emptyFlag != 0)
              
         <div class="new-form-ui-submit">
         <?php echo $this->form->submit; ?>
-        <!--<button onclick="window.location.href='/hrms/employee';" type="button" id="Cancel" name="Cancel">Cancel</button>-->
         </div>
    </div>    
 </form>
@@ -219,9 +216,10 @@ if($this->emptyFlag != 0)
 	</div> 
 
 
-<script>
+<script type='text/javascript'>
 $(document).ready(function(){
-	var yearrange = <?php echo "'".date("Y", strtotime("-30 years")).':'.date('Y')."'"; ?>;
+	//var yearrange = <?php echo "'".date("Y", strtotime("-30 years")).':'.date('Y')."'"; ?>;
+	var yearrange = <?php echo "'".YEAR.':'.date('Y')."'"; ?>;
 
 	$("#doc_issue_date").datepicker({
 					showOn:'both',
@@ -244,40 +242,24 @@ $(document).ready(function(){
 	//#doc_expiry_date
 $("#doc_expiry_date").datepicker({
 					showOn:'both',
-					//maxDate: new Date, 
-					//yearRange: yearrange,
-					//dateFormat: 'mm-dd-yy',
 					dateFormat:"<?php echo DATEFORMAT_JS;?>",
 					buttonImage: "<?php echo $this->baseUrl("public/media/images/cal.jpg");?>",
 					buttonImageOnly: true,
-                                        showButtonPanel: true ,
+                    showButtonPanel: true ,
 					buttonText: "",
 					changeMonth: true,
 					changeYear: true,
-                                        minDate:0,
+                    //minDate:0,
+                                       
 					onClose:function()
 					{
 						$('#doc_expiry_date').trigger('blur');
-                                                var msg = "Document expiry date should be greater than document issue date.";        
+                          var msg = "Document expiry date should be greater than document issue date.";        
 						from_to_date_validation('doc_issue_date','doc_expiry_date',this,msg);
                                 }
 					
 	});
 
-	/* Making window responsive
- 	var complete_width = $('.poc-ui-data-control').width();
-	$('.left-block-ui-data').css("width", "230");
-	$('.right-block-data').css("width", (complete_width-(253)));	
-		
-	 function checkWidth() {
-        var complete_width = $('.poc-ui-data-control').width();		
-		$('.left-block-ui-data').css("width", "230");
-		$('.right-block-data').css("width", (complete_width-(253)));		
-    }
-	$(window).resize(function() {
-		checkWidth();
-	}); */
-	
 	$("#workeligibilitydetails").addClass('active');
 	$("#workeligibilitydetails").removeAttr("onclick");
 	

@@ -87,7 +87,7 @@ function main_function($tls,$auth,$smtpserver,$username,$password,$port)
     }		
     catch(PDOException $ex)
     {
-        $msgarray['error'] = 'Some error occured' ;
+        $msgarray['error'] = 'Some error occured. '.$ex->getMessage() ;
     }
     return $msgarray;
 }
@@ -209,11 +209,6 @@ function writeMailSettingsconstants($tls,$auth,$port,$username,$password,$smtpse
         }
         catch (Exception $e)
         {
-            /*echo "Exception";
-             echo $errorMsg = 'Error on line '.$e->getLine().' in '.$e->getFile().': <b>'.$e->getMessage().'</b>';
-             echo $e->getMessage()."<br/>";
-             echo $e->getTraceAsString();
-             exit; */
             return false;
         }
     }	
@@ -279,13 +274,21 @@ function writeMailSettingsconstants($tls,$auth,$port,$username,$password,$smtpse
 					       }
 					        for($i = 1;$i<=sizeof($authArray);$i++)
 					        {
+							if(!$_POST){
 					        	if($i == $value)
-					        	  $selected = 'selected';
+					        	  $selected = 'selected'; 
 					        	else
-					        	  $selected = '';  
+					        	  $selected = ''; 
 					  ?>
 						   <option value="<?php echo $i;?>" <?php echo $selected;?>><?php echo $authArray[$i];?></option>
-					<?php }?>
+						<?php } else {
+								if($i == $_POST['auth'])
+								  $selected = 'selected';
+								else	
+								 $selected = ''; 
+						?>
+					       <option value="<?php echo $i;?>" <?php echo $selected;?>><?php echo $authArray[$i];?></option>
+					<?php }}?>
 					</select>
 					<!--  <input type="text" maxlength="50" value="<?php //defined('MAIL_AUTH')?MAIL_AUTH:'';?>" id="auth" name="auth">-->
 					<span><?php echo isset($msgarray['auth'])?$msgarray['auth']:'';?></span>

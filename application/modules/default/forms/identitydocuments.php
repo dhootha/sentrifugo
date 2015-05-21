@@ -30,9 +30,8 @@ class Default_Form_identitydocuments extends Zend_Form
 
         $id = new Zend_Form_Element_Hidden('id');
 		
-		$identitydocuments = new Zend_Form_Element_MultiCheckbox('identitydoc');
+		/*$identitydocuments = new Zend_Form_Element_MultiCheckbox('identitydoc');
 		$identitydocuments->setLabel('Identity Documents');
-	    //$identitydocuments->setRegisterInArrayValidator(false);
 		$identitydocuments->setMultiOptions(array(
                            	'1'=>'Passport',
 							'2'=>'SSN',
@@ -54,22 +53,69 @@ class Default_Form_identitydocuments extends Zend_Form
 		$otherdocument->setAttrib('onblur', 'validate_otherdocument(this)');
 		$otherdocument->setLabel('Document Name');
 		$otherdocument->addValidator("regex",true,array(
-                            //'pattern'=>'/^[a-zA-Z][a-zA-Z0-9\-\. ]*$/', 
 							'pattern'=> '/^(?=.*[a-zA-Z])([^ ][a-zA-Z0-9\-\s]*)$/',
-                           //'pattern'=>"!~^?%`",
+                           'messages'=>array(
+                               'regexNotMatch'=>'Please enter valid document name.'
+                           )
+        	));*/
+        
+        $documentname = new Zend_Form_Element_Text('document_name');
+		$documentname->setAttrib('maxlength',50);
+		$documentname->setLabel('Document Name');
+		$documentname->setRequired(true);
+        $documentname->addValidator('NotEmpty', false, array('messages' => 'Please enter document name.'));
+		$documentname->addValidator("regex",true,array(
+							'pattern'=> '/^(?=.*[a-zA-Z])([^ ][a-zA-Z0-9\-\s]*)$/',
                            'messages'=>array(
                                'regexNotMatch'=>'Please enter valid document name.'
                            )
         	));
-		//$otherdocument->addFilters(array('StringTrim'));
+		$documentname->addValidator(new Zend_Validate_Db_NoRecordExists(
+	                                            array(  'table'=>'main_identitydocuments',
+	                                                     'field'=>'document_name',
+	                                                     'exclude'=>'id!="'.Zend_Controller_Front::getInstance()->getRequest()->getParam('id').'" AND isactive=1',    
+	
+	                                                      ) ) );
+		$documentname->getValidator('Db_NoRecordExists')->setMessage('Document name already exists.');
+		
+		$mandatory = new Zend_Form_Element_Radio('mandatory');
+		$mandatory->setLabel("Mandatory");
+        $mandatory->addMultiOptions(array(
+										        '1' => 'Yes',
+										        '0' => 'No',
+    									   ));
+		$mandatory->setRequired(true);
+        $mandatory->addValidator('NotEmpty', false, array('messages' => 'Please select mandatory.'));    									   
+		$mandatory->setSeparator('');    
+		$mandatory->setValue(0);									   
+		$mandatory->setRegisterInArrayValidator(false);
+		
+		$expiry = new Zend_Form_Element_Radio('expiry');
+		$expiry->setLabel("Expiry");
+        $expiry->addMultiOptions(array(
+										        '1' => 'Yes',
+										        '0' => 'No',
+    									   ));
+		$expiry->setRequired(true);
+        $expiry->addValidator('NotEmpty', false, array('messages' => 'Please select expiry.'));    									   
+		$expiry->setSeparator('');    
+		$expiry->setValue(0);									   
+		$expiry->setRegisterInArrayValidator(false);
+
+		
+		$description = new Zend_Form_Element_Textarea('description');
+		$description->setLabel("Description");
+        $description->setAttrib('rows', 10);
+        $description->setAttrib('cols', 50);
+		$description ->setAttrib('maxlength', '200');
+        	
 		
 		
 		$submit = new Zend_Form_Element_Submit('submit');
 		$submit->setAttrib('id', 'submitbutton');
 		$submit->setLabel('Save');
 
-		 //$this->addElements(array($id,$natinalityid,$dateformatid,$timeformatid,$timezoneid,$currencyid,$passwordid,$description,$submit));
-		 $this->addElements(array($id,$identitydocuments,$othercheck,$otherdocument,$submit));
+		 $this->addElements(array($id,$documentname,$mandatory,$expiry,$description,$submit));
         $this->setElementDecorators(array('ViewHelper')); 
 	}
 }

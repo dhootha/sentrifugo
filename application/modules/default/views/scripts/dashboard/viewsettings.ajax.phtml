@@ -49,7 +49,6 @@ $role_id = $this->role_id;
 	 ?>
 
 <?php 
-//echo $this->pageContent;
 if($this->menuidcount > 0){ 
 ?>
 <div id="menutabdiv" style="display:none;">
@@ -62,9 +61,12 @@ if($this->menuidcount > 0){
 </div>
 <?php }?>
 
-<?php if($this->iconidcount > 0){ ?>
+<?php if($this->iconidcount > 0 ){ ?>
 <div id="icontabdiv" style="display:none;">
-    <?php for($j=0;$j<sizeof($this->iconnamearray);$j++){ 
+		
+    <?php 
+    $size = (sizeof($this->iconnamearray) > 16) ? 16:sizeof($this->iconnamearray);
+    for($j=0;$j<$size;$j++){ 
             if(isset( $this->iconnamearray[$j]['id']) && !empty( $this->iconnamearray[$j]['id'])){
               $iconnamearrayId =  $this->iconnamearray[$j]['id'];
             }else{
@@ -85,7 +87,6 @@ if($this->menuidcount > 0){
     
     ?>
 		<div class='setting-div' id='shortcut_<?php echo $iconnamearrayId;?>'>
-		<!--<img width='23' height='23' border='0' src=<?php //echo $this->baseUrl('public/media/images/').$this->iconnamearray[$j]['iconPath'];?> onerror="this.src='<?php //echo $this->baseUrl('public/media/images/sampleimg.png')?>'" />-->
 		<img width='23' height='23' border='0' src=<?php echo $this->baseUrl('public/media/images/menuIcons/shortcuts/').$iconnamearrayIconPath;?> onerror="this.src='<?php echo $this->baseUrl('public/media/images/sampleimg.png')?>'" />
 		<label><?php echo $iconnamearrayMenuName;?></label> 
 		<a href='javascript:void(0);' class='close-1' onclick="removesettingsdiv(<?php echo $iconnamearrayId;?>,'icon')"></a>
@@ -94,8 +95,10 @@ if($this->menuidcount > 0){
 </div>
 <?php }?>
 
-<div id="error_message" style="display:none;" ></div>
 <div class="profile-tabs">
+ <a href="<?php echo BASE_URL;?>/welcome" class="sprite reports-back-btn view-settings-back-btn">Back to Dashboard</a>
+<div id="error_message" style="display:none;" ></div>
+
     <div class="profile-tabs-left">
         <ul>
             <li><a href="<?php echo DOMAIN; ?>dashboard/viewprofile"><div class="profile-icon view-profile"></div><p>View Profile</p></a></li>
@@ -144,7 +147,8 @@ if($this->menuidcount > 0){
 
 							if(!empty($this->widgets)){
 								
-								for($w = 0; $w <sizeof($this->widgets); $w++)
+								$size = (sizeof($this->widgets) > 10)? 10:sizeof($this->widgets);
+								for($w = 0; $w <$size; $w++)
 								{
 						?>
 									<div style="clear: both;width:auto;padding-bottom:20px;">
@@ -185,23 +189,8 @@ if($this->menuidcount > 0){
       	   
     </div>
 </div>
- 
- 
- <?php //for($i=0;$i<$this->menuidcount;$i++){?>
-    
 
-        <!--<div class="setting-div" id="<?php //echo $this->menuids[$i]['menuid'];?>">
-	<input type="checkbox" checked="checked" onclick="getmenuid(<?php //echo $this->menuids[$i]['menuid'];?>)" id="check_<?php //echo $this->menuids[$i]['menuid'];?>" />
-	<label><?php //echo $this->menuname[$i][0]['menuName'];?></label> 
-	<a href="#" class="menusprite close" onclick="removesettingsdiv(<?php //echo $this->menuids[$i]['menuid'];?>)"></a>
-	</div>-->
-
-
-<?php //} ?>
-
-
-
-<script>
+<script type='text/javascript'>
 
 $(document).ready(function() { 
 $("#settingstab").droppable({
@@ -249,7 +238,6 @@ $("#shortcuticontab").droppable({
 	
 	function checkWidth() {
         var total_width = $('.profile-tabs').width();
-		//var profile_tabs_right_password_width = total_width*(99/100);		
 		var profile_tabs_right_password_width = total_width-2;		
 		$('.profile-tabs-left').css("width", "150");
 		$('.profile-tabs-right-settings').css("width", (profile_tabs_right_password_width-155));        
@@ -259,19 +247,6 @@ $("#shortcuticontab").droppable({
 		checkWidth();
 	});
 
-	/*$(window).bind('beforeunload', function() {
-	        
-		    var divsize =  $("#settingstab > div").size();
-			var icondivsize =  $("#shortcuticontab > div").size();
-			 if($("#settingstab").is(":visible") && divsize > 0){
-			    return 'Are you sure?';
-			 }
-			 if($("#shortcuticontab").is(":visible") && icondivsize > 0){
-			    return 'Are you sure?';
-			 }
-		    
-		});*/
-		
 	var disphtml = '';	
 	var icondisphtml = '';
 
@@ -293,9 +268,9 @@ $("#shortcuticontab").droppable({
 	     $("#shortcuticontab").html(icondisphtml);
 		 
 	  }
-    <?php for($j=0;$j<sizeof($this->iconnamearray);$j++){?>
+    <?php for($j=0;$j<sizeof($this->iconnamearray);$j++){ if(isset($this->iconnamearray[$j])) {?>
          	iconarray.push(<?php echo $this->iconnamearray[$j]['id'];?>);
-	<?php }} ?>
+	<?php }}} ?>
 	
 	<?php if($this->settingsflag == 2){ ?>
 	      showshortcuticons();
@@ -304,17 +279,9 @@ $("#shortcuticontab").droppable({
 	<?php }else{?>
 	       showwidgets();  
     <?php }?> 
- //console.log(menuarray);
- //console.log(iconarray);
-  $('#cancelwidget').click(function(){
-        //parent.history.back();
-        //return false;
+ 
+  $('#cancelwidget').click(function(){                
 		window.location = document.referrer;
     });
-
-
 });
-
-
 </script>
-

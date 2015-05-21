@@ -36,7 +36,7 @@ class Default_Model_Trainingandcertificationdetails extends Zend_Db_Table_Abstra
     					   ->where($where)
     					   ->order("$by $sort") 
     					   ->limitPage($pageNo, $perPage);
-		//echo $expData;die;
+		
 		return $expData;         		
 	}
 	public function getTandCdetailsRecord($id=0)
@@ -104,7 +104,7 @@ class Default_Model_Trainingandcertificationdetails extends Zend_Db_Table_Abstra
 						'searchArray' => $searchArray,
 						'dashboardcall'=>$dashboardcall,
 						'add'=>'add',
-						'menuName'=>'Training & Certification  Details',
+						'menuName'=>'Training & Certification',
 						'formgrid' => 'true',
 						'unitId'=>$exParam1,
 						'call'=>$call,

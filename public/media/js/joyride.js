@@ -55,7 +55,7 @@
 						"bgcolor"	: "black",
 						"color"		: "white",
 						"position"	: "T",
-						"text"		: application_name + " is an Open Source Human Resource Management Software, ideally providing Employee Management, Recruitment Process, Leave Management, Background Checks, Analytics and Logs. It enables the administrators to configure the standards used in the organization such as currency codes, date formats, ethnic codes, etc. The software also meets the employee's everyday needs like Leave Management. It tracks existing employee data which traditionally includes personal history, skills, capabilities and accomplishments." ,
+						"text"		: application_name + " is an Open Source Human Resource Management Software, ideally providing Employee Management, Performance Appraisal, Feed Forward, Recruitment Process, Leave Management, Background Checks, Announcements, Analytics and Logs. It enables the administrators to configure the standards used in the organization such as currency codes, date formats, ethnic codes, etc. The software also meets the employee's everyday needs like Leave Management, Performance Appraisal etc... It tracks existing employee data which traditionally includes personal history, skills, capabilities and accomplishments." ,
 						"time" 		: 5000
 						};
 					configArr.push(obj);
@@ -84,6 +84,19 @@
 						};
 					configArr.push(obj);
 				}
+				if($('.tour_dashboard').attr('class'))
+				{
+					var obj = {
+						"name" 		: "tour_dashboard",
+						"bgcolor"	: "black",
+						"color"		: "white",
+						"position"	: "TL",
+						"text"		: 'Sentrifugo Dashboard is a real time user interface allowing you to have all the menus that are used regularly, at one place. The “easy to read” display of the menus covers overall information present in each menu with clickable sub menus to navigate to the desired page avoiding tiresome menu redirections. The display of dandy default features, birthdays and announcements, takes Sentrifugo to another level altogether.' ,
+						"time" 		: 5000
+						};
+					configArr.push(obj);
+				}
+				
 				if($('.tour_managemodules').attr('class'))
 				{
 					var obj = {
@@ -138,7 +151,7 @@
 						"name":"tour_organization",
 						"bgcolor":"black",
 						"color":"white",
-						"text":"Manage your organization's information, business units, departments and organization hierarchy here.",
+						"text":"Manage your organization's information, announcements, business units, departments and organization hierarchy here.",
 						"position":"TL",
 						"time":5000
 					};
@@ -202,6 +215,30 @@
 					};
 					configArr.push(obj);					
 				}
+				if($('.tour_service').attr('class'))
+				{
+					var obj = {
+						"name":"tour_service",
+						"bgcolor":"black",
+						"color":"white",
+						"text":"Service Request Management delivers a comprehensive and easy to use IT self-service portal with access to key services and information which is required by the employees. Configure the service request workflows and entitlements without coding or scripting.",
+						"position":"TL",
+						"time":5000
+					};
+				    configArr.push(obj);
+				}
+				if($('.tour_performanceappraisal').attr('class'))
+				{
+					var obj = {
+						"name":"tour_performanceappraisal",
+						"bgcolor":"black",
+						"color":"white",
+						"text":"Performance Appraisal is a systematic evaluation of performance of the employees and to understand the abilities of a person for further career transition. It is generally done by the supervisors based on measuring criterion such as parameters, questions, ratings and more.",
+						"position":"R",
+						"time":5000
+					};
+					configArr.push(obj);
+				}
 				if($('.tour_reports').attr('class'))
 				{
 				    var obj = {
@@ -226,6 +263,7 @@
 					};
 					configArr.push(obj);
 				}
+				
 				var config = configArr,
 				//define if steps should change automatically
 				autoplay	= false,
@@ -368,7 +406,7 @@
 							
 								temp.interval = setInterval(function() {
 									if (temp[0]['scrollLeft'] >= 0) {										
-										temp[0]['scrollLeft'] -= 5;
+										temp[0]['scrollLeft'] -= 6;
 									}									
 								},5);
 								//if($elem.offset().left < 0)
@@ -376,7 +414,7 @@
 
 							}
 							properties = {
-								'left'	: e_l,
+								'left'	: e_l + 'px',
 								'top'	: e_t + e_h + 'px'
 							};
 							$tooltip.find('span.tourtooltip_arrow').addClass('tourtooltip_arrow_TL');
@@ -446,7 +484,7 @@
 										temp[0]['scrollLeft'] += 5;
 									}								
 								},5);
-								console.log($elem.offset().left+" >> "+temp[0]['scrollLeftMax']);								
+								//console.log($elem.offset().left+" >> "+temp[0]['scrollLeftMax']);								
 								//if($elem.offset().left > 1000)
 								e_l	= $elem.offset().left-temp[0]['scrollLeftMax'];								
 							}

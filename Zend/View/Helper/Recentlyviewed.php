@@ -62,115 +62,110 @@ class Zend_View_Helper_Recentlyviewed extends Zend_View_Helper_Abstract
         }
 
         $burl = $burl.$actionurl;
-        
-       /* $id_params = array_diff($params,$mparams);
-        $id_name = '';
-        if(is_array($id_params) && !empty($id_params))
-        {            
-            foreach($id_params as $key => $value)
-            {
-                $burl .= "/".$key."/".$value;
-            }
-            $id_name = "yes";
-        }*/
+               
         $tmpPageLink = explode("/",$_SERVER['REQUEST_URI']);
         $pageName = $controllerName;
         $pageLink = $burl;
-        //echo "<br/>".DOMAIN;
-        
-        
-        
-        $reportsArr = array('leavesreport'=>'-Leaves',
-		                    'leavemanagementreport'=>'-Leave Management',
-		                    'holidaygroupreports'=>'-Holidays',
+                                
+        $reportsArr = array('leavesreport'=>'-'.TAB_EMP_LEAVES,
+                            'leavemanagementreport'=>'-Leave Management',
+                            'holidaygroupreports'=>'-'.TAB_EMP_HOLIDAYS,
                             'activeuser'=>'-Active Users',
-							'employeereport'=>'-Employees',
-							'rolesgroup'=>'-Roles',
-							'emprolesgroup'=>'-Employee Roles',
-							'userlogreport'=>'-User Logs',
+                            'employeereport'=>'-Employees',
+                            'rolesgroup'=>'-Roles',
+                            'emprolesgroup'=>'-Employee Roles',
+                            'userlogreport'=>'-User Logs',
                             'activitylogreport'=>'-Activity Logs',
-							'requisitionstatusreport'=>'-Requisition',
-							'candidatesreport'=>'-Candidates',
-							'interviewrounds'=>'-Interview Rounds',
-							'agencylistreport'=>'-Agency List',
-							'empscreening'=>'-Employee Screening',
-							'businessunits'=>'-Business Units',
-							'departments'=>'-Departments'
-		                    );
-		$emptabarr = array(
-                                'dependencydetails'=> 'Dependency Details',
-                                'creditcarddetails'=> 'Corporate Card Details',
-                                'visaandimmigrationdetails'=> 'Visa and Immigration Details',
-                                'workeligibilitydetails'=> 'Work Eligibility Details',
-                                'disabilitydetails'=> 'Disability Details',
-                                'empcommunicationdetails'=> 'Communication Details',
-                                'empskills'=> 'Employee Skills',
-                                'empleaves'=> 'Leaves',
-                                'empholidays'=> 'Holidays',
-                                'medicalclaims'=> 'Medical Claims',
-                                'educationdetails'=> 'Education Details',
-                                'experiencedetails'=> 'Experience Details',
-                                'trainingandcertificationdetails'=> 'Training & Certification Details',
-                                'emppersonaldetails'=> 'Personal Details',
-                                'empperformanceappraisal'=> 'Performance Appraisal',
-                                'emppayslips'=> 'Pay Slips',
-                                'empbenefits'=> 'Benefits',
-                                'emprenumerationdetails'=> 'Remuneration Details',
-                                'emprequisitiondetails'=> 'Requisition Details',
-                                'empadditionaldetails'=> 'Additional Details',
-                                'empsecuritycredentials'=> 'Security Credentials',
-                                'empsalarydetails'=> 'Salary Details',
-                                'empjobhistory'=> 'Job History',
-                                'mydetails' => "",
-                                "myemployees" => "My Team",
-                                "userloginlog" => "User Log",
-                                "logmanager" => "Activity Log",
-                                "empconfiguration" => "Employee Tabs",
-                                //"managemenus" => "Manage Modules",
-                                
-                            );	
-           							
-                $myemployees_arr = array(
-                    'view'=> '-View',
-                    'trainingview'=> '-Training & Certification Details',
-                    'comview'=> '-Communication Details',
-                    'skillsview'=> '-Employee Skills',
-                    'eduview'=> '-Education Details',
-                    'expview'=> '-Experience Details',
-                    'perview'=> '-Personal Details',
-                    'additionaldetailsview'=> '-Additional Details',
-                    'jobhistoryview'=> '-Job History',
-                                
-                                
+                            'requisitionstatusreport'=>'-Requisition',
+                            'candidatesreport'=>'-Candidates',
+                            'interviewrounds'=>'-Interview Rounds',
+                            'agencylistreport'=>'-Agency List',
+                            'empscreening'=>'-Employee Screening',
+                            'businessunits'=>'-Business Units',
+                            'departments'=>'-Departments'
                 );
+        $emptabarr = array(
+                        'dependencydetails'=> TAB_EMP_DEPENDENCY,
+                        'creditcarddetails'=> TAB_EMP_CORPORATE_CARD,
+                        'visaandimmigrationdetails'=> TAB_EMP_VISA_EMIGRATION,
+                        'workeligibilitydetails'=> TAB_EMP_WORK_ELIGIBILITY,
+                        'disabilitydetails'=> TAB_EMP_DISABILITY,
+                        'empcommunicationdetails'=> TAB_EMP_CONTACT,
+                        'empskills'=> TAB_EMP_SKILLS,
+                        'empleaves'=> TAB_EMP_LEAVES,
+                        'empholidays'=> TAB_EMP_HOLIDAYS,
+                        'medicalclaims'=> TAB_EMP_MEDICAL_CLAIMS,
+                        'educationdetails'=> TAB_EMP_EDUCATION,
+                        'experiencedetails'=> TAB_EMP_EXPERIENCE,
+                        'trainingandcertificationdetails'=> TAB_EMP_TRAINING_CERTIFY,
+                        'emppersonaldetails'=> TAB_EMP_PERSONAL,
+                        'empperformanceappraisal'=> TAB_EMP_PERFORMANCE_APPRAISAL,
+                        'emppayslips'=> TAB_EMP_PAY_SLIPS,
+                        'empbenefits'=> TAB_EMP_BENEFITS,
+                        'emprenumerationdetails'=> TAB_EMP_REMUNERATION,
+                        'empadditionaldetails'=> TAB_EMP_ADDITIONAL,
+                        'empsecuritycredentials'=> TAB_EMP_SECURITY_CREDENTIALS,
+                        'empsalarydetails'=> TAB_EMP_SALARY,
+                        'empjobhistory'=> TAB_EMP_JOB_HISTORY,
+                        'mydetails' => "",
+                        "myemployees" => "My Team",
+                        "userloginlog" => "User Log",
+                        "logmanager" => "Activity Log",
+                        "empconfiguration" => "Employee Tabs",                                                                
+            );	
+           							
+        $myemployees_arr = array(
+                    'view'=> '-View',
+                    'trainingview'=> '-'.TAB_EMP_TRAINING_CERTIFY,
+                    'comview'=> '-'.TAB_EMP_CONTACT,
+                    'skillsview'=> '-'.TAB_EMP_SKILLS,
+                    'eduview'=> '-'.TAB_EMP_EDUCATION,
+                    'expview'=> '-'.TAB_EMP_EXPERIENCE,
+                    'perview'=> '-'.TAB_EMP_PERSONAL,
+                    'additionaldetailsview'=> '-'.TAB_EMP_ADDITIONAL,
+                    'jobhistoryview'=> '-'.TAB_EMP_JOB_HISTORY,                                                                
+                );
+                
+                $myemployeesedit_arr = array(
+                    'edit'=> '-Edit',
+                    'trainingedit'=> '-'.TAB_EMP_TRAINING_CERTIFY,
+                    'comedit'=> '-'.TAB_EMP_CONTACT,
+                    'skillsedit'=> '-'.TAB_EMP_SKILLS,
+                    'eduedit'=> '-'.TAB_EMP_EDUCATION,
+                    'expedit'=> '-'.TAB_EMP_EXPERIENCE,
+                    'peredit'=> '-'.TAB_EMP_PERSONAL,
+                    'additionaldetailsedit'=> '-'.TAB_EMP_ADDITIONAL,
+                    'jobhistoryedit'=> '-'.TAB_EMP_JOB_HISTORY,                                                                
+                );
+        
                	$myDetailsEmployeesarr = array('mydetails','myemployees');																																																																																																																																																																	
                 $mydetails_arr = array(
-                    'communicationdetailsview'=> 'Communication Details-View',
-                    'communication'=> 'Communication Details-Edit',
-                    'disabilitydetailsview'=> 'Disability Details-View',
-                    'disability'=> 'Disability Details-Edit',
-                    'workeligibilitydetailsview'=> 'Work Eligibility Details-View',                    
-                    'workeligibility'=> 'Work Eligibility Details-Edit',                    
-                    'visadetailsview'=> 'Visa and Immigration Details-View',                    
-                    'visa'=> 'Visa and Immigration Details-Edit',                    
-                    'creditcarddetailsview'=> 'Corporate Card Details-View',
-                    'creditcard' => "Corporate Card Details-Edit",
-                    "additionaldetails" => "Additional Details-Edit",
-                    "additionaldetailsview" => "Additional Details-View",
-                    "salarydetails" => "Salary Details-Edit",
-                    "salarydetailsview" => "Salary Details-View",
-                    "personaldetailsview" => "Personal Details-View",
-                    "personal" => "Personal Details-Edit",
-                    "jobhistory" => "Job History",
-                    "certification" => "Training & Certification Details",
-                    "experience" => "Experience Details",
-                    "education" => "Education Details",
-                    "medicalclaims" => "Medical Claims",
-                    "leaves" => "Leaves",
-                    "skills" => "Employee Skills",
-                    "dependency" => "Dependency Details",
-                    "index" => "Employee Details-View",
-                    "edit" => "Employee Details-Edit",                                                    
+                    'communicationdetailsview'=> TAB_EMP_CONTACT.'-View',
+                    'communication'=> TAB_EMP_CONTACT.'-Edit',
+                    'disabilitydetailsview'=> TAB_EMP_DISABILITY.'-View',
+                    'disability'=> TAB_EMP_DISABILITY.'-Edit',
+                    'workeligibilitydetailsview'=> TAB_EMP_WORK_ELIGIBILITY.'-View',                    
+                    'workeligibility'=> TAB_EMP_WORK_ELIGIBILITY.'-Edit',                    
+                    'visadetailsview'=> TAB_EMP_VISA_EMIGRATION.'-View',                    
+                    'visa'=> TAB_EMP_VISA_EMIGRATION.'-Edit',                    
+                    'creditcarddetailsview'=> TAB_EMP_CORPORATE_CARD.'-View',
+                    'creditcard' => TAB_EMP_CORPORATE_CARD."-Edit",
+                    "additionaldetails" => TAB_EMP_ADDITIONAL."-Edit",
+                    "additionaldetailsview" => TAB_EMP_ADDITIONAL."-View",
+                    "salarydetails" => TAB_EMP_SALARY."-Edit",
+                    "salarydetailsview" => TAB_EMP_SALARY."-View",
+                    "personaldetailsview" => TAB_EMP_PERSONAL."-View",
+                    "personal" => TAB_EMP_PERSONAL."-Edit",
+                    "jobhistory" => TAB_EMP_JOB_HISTORY,
+                    "certification" => TAB_EMP_TRAINING_CERTIFY,
+                    "experience" => TAB_EMP_EXPERIENCE,
+                    "education" => TAB_EMP_EDUCATION,
+                    "medicalclaims" => TAB_EMP_MEDICAL_CLAIMS,
+                    "leaves" => TAB_EMP_LEAVES,
+                    "skills" => TAB_EMP_SKILLS,
+                    "dependency" => TAB_EMP_DEPENDENCY,
+                    "index" => TAB_EMP_OFFICIAL."-View",
+                    "edit" => TAB_EMP_OFFICIAL."-Edit",                                                    
                 );
 		    	
 		//The Logic used behind this functionality is we are using the object of zend session to store the action
@@ -188,12 +183,12 @@ class Zend_View_Helper_Recentlyviewed extends Zend_View_Helper_Abstract
                     {
                         $rvSize = sizeof($recentlyViewed->recentlyViewedObject);
                     }
-
-			//echo "before<pre>";print_r($recentlyViewed->recentlyViewedObject);echo "</pre>";//exit;
+			
                     $menuName = '';	$pagesplitName='';
                     for($i=0;$i<$rvSize;$i++)
                     {
                         $pagesplit = $recentlyViewed->recentlyViewedObject[$i];
+                        
                         $pagesplitName = isset($pagesplit['controller_name'])?$pagesplit['controller_name']:"";
                         $pagesplitLink = isset($pagesplit['url'])?$pagesplit['url']:"";
                         $pagesplit_action = isset($pagesplit['action_name'])?$pagesplit['action_name']:"";
@@ -204,7 +199,7 @@ class Zend_View_Helper_Recentlyviewed extends Zend_View_Helper_Abstract
                         {					
                             if(array_key_exists($pagesplitName,$emptabarr) !== false)
                             {
-                                $menuName = $emptabarr[$pagesplitName];
+								$menuName = $emptabarr[$pagesplitName];
                             }																			
                             else
                             {
@@ -213,10 +208,14 @@ class Zend_View_Helper_Recentlyviewed extends Zend_View_Helper_Abstract
                                 $sql=$db->query($selectQuery1);
                                 $resultarray = $sql->fetchAll();
         
-                                if(!empty($resultarray))
-                                    $menuName = ucfirst($resultarray[0]['menuName']);
-                                else
-                                    $menuName = ucfirst($pagesplitName);
+                                if(!empty($resultarray)){
+                                    $menuName = ucfirst($resultarray[0]['menuName']);									
+                                }else{
+									$menuName = ucfirst($pagesplitName);
+									if($menuName == 'Appraisalstatus')
+										$menuName = '';
+								}	
+								
                             }
                         }
                         else
@@ -244,11 +243,15 @@ class Zend_View_Helper_Recentlyviewed extends Zend_View_Helper_Abstract
                         {
                             if($pagesplit_action != '')
                             {
-                                        //$menuName .= '-'.ucfirst($urldata[$flag]);
+                                        
                                 if($pagesplitName == 'myemployees')
                                 {
                                     if(array_key_exists($pagesplit_action, $myemployees_arr) !== false)
-                                        $menuName .= $myemployees_arr[$pagesplit_action];															
+                                        $menuName .= $myemployees_arr[$pagesplit_action];	
+                                  	else if(array_key_exists($pagesplit_action, $myemployeesedit_arr) !== false)
+                                        $menuName .= $myemployeesedit_arr[$pagesplit_action];
+                                  	else if($actionName == 'add')
+                                  		$menuName .= '-Add';                                        														
                                 }
                                 else
                                 {
@@ -259,7 +262,7 @@ class Zend_View_Helper_Recentlyviewed extends Zend_View_Helper_Abstract
                             else if($pagesplit_action == '')
                             {
                                 if($pagesplitName == 'mydetails')
-                                    $menuName .= "Employee Details-View";
+                                    $menuName .= TAB_EMP_OFFICIAL."-View";
                             }					
                             else
                             {
@@ -273,6 +276,50 @@ class Zend_View_Helper_Recentlyviewed extends Zend_View_Helper_Abstract
                             {
                                 if(array_key_exists($pagesplit_action,$reportsArr) !== false)
                                     $menuName .=$reportsArr[$pagesplit_action]; 
+                            }		    		  
+                        }
+                    	else if($pagesplitName != '' && $pagesplitName == 'servicerequests')
+                        {
+                            if($pagesplit_action != '')
+                            {
+                            	$param_t = isset($pagesplit['t'])?sapp_Global::_decrypt($pagesplit['t']):"";
+                                $param_v = isset($pagesplit['v'])?sapp_Global::_decrypt($pagesplit['v']):"";
+                                $service_menu = sapp_Helper::sd_menu_names();
+                                $service_action_arr = sapp_Helper::sd_action_names();
+                                if($param_t != '' && isset($service_menu[$param_t]))
+                                    $menuName .= " - ".$service_menu[$param_t];    
+                                if($param_v != '' && isset($service_action_arr[$param_v]))
+                                    $menuName .= " - ".$service_action_arr[$param_v];    
+                            }		    		  
+                        }
+                    	else if($pagesplitName != '' && $pagesplitName == 'appraisalinit')
+                        {
+                            if($pagesplit_action != '')
+                            {
+                            	if($pagesplit_action == 'edit')
+                                    $menuName .= '-Edit';
+                                if($pagesplit_action == 'view')
+                                    $menuName .= '-View';
+                                if($pagesplit_action == 'add')
+                                    $menuName .= '-Add';        
+                            	if($pagesplit_action == 'assigngroups')
+                                    $menuName .= '-Edit Questions';
+                                if($pagesplit_action == 'confmanagers')
+                                    $menuName .= '-Edit Managers';
+                                if($pagesplit_action == 'viewassigngroups')
+                                    $menuName .= '-View Questions';        
+                                if($pagesplit_action == 'viewconfmanagers')
+                                    $menuName .= '-View Managers';        
+                            }		    		  
+                        }
+                    	else if($pagesplitName != '' && $pagesplitName == 'appraisalstatus')
+                        {
+                            if($pagesplit_action != '')
+                            {
+                            	if($pagesplit_action == 'employee')
+                                    $menuName .= 'Employee Status';
+                                if($pagesplit_action == 'manager')
+                                    $menuName .= 'Manager Status';    
                             }		    		  
                         }
                         else
@@ -295,6 +342,8 @@ class Zend_View_Helper_Recentlyviewed extends Zend_View_Helper_Abstract
                                     $menuName = 'Change password';
                                 else if($pagesplit_action == 'emailsettings')
                                     $menuName = 'Email Settings';
+                                else if($pagesplit_action == 'upgradeapplication')
+                                    $menuName = 'Upgrade Application';    
                             }
 					
                         }
@@ -303,9 +352,8 @@ class Zend_View_Helper_Recentlyviewed extends Zend_View_Helper_Abstract
                             echo '<li><span id="redirectlink"  title = "'.$menuName.'" onclick ="redirecttolink(\''.$pagesplitLink.'\');">'.$menuName.'</span><a href="javascript:void(0);" onClick="closetab(this,\''.$pagesplitName.'\',\''.$pagesplitLink.'\')"></a></li>';
                         }
                     }
-			//echo "MENUNAME".$menuName;
+			
 		}//end of display
-                                                                
         if(isset($recentlyViewed->recentlyViewedObject))
         {                
             if(sizeof($recentlyViewed->recentlyViewedObject) > 3 && $pageLink != DOMAIN && !in_array($pageName."!@#".$pageLink, $recentlyViewed->recentlyViewedObject))
@@ -319,7 +367,12 @@ class Zend_View_Helper_Recentlyviewed extends Zend_View_Helper_Abstract
                     if($pageLink != DOMAIN && $controllerName !='index' && $actionName != 'welcome')
                     {                        
                         if($this->recentlyviewed_helper($pageLink, $recentlyViewed->recentlyViewedObject) === true)
-                            array_push($recentlyViewed->recentlyViewedObject,array('url' => $burl,'controller_name' => $controllerName,'action_name' => $actionName,'id_name' => $id_name));
+                        {
+                            if($controllerName == 'servicerequests')
+                                array_push($recentlyViewed->recentlyViewedObject,array('url' => $burl,'controller_name' => $controllerName,'action_name' => $actionName,'id_name' => $id_name,'t'=> isset($params['t'])?$params['t']:"",'v'=> isset($params['v'])?$params['v']:""));
+                            else 
+                                array_push($recentlyViewed->recentlyViewedObject,array('url' => $burl,'controller_name' => $controllerName,'action_name' => $actionName,'id_name' => $id_name));
+                        }
                     }
                 }
             }
@@ -330,11 +383,15 @@ class Zend_View_Helper_Recentlyviewed extends Zend_View_Helper_Abstract
             if($pageLink != DOMAIN && $controllerName !='index' && $actionName != 'welcome'  && $controllerName !='error' && !in_array('PIE.htc', $tmpPageLink))    
             {
                 if($this->recentlyviewed_helper($pageLink, $recentlyViewed->recentlyViewedObject) === true)
-                    array_push($recentlyViewed->recentlyViewedObject,array('url' => $burl,'controller_name' => $controllerName,'action_name' => $actionName,'id_name' => $id_name));
+                {
+                    if($controllerName == 'servicerequests')
+                        array_push($recentlyViewed->recentlyViewedObject,array('url' => $burl,'controller_name' => $controllerName,'action_name' => $actionName,'id_name' => $id_name,'t'=> isset($params['t'])?$params['t']:"",'v'=> isset($params['v'])?$params['v']:""));
+                    else 
+                        array_push($recentlyViewed->recentlyViewedObject,array('url' => $burl,'controller_name' => $controllerName,'action_name' => $actionName,'id_name' => $id_name));
+                }
             }
         }
-        //echo "AFTER<pre>";print_r($recentlyViewed->recentlyViewedObject);echo "</pre>";
-        
+                
         echo '</ul></div>';
     }//end of recently view function
     

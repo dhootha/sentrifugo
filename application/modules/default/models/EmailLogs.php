@@ -45,6 +45,45 @@ class Default_Model_EmailLogs extends Zend_Db_Table_Abstract
         return $email_data;        
     }
     
+    public function getEmpDocExpiryData($calc_date)
+    {
+        $db = Zend_Db_Table::getDefaultAdapter();
+        $query = "select id,document_name from main_identitydocuments where isactive = 1 and expiry = 1";
+        $result = $db->query($query);
+        $doc_arr = array();
+        while($data = $result->fetch())
+        {        
+            $doc_arr[$data['id']] = $data['document_name'];
+        }
+        
+        $final_arr = array();
+        if(count($doc_arr) > 0)
+        {
+            $query = "select p.identity_documents,e.userfullname,e.emailaddress from main_emppersonaldetails p,
+                      main_employees_summary e where e.isactive = 1 and p.isactive = 1  and p.user_id = e.user_id 
+                      and p.identity_documents is not null";
+            $result = $db->query($query);
+            $i = 0;
+            while($data = $result->fetch())
+            {
+                
+                $att_arr = get_object_vars(json_decode($data['identity_documents']));
+                $fin_att_arr = array_intersect_key($att_arr, $doc_arr);
+                foreach($fin_att_arr as $key => $value)
+                {
+                    $imp_val = explode(":",$value);                    
+                    if($imp_val[1] != '' && $imp_val[1] == $calc_date)
+                    {                        
+                        $final_arr[$i]['name'] = $data['userfullname'];
+                        $final_arr[$i]['email'] = $data['emailaddress'];
+                        $final_arr[$i]['docs'][] = $doc_arr[$key];
+                    }
+                }
+                $i++;                
+            }            
+        }
+        return $final_arr;        
+    }
     public function getEmpExpiryData($calc_date)
     {
         $db = Zend_Db_Table::getDefaultAdapter();
@@ -158,7 +197,7 @@ class Default_Model_EmailLogs extends Zend_Db_Table_Abstract
         $db = Zend_Db_Table::getDefaultAdapter();
         $query = "select r.requisition_code,r.businessunit_id,j.jobtitlename from 
                   main_requisition r 
-                  inner join main_jobtitles j on j.id = r.jobtitle 
+                  left join main_jobtitles j on j.id = r.jobtitle 
                   where r.onboard_date = '".$calc_date."'  and r.isactive  = 1 order by r.businessunit_id";
         $result = $db->query($query);
         $final_arr = array();

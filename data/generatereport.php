@@ -20,6 +20,7 @@ if(!empty($_POST))
 			$mailtls = $_POST['mailtls'];
 			$mailport = $_POST['mailport'];
 			$cronjoburl = $_POST['cronjoburl'];
+			$expirydocurl = $_POST['expirydocurl'];
 			
 			
 			$output = '<table border="1"  bordercolor="#CCCCCC">
@@ -101,13 +102,12 @@ if(!empty($_POST))
 </tr>
 <td width="700" height="40">'.$cronjoburl.'</td><td width="200" height="40"></td>
 </tr>
+<tr>
+<td width="700" height="40">'.$expirydocurl.'</td><td width="200" height="40"></td>
+</tr>
 </table>'; 
 						    
-			
-    	 	//$pdf=new PDF_HTML();
-		   // $pdf->SetFont('Arial','',12);
 		    $pdf=new PDF();
-			//$pdf->AddPage();
 			$pdf->SetFont('Arial','',12);
 		    $pdf->AddPage();
 		    if(ini_get('magic_quotes_gpc')=='1')

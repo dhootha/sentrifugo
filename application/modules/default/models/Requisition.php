@@ -80,30 +80,7 @@ class Default_Model_Requisition extends Zend_Db_Table_Abstract
 			$loginUserId = $auth->getStorage()->read()->id;			
 			$loginuserGroup = $auth->getStorage()->read()->group_id;
 		} 
-	/*	
-        $roleData = $this->select()
-                        ->setIntegrityCheck(false)
-                        ->from(array('r'=>$this->_name),array('id'=>'r.id','requisition_code'=>'r.requisition_code',
-                               'onboard_date'=>'date_format(r.onboard_date,"'.DATEFORMAT_MYSQL.'")',
-                               'req_no_positions'=>'r.req_no_positions','req_status'=>'r.req_status',
-                               'filled_positions'=>'r.filled_positions','r.createdon'=>'DATE_FORMAT(r.createdon,"'.DATEFORMAT_MYSQL.'")' ,
-                                'appstatus1' => new Zend_Db_Expr("if(appstatus1 ='Initiated',null,appstatus1)"),
-                                'appstatus2' => new Zend_Db_Expr("if(appstatus2 ='Initiated',null,appstatus2)"),
-                                'appstatus3' => new Zend_Db_Expr("if(appstatus3 ='Initiated',null,appstatus3)"),
-                            ))        
-                        ->joinInner(array('p'=>'main_jobtitles'), "p.id = r.jobtitle",array('jobtitlename'=>'p.jobtitlename'))
-                        ->joinInner(array('b'=>'main_businessunits'), "b.id = r.businessunit_id and b.isactive = 1",array('bunit_id'=>'b.id'))
-                        ->joinInner(array('d'=>'main_departments'), "d.id = r.department_id and d.isactive = 1",array('dunit_id'=>'d.id'))
-                        ->joinInner(array('mu'=>'main_users'), "mu.id = r.createdby and mu.isactive = 1",array('mu.userfullname'=>	'mu.userfullname'))
-                        ->joinLeft(array('a1'=>'main_users'), "a1.id = r.approver1 ",array('a1.userfullname'=>'a1.userfullname'))
-                        ->joinLeft(array('a2'=>'main_users'), "a2.id = r.approver2 ",array('a2.userfullname'=>'a2.userfullname'))
-                        ->joinLeft(array('a3'=>'main_users'), "a3.id = r.approver3 ",array('a3.userfullname'=>'a3.userfullname'))
-                        ->joinInner(array('u'=>'main_users'), "u.id = r.reporting_id and u.isactive = 1",array('u.userfullname'=>'u.userfullname'))
-                        ->where($where)
-                        ->order("$by $sort") 
-                        ->limitPage($pageNo, $perPage);
-        */
-        //the above is original and commented by rama krishna on 12-dec-2013
+	
         $roleData = $this->select()
                         ->setIntegrityCheck(false)
                         ->from(array('r'=>"main_requisition_summary"),array('id'=>'req_id','requisition_code'=>'requisition_code',
@@ -146,27 +123,7 @@ class Default_Model_Requisition extends Zend_Db_Table_Abstract
 				$searchQuery = rtrim($searchQuery," AND");					
 			}
 		}		
-/*
-        $tableFields = array('action'=>'Action',
-                             'requisition_code' => 'Requisition Code',
-                            'jobtitlename' => 'Job title',
-                            'req_status'=>'Requisition Status',
-                            'mu.userfullname'	=> 'Raised By',
-                            'u.userfullname' => 'Reporting Manager',
-                            'a1.userfullname' => 'Approver -1',
-                             'appstatus1' =>'Status',
-                             'a2.userfullname' => 'Approver -2',
-                             'appstatus2' =>'Status',
-                             'a3.userfullname' => 'Approver -3',
-                             'appstatus3' =>'Status',
-                             
-                             'req_no_positions' => 'No.of positions',
-                             'filled_positions' => 'Filled positions',
-                            'r.createdon'=> 'Raised On',
-                            'onboard_date' => 'Due date',
-                            );
-        */
-        //the above is original and commented by rama krishna on 12-dec-2013
+
         $tableFields = array('action'=>'Action',
                              'requisition_code' => 'Requisition Code',
                             'jobtitle_name' => 'Job Title',
@@ -351,11 +308,11 @@ class Default_Model_Requisition extends Zend_Db_Table_Abstract
                   d.deptname,j.jobtitlename,j.jobdescription,r.additional_info,es.workcodename emp_type,
                   r.req_no_positions 
                   from main_requisition r 
-                  inner join main_positions p on p.id = r.position_id and p.isactive = 1 
+                  left join main_positions p on p.id = r.position_id and p.isactive = 1 
                   inner join main_employees e on e.id = r.reporting_id and e.isactive = 1 
                   inner join main_businessunits b on b.id = p.busineesunitid and b.isactive = 1 
                   inner join main_departments d on d.id = p.departmentid and d.isactive = 1 
-                  inner join main_jobtitles j on j.id = p.jobtitleid and j.isactive = 1 
+                  left join main_jobtitles j on j.id = p.jobtitleid and j.isactive = 1 
                   inner join main_employmentstatus es on es.id = r.emp_type and es.isactive = 1 
                   where r.id = ".$id;
         $result = $db->query($query);
@@ -375,10 +332,7 @@ class Default_Model_Requisition extends Zend_Db_Table_Abstract
 		{
 			$roleIdsData = $db->query("select role from main_privileges where editpermission = 'Yes' AND viewpermission = 'Yes' AND object = ".SCHEDULEINTERVIEWS." 
 										AND role is not null AND group_id in (".MANAGER_GROUP.",".HR_GROUP.",".EMPLOYEE_GROUP.",".SYSTEMADMIN_GROUP.")");				
-			/*}else{
-			$roleIdsData = $db->query("select role from main_privileges where editpermission = 'Yes' AND viewpermission = 'Yes' AND object = ".RESOURCEREQUISITION." 
-											AND role is not null AND group_id in (".MANAGER_GROUP.",".HR_GROUP.",".SYSTEMADMIN_GROUP.")");//".EMPLOYEE_GROUP.",
-			}*/
+			
 			$roleIds = $roleIdsData->fetchAll();
 			$roles = '';
 			foreach($roleIds as $row) {
@@ -406,29 +360,26 @@ class Default_Model_Requisition extends Zend_Db_Table_Abstract
 					$wheredeptText = " AND e.department_id = ".$dept;
 				else
 					$wheredeptText = "";
-                                $query = "select app.id,app.name,app.profileimg from (SELECT u.id, concat(u.userfullname,' , ',j.jobtitlename) as name,u.profileimg FROM main_users u 
+                                $query = "select app.id,app.name,app.profileimg from (SELECT u.id, concat(u.userfullname,if(j.jobtitlename is null,'',concat(' , ',j.jobtitlename))) as name,u.profileimg FROM main_users u 
 						INNER JOIN main_roles r ON u.emprole = r.id 
 						INNER JOIN main_employees e ON u.id = e.user_id 
-                                                inner join main_jobtitles j on j.id = e.jobtitle_id
+                                                left join main_jobtitles j on j.id = e.jobtitle_id
 						WHERE r.group_id IN (".MANAGER_GROUP.",".HR_GROUP.",".EMPLOYEE_GROUP.",".SYSTEMADMIN_GROUP.") 
 						".$wheredeptText." ".$roles."
 						AND u.userstatus='old' AND u.isactive=1 AND r.isactive=1  ".$whereidText."
 						union 
-						select u.id,concat(u.userfullname,' , ',j.jobtitlename) as name,u.profileimg from main_users u
+						select u.id,concat(u.userfullname,if(j.jobtitlename is null,'',concat(' , ',j.jobtitlename))) as name,u.profileimg from main_users u
 						INNER JOIN main_employees e ON u.id = e.user_id 											
 						INNER JOIN main_roles r ON u.emprole = r.id 
-                                                inner join main_jobtitles j on j.id = e.jobtitle_id
+                                                left join main_jobtitles j on j.id = e.jobtitle_id
 						where r.group_id = ".MANAGEMENT_GROUP."  AND u.isactive=1 AND r.isactive=1 ".$whereidText.") app order by app.name asc";
                                 
 				$managerData = $db->query($query);
 				$emp_options = array();
                                 $emp_options = $managerData->fetchAll();
-                                /*
-				while($row = $managerData->fetch()){
-					$emp_options[$row['id']] = ucwords($row['name']);
-				}*/				
+                                				
 			}else{
-				//$managerData = $db->query("select id,userfullname as name from main_users where emprole = 2 and userstatus='old' and id=".$loginid.";");
+				
                                 
 				$managerData = $db->query("select u.id,u.userfullname as name from main_users u
 										join main_roles r on u.emprole = r.id where r.group_id = ".MANAGER_GROUP." AND userstatus='old';");// AND u.id=".$loginid."
@@ -462,26 +413,24 @@ class Default_Model_Requisition extends Zend_Db_Table_Abstract
             $roles = substr($roles,1);
             $roles =  "AND r.id IN (".$roles.")";
         }
-           $query = "select app.id,app.name,app.profileimg from (SELECT u.id, concat(u.userfullname,' , ',j.jobtitlename) as name,u.profileimg FROM main_users u 
+           $query = "select app.id,app.name,app.profileimg from (SELECT u.id, concat(u.userfullname,if(j.jobtitlename is null,'',concat(' , ',j.jobtitlename))) as name,u.profileimg FROM main_users u 
                     INNER JOIN main_roles r ON u.emprole = r.id 
                     INNER JOIN main_employees e ON u.id = e.user_id 
-                    inner join main_jobtitles j on j.id = e.jobtitle_id
+                    left join main_jobtitles j on j.id = e.jobtitle_id
                     WHERE r.group_id IN (".MANAGER_GROUP.",".HR_GROUP.") 
                     AND e.department_id = ".$dept_id." ".$roles."
                     AND u.userstatus='old' AND u.isactive=1 AND r.isactive=1   AND e.user_id not in (".$rept_id.",".$loginUserId.")
                     union 
-                    select u.id,concat(u.userfullname,' , ',j.jobtitlename) as name,u.profileimg from main_users u
+                    select u.id,concat(u.userfullname,if(j.jobtitlename is null,'',concat(' , ',j.jobtitlename))) as name,u.profileimg from main_users u
                     INNER JOIN main_employees e ON u.id = e.user_id 											
                     INNER JOIN main_roles r ON u.emprole = r.id 
-                    inner join main_jobtitles j on j.id = e.jobtitle_id
+                    left join main_jobtitles j on j.id = e.jobtitle_id
                     where r.group_id = ".MANAGEMENT_GROUP."  AND u.isactive=1 
                         AND r.isactive=1 AND e.user_id not in (".$rept_id.")) app order by app.name asc;";
 
             $result = $db->query($query);
             $options = $result->fetchAll();
         
-        //else 
-          //  $options = array();
         return $options;
     }
 	/**
@@ -650,7 +599,7 @@ class Default_Model_Requisition extends Zend_Db_Table_Abstract
             $query = "SELECT `r`.`id`, `r`.`requisition_code`,j.jobtitlename,req_status
 						FROM `main_requisition` AS `r` 
 						LEFT JOIN main_jobtitles as j on j.id = r.jobtitle
-                        INNER JOIN `main_positions` AS `p` ON p.id = r.position_id and p.isactive = 1 
+                        left JOIN `main_positions` AS `p` ON p.id = r.position_id and p.isactive = 1 
                         INNER JOIN `main_users` AS `mu` ON mu.id = r.createdby and mu.isactive = 1 
                         INNER JOIN `main_users` AS `u` ON u.id = r.reporting_id and u.isactive = 1 
                         WHERE (r.isactive = 1 AND r.req_status in (".$filters.") ) ";
@@ -662,10 +611,11 @@ class Default_Model_Requisition extends Zend_Db_Table_Abstract
         {
             $db = Zend_Db_Table::getDefaultAdapter();
             $query = "select r.id,r.requisition_code,j.jobtitlename,r.department_id 
-                      from main_requisition r,main_candidatedetails c,main_jobtitles j 
-                      where r.isactive = 1 and r.req_status = 'In process' 
-					  and j.id = r.jobtitle
-                      and c.isactive = 1 and c.cand_status = 'Not Scheduled' and r.id = c.requisition_id group by r.id order by r.id";
+                      from main_requisition r 
+                      inner join main_candidatedetails c on c.isactive = 1 
+                      and c.cand_status = 'Not Scheduled' and r.id = c.requisition_id 
+                       left join main_jobtitles j on j.id = r.jobtitle
+                      where r.isactive = 1 and r.req_status = 'In process' group by r.id order by r.id";
             $result = $db->query($query);
             $rows = $result->fetchAll();
             return $rows;
@@ -673,15 +623,7 @@ class Default_Model_Requisition extends Zend_Db_Table_Abstract
         public function getReqDataForView($req_id)
         {
             $db = Zend_Db_Table::getDefaultAdapter();
-            /*
-            $query = "select r.*,p.positionname,u.userfullname,b.unitname,d.deptname,j.jobtitlename,
-                      t.employemnt_status 
-                      from main_requisition r,main_positions p,main_users u,main_businessunits b,
-                      main_departments d,main_jobtitles j,main_employmentstatus es,tbl_employmentstatus t
-                      where r.id = ".$req_id." and p.id = r.position_id and u.id = r.reporting_id 
-                      and b.id = r.businessunit_id and r.department_id = d.id and j.id = r.jobtitle and es.id = r.emp_type 
-                      and t.id = es.workcodename";
-            */
+            
             
             $query = "select * from main_requisition_summary where req_id = ".$req_id." and isactive = 1";
             $result = $db->query($query);
@@ -712,7 +654,7 @@ class Default_Model_Requisition extends Zend_Db_Table_Abstract
             $query = "select r.id req_id,concat(r.requisition_code,', ',j.jobtitlename) req_name 
                       from main_requisition r 
                       inner join main_candidatedetails c on c.isactive = 1 and c.requisition_id = r.id 
-                      inner join main_jobtitles j on j.id = r.jobtitle 
+                      left join main_jobtitles j on j.id = r.jobtitle 
                       where r.isactive = 1 and r.req_status not in ('Rejected','Initiated') 
                       group by req_id order by req_id ;";
             $result = $db->query($query);

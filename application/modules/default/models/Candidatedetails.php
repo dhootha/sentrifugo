@@ -48,7 +48,8 @@ class Default_Model_Candidatedetails extends Zend_Db_Table_Abstract
                         ->from(array('c'=>$this->_name),
                         		array(
                         			'id'=>'c.id',
-                        			'candidate_name'=>'c.candidate_name', 
+                        			'candidate_firstname'=>'c.candidate_firstname',
+                        			'candidate_lastname'=>'c.candidate_lastname', 
 				                    'emailid'=>'c.emailid', 
 				                    'cand_resume'=>'c.cand_resume',
 				                    'cand_status'=>'c.cand_status', 
@@ -116,7 +117,7 @@ class Default_Model_Candidatedetails extends Zend_Db_Table_Abstract
         $roleData = $this->select()
                         ->setIntegrityCheck(false)
                         ->from(array('c'=>$this->_name),array('c.*',))
-                        //->joinInner(array('r'=>'main_requisition'), "r.id = c.requisition_id and r.isactive = 1",array('requisition_code'=>'r.requisition_code'))
+                        
                         ->where($where)
                         ->order("$by $sort") 
                         ->limitPage($pageNo, $perPage);        
@@ -168,11 +169,23 @@ class Default_Model_Candidatedetails extends Zend_Db_Table_Abstract
         $data = array();
         while($row = $result->fetch())
         {
-            //$data[$row['id']]['candidate_name'] = $row['candidate_name'];
+            
             $data[$row['id']] = $row['candidate_name'];
-            //$data[$row['id']]['emailid'] = $row['emailid'];
+            
         }
         return $data;
+    }
+    
+    public function getCandidateForView($id)
+    {
+        $db = Zend_Db_Table::getDefaultAdapter();
+        $query = "select cd.id rec_id,cd.*,r.requisition_code,r.jobtitle_name,ct.city_name city_name,c.country_name country_name,
+                  s.state_name state_name from main_candidatedetails cd inner join main_requisition_summary r on 
+                  cd.requisition_id = r.req_id and r.isactive = 1 left join tbl_countries c on c.id = cd.country 
+                   left join tbl_states s on s.id = cd.state  left join tbl_cities ct on ct.id = cd.city  where cd.isactive = 1 and cd.id = ".$id." ";
+        $result = $db->query($query);
+        $row = $result->fetch();
+        return $row;
     }
     /**
      * This function is used to get candidate details by its Id.
@@ -271,7 +284,8 @@ class Default_Model_Candidatedetails extends Zend_Db_Table_Abstract
         $tableFields = array('action'=>'Action',
                              'requisition_code' => 'Requisition Code',
 							 'jobtitle_name' => 'Job Title',
-                             'candidate_name' => 'Candidate Name',
+                             'candidate_firstname' => 'Candidate First Name',
+        					 'candidate_lastname' => 'Candidate Last Name',
                              'emailid' => 'Email',
         					 'cand_resume' => 'Resume',
 							 'cand_status' => 'Status',
@@ -334,9 +348,7 @@ class Default_Model_Candidatedetails extends Zend_Db_Table_Abstract
 	
 		zip_close($zip);
 		
-		//echo $content;
-		//echo "<hr>";
-		//file_put_contents('1.xml', $content);		
+			
 		
 		$content = str_replace('</w:r></w:p></w:tc><w:tc>', " ", $content);
 		$content = str_replace('</w:r></w:p>', "\r\n", $content);
@@ -395,7 +407,7 @@ class Default_Model_Candidatedetails extends Zend_Db_Table_Abstract
 					// To log warning in the logs/application.log
 					move_uploaded_file($files['resume-file']['tmp_name'], $newfilename);
 				}elseif (!move_uploaded_file ($files['resume-file']['tmp_name'], $newfilename)) {
-				  //$result_msg = "The file cannot be uploaded. Please try again.";
+				  
 				  $result_msg = "Failed to upload the file"; // To show error in one line, the above error message was replaced to this one.
 				}else{
 			      $rezultat = $newname;
@@ -403,20 +415,20 @@ class Default_Model_Candidatedetails extends Zend_Db_Table_Abstract
 				}
 			  }
 			}else{ 
-				//$result_msg = 'The file exceeds the maximum permitted size '. $max_size. ' KB.';
+				
 				$result_msg = 'Invalid file'; // To show error in one line, the above error message was replaced to this one.
 			}
 		  }
 		  else 
 		  { 
-			//$result_msg = 'Please upload Word or PDF document';
+			
 			$result_msg = 'Invalid file'; // To show error in one line, the above error message was replaced to this one.
 			
 		  }
 		}
 		else 
 		  { 
-			//$result_msg = 'The file cannot be uploaded. Please try again.';
+			
 			$result_msg = 'Failed to upload the file'; // To show error in one line, the above error message was replaced to this one.
 			
 		  }

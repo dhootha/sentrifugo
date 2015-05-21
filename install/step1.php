@@ -18,7 +18,28 @@
  *
  *  Sentrifugo Support <support@sentrifugo.com>
  ********************************************************************************/
+ function check_modrewriteserver()
+ {
  
+	$url = BASE_URL.'/junkurl/junkurl';
+	$tmp = file_get_contents($url);
+	
+	/*
+		if( function_exists('apache_get_modules') && in_array('mod_rewrite',apache_get_modules()) )
+		 $mod_rewrite = 1;
+		elseif( isset($_SERVER['IIS_UrlRewriteModule']) )
+		 $mod_rewrite = 1;
+		else
+		 $mod_rewrite = 0;
+	*/
+	
+	if($tmp == 'yes'){
+		$mod_rewrite = 1;
+	} else {
+		$mod_rewrite = 0;
+	}	 
+	 return $mod_rewrite;
+ }
 function getPHPVersion() {
 	$prereq = array('php'   => '5.3',
                         'mysql' => '5.0');
@@ -32,25 +53,27 @@ function check_php() {
         return (extension_loaded('mysqli'));
     }                        
 
-$req_arr = array(
+/*$req_arr = array(
 			'php' => check_php(),
 			'pdo_mysql' => extension_loaded('pdo_mysql'),
 			'mod_rewrite' => in_array('mod_rewrite',apache_get_modules()),
 			'gd' => extension_loaded('gd'),
             'openssl' => extension_loaded('openssl'),
-			//'dom' => extension_loaded('dom'),
-			//'json' => extension_loaded('json'),
-			//'mbstring' => extension_loaded('mbstring'),
+);*/
+$req_arr = array(
+			'php' => check_php(),
+			'pdo_mysql' => extension_loaded('pdo_mysql'),
+			'mod_rewrite' => check_modrewriteserver(),
+			'gd' => extension_loaded('gd'),
+            'openssl' => extension_loaded('openssl'),
 );
+
 $req_html_arr = array(
 		'php' => "PHP v5.3 or greater",
 		"pdo_mysql" => "PDO-Mysql extension for PHP (pdo_mysql)",
 		"mod_rewrite" => "Rewrite module (mod_rewrite)",
 		"gd" => "GD Library (gd)",
                 'openssl' => "Open SSL (openssl)"
-		//"dom" => "PHP XML-DOM extension (for HTML email processing)",
-		//"json" => "PHP JSON extension (faster performance)",
-		//"mbstring" => "Mbstring is <b>strongly</b> recommended for all installations",
 );
 $stat_arr = array(0=> "No",1 => "Yes");
 chdir("../");
@@ -94,7 +117,7 @@ $writable_paths = array(
 				    <?php } else if($req == 'pdo_mysql') {?>
 				           <a href="<?php echo PDOURL;?>" target="_blank" style="text-decoration: none;"><div class="error-txt" id = "phplink">PDO-Mysql extension is disabled in your php.ini file.</div></a>		
 				    <?php } else if($req == 'mod_rewrite') {?>
-				           <a href="<?php echo MODURL;?>" target="_blank" style="text-decoration: none;"><div class="error-txt" id = "phplink">mod_rewrite is not enabled in your httpd.conf file.</div></a>	
+				           <a href="<?php echo MODURL;?>" target="_blank" style="text-decoration: none;"><div class="error-txt" id = "phplink">Rewrite module is not enabled in your web server configurations.</div></a>	
 				    <?php } else if($req == 'gd') {?>
 		                   <a href="<?php echo GDURL;?>" target="_blank" style="text-decoration: none;"><div class="error-txt" id = "phplink">GD Library module is disabled in your php.ini file.</div></a>	
 		             <?php } else if($req == 'openssl') {?>
@@ -157,12 +180,7 @@ $writable_paths = array(
 <?php 
 if($cnt == 0)
 {
-    //echo "Please solve above issues to proceed further.";
-//}
-//else 
-//{
 ?>
-    <!--  <input type="submit" name="btnstep1" id="idbtnstep1" value="Next" />-->
     <button name="next" id="next" type="button" onclick="window.location='index.php?s=<?php echo sapp_Global::_encrypt(2);?>';">Next</button>
 <?php 
 }

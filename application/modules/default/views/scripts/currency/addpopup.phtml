@@ -18,9 +18,7 @@
  *
  *  Sentrifugo Support <support@sentrifugo.com>
  ********************************************************************************/
-?>
-
-<?php if($this->popup == 'close') { ?>	
+ if($this->popup == 'close') { ?>	
 	<div class="ml-alert-1-success">
 	<div class="style-1-icon success"></div>
 	Currency <?php echo $this->eventact; ?> successfully
@@ -43,7 +41,7 @@ sapp_Global::generateClientValidations($this->form);?>
 			<?php }?>
 			</div>
 			<div class="new-form-ui clearb">
-			  <label class="required">Currency Code</label>
+			  <label class="required">Currency Code <img class="tooltip" title="Ex: USD" src="<?php echo MEDIA_PATH;?>images/help.png" /></label>
 			<div class="division"><?php echo $this->form->currencycode; ?></div>
 			<?php if(isset($this->msgarray['currencycode'])){?>
 			   <span class="errors" id="errors-<?php echo $this->form->currencycode->getId(); ?>"><?php echo $this->msgarray['currencycode'];?></span>
@@ -61,9 +59,7 @@ sapp_Global::generateClientValidations($this->form);?>
 </div>
 </form>
 <?php }?>
-
-<script language='javascript'>
-
+<script language='javascript' type='text/javascript'>
 	<?php if($this->popup != '') { ?>
 			setTimeout(function(){
 				 closeiframeAddPopup("<?php echo $this->currencyData ;?>",'<?php echo $this->controllername; ?>','currencyid','Salary Currency');	
@@ -72,15 +68,12 @@ sapp_Global::generateClientValidations($this->form);?>
 				 closeiframeAddPopup("<?php echo $this->currencyData ;?>",'<?php echo $this->controllername; ?>','currency','Currency');						 					
 				},2000);
 				
-	<?php } ?>
-	</script>
-<script>
+	<?php } ?>	
 	$(document).ready(function() { 
 		<?php if (count($this->messages)) {?>
 			  setTimeout(function(){
 					$('#popupmessage').fadeOut('slow');
 				},3000);
-
 		<?php } ?>
 	});
 </script>

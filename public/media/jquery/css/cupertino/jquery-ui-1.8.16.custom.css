@@ -139,11 +139,7 @@
 }
 
 .ui-widget-header { 
--moz-border-bottom-colors: none;
--moz-border-image: none;
--moz-border-left-colors: none;
--moz-border-right-colors: none;
--moz-border-top-colors: none;
+
 /* filter : progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff',endColorstr='#ededed',GradientType=0); */ 
 		/**
 		**	modified by Sapplica
@@ -155,14 +151,13 @@ background: -webkit-linear-gradient(top, #ffffff 0pt, #ededed 100% );
 border-color: #2B5177 #2B5177 -moz-use-text-color;
 border-style: solid solid none;
 border-width: 1px 1px 0;*/
-border-top:1px solod #bbbbbb;
+
 /* border-left: #cccccc 1px solid; */
 /*box-shadow: 0 1px 0 0 rgba(255, 255, 255, 0.5) inset;*/
--webkit-box-shadow: 1px -2px 3px  rgba(0, 0, 0, 0.75);
--moz-box-shadow:    1px -2px 3px  rgba(0, 0, 0, 0.75);
-box-shadow:         1px -2px 3px  rgba(0, 0, 0, 0.75);
-/*height: 29px;*/ height:35px;
+
+/*height: 29px;*/ 
 line-height: 23px;
+height:35px;
 
 background: #ffffff; /* Old browsers */
 /* IE9 SVG, needs conditional override of 'filter' to 'none' */
@@ -174,8 +169,15 @@ background: -o-linear-gradient(top,  #ffffff 0%,#ededed 100%); /* Opera 11.10+ *
 background: -ms-linear-gradient(top,  #ffffff 0%,#ededed 100%); /* IE10+ */
 background: linear-gradient(to bottom,  #ffffff 0%,#ededed 100%); /* W3C */
 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ededed',GradientType=0 ); /* IE6-8 */
-
-
+border-top:1px solod #bbbbbb;
+-moz-border-bottom-colors: none;
+-moz-border-image: none;
+-moz-border-left-colors: none;
+-moz-border-right-colors: none;
+-moz-border-top-colors: none;
+-webkit-box-shadow: 1px -2px 3px  rgba(0, 0, 0, 0.75);
+-moz-box-shadow:    1px -2px 3px  rgba(0, 0, 0, 0.75);
+box-shadow:         1px -2px 3px  rgba(0, 0, 0, 0.75);
 }
 
 
@@ -1107,9 +1109,9 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', end
 /* Overlays */
 .ui-widget-overlay {
 	/* background: #eeeeee
-		url(images/ui-bg_diagonals-thick_90_eeeeee_40x40.png) 50% 50% repeat; */ background-color:#0a0a0a !important;
-	opacity: .60;
-	filter: Alpha(Opacity =   60);
+		url(images/ui-bg_diagonals-thick_90_eeeeee_40x40.png) 50% 50% repeat; */ background-color:#fff !important;
+	opacity: .85;
+	filter: Alpha(Opacity =   85);
 }
 
 .ui-widget-shadow {
@@ -1477,34 +1479,39 @@ button.ui-button::-moz-focus-inner {
  */
 .ui-dialog {
 	position: absolute;
-	padding: 1.2em;
+	
 	/* width: 300px; */
 	width : 780px !important ;
 	overflow: hidden;
-	background:url(images/popup-bg.png) repeat; 
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px; border: 1px solid #141414 !important; 
-	-webkit-box-shadow: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.2);
-box-shadow: inset 0px 1px 0px 0px rgba(255, 255, 255, 0.2); 
+	
+	border: 1px solid #bbbbbb !important; 
+	-webkit-box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.3);
+box-shadow: 0px 0px 9px 0px rgba(0, 0, 0, 0.3); 
 z-index : 950;
 top : 20%/* !important*/;
-	
+
+
+/*	padding: 1.2em;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px; 
+	background:url(images/popup-bg.png) repeat; */
 }
 
 .ui-dialog-buttons { width: 348px !important;}
 .ui-dialog-buttons .new-form-ui { min-width: 315px !important; height: 80px !important;}
 
 .ui-dialog .ui-dialog-titlebar {
-	padding: .4em 1em;
+	padding: .2em 1em;
 	position: relative;
+	border-bottom:1px solid #bbbbbb;
 }
 
 .ui-dialog .ui-dialog-title {
-	float: left; text-transform: capitalize;
+	float: left; /*text-transform: capitalize;*/
 	/*margin: 2px 16px .1em 0;*/ margin: 5px 16px .1em 0;
 	color: #3b3b3b;
-    font-family: 'PTSansRegular';
+    font-family: 'robotomedium';
     font-size: 18px;
     font-weight: normal;
     text-shadow: 0 1px 0 #ffffff;
@@ -1535,9 +1542,9 @@ top : 20%/* !important*/;
 	background: none;
 	overflow: auto;
 	zoom: 1; background-color: #ffffff;
--webkit-box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.75);
+/*-webkit-box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.75);
 -moz-box-shadow:    0px 3px 3px rgba(0, 0, 0, 0.75);
-box-shadow:         0px 3px 3px rgba(0, 0, 0, 0.75);
+box-shadow:         0px 3px 3px rgba(0, 0, 0, 0.75);*/
 overflow:hidden !important;
 }
 
@@ -1547,7 +1554,7 @@ overflow:hidden !important;
 	background-image: none;
 	margin: -4px 0 0 0;
 	padding: .3em 1em .5em .4em;
-	box-shadow:0 3px 2px rgba(0, 0, 0, 0.75); float: left; /* width: 758px; */ width: 326px; position: relative; 
+/*	box-shadow:0 3px 2px rgba(0, 0, 0, 0.75);*/ float: left; /* width: 758px; */ width: 326px; position: relative; 
 }
 .ui-btn-overwrite .ui-dialog-buttonpane {  width: 758px; }
 .ui-dialog .ui-dialog-buttonpane .ui-dialog-buttonset {

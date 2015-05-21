@@ -33,112 +33,194 @@ class Default_IdentitydocumentsController extends Zend_Controller_Action
 		
     }
 
-    public function indexAction()
+    
+ public function indexAction()
     {
 		$identitydocumentsModel = new Default_Model_Identitydocuments();	
-       
-		$identityDocumentArr = $identitydocumentsModel->getIdentitydocumnetsrecord();
-		//echo "In Controller <pre>";print_r($identityDocumentArr);die;
-		if(!empty($identityDocumentArr))
-		 $this->view->dataArray = $identityDocumentArr;
+        $call = $this->_getParam('call');
+		if($call == 'ajaxcall')
+				$this->_helper->layout->disableLayout();
+		
+		$view = Zend_Layout::getMvcInstance()->getView();		
+		$objname = $this->_getParam('objname');
+		$refresh = $this->_getParam('refresh');
+		$dashboardcall = $this->_getParam('dashboardcall');
+		
+		$data = array();
+		$searchQuery = '';
+		$searchArray = array();
+		$tablecontent='';
+		
+		if($refresh == 'refresh')
+		{
+		    if($dashboardcall == 'Yes')
+				$perPage = DASHBOARD_PERPAGE;
+			else	
+				$perPage = PERPAGE;
+			$sort = 'DESC';$by = 'i.modifieddate';$pageNo = 1;$searchData = '';$searchQuery = '';$searchArray='';
+		}
+		else 
+		{
+			$sort = ($this->_getParam('sort') !='')? $this->_getParam('sort'):'DESC';
+			$by = ($this->_getParam('by')!='')? $this->_getParam('by'):'i.modifieddate';
+			if($dashboardcall == 'Yes')
+				$perPage = $this->_getParam('per_page',DASHBOARD_PERPAGE);
+			else 
+				$perPage = $this->_getParam('per_page',PERPAGE);
+			$pageNo = $this->_getParam('page', 1);
+			/** search from grid - START **/
+			$searchData = $this->_getParam('searchData');	
+			$searchData = rtrim($searchData,',');
+			/** search from grid - END **/
+		}
+				
+		$dataTmp = $identitydocumentsModel->getGrid($sort, $by, $perPage, $pageNo, $searchData,$call,$dashboardcall);		 		
+					
+		array_push($data,$dataTmp);
+		$this->view->dataArray = $data;
+		$this->view->call = $call ;
 		$this->view->messages = $this->_helper->flashMessenger->getMessages();
+		//$this->renderScript('commongrid/index.phtml');
+		$this->render('commongrid/index', null, true);
+		
     }
 	
-	 public function addAction()
+	public function addAction()
 	{
-		$msgarray = array();
-	    $auth = Zend_Auth::getInstance();
+	   $auth = Zend_Auth::getInstance();
      	if($auth->hasIdentity()){
-			$loginUserId = $auth->getStorage()->read()->id;
+					$loginUserId = $auth->getStorage()->read()->id;
+					$loginuserRole = $auth->getStorage()->read()->emprole;
+					$loginuserGroup = $auth->getStorage()->read()->group_id;
 		}
+		$callval = $this->getRequest()->getParam('call');
+		if($callval == 'ajaxcall')
+			$this->_helper->layout->disableLayout();
 		$identitydocumentsform = new Default_Form_identitydocuments();
-		//echo "<pre>";print_r($IdentityCodesform);die;
-		
+		$msgarray = array();
 		$identitydocumentsform->setAttrib('action',DOMAIN.'identitydocuments/add');
-		$this->view->form = $identitydocumentsform; 	
-		$this->view->msgarray = $msgarray;
-        
-		if($this->getRequest()->getPost())
-		{
-		     $result = $this->save($identitydocumentsform);	
-          //  echo "<pre>";print_r($result);//exit;	
-			$this->view->form = $identitydocumentsform;			 
-		     $this->view->msgarray = $result; 
-        }  		
+		$this->view->form = $identitydocumentsform; 
+		$this->view->msgarray = $msgarray; 
+		$this->view->ermsg = '';
+			if($this->getRequest()->getPost()){
+				 $result = $this->save($identitydocumentsform);	
+				 $this->view->msgarray = $result; 
+			}  		
+		$this->render('form');	
 	}
 
-    public function viewAction()
+	public function viewAction()
 	{	
-		
+		$id = $this->getRequest()->getParam('id');
+		$callval = $this->getRequest()->getParam('call');
+		if($callval == 'ajaxcall')
+			$this->_helper->layout->disableLayout();
+		$objName = 'identitydocuments';
+		$identitydocumentsform = new Default_Form_identitydocuments();
+		$identitydocumentsform->removeElement("submit");
+		$elements = $identitydocumentsform->getElements();
+		if(count($elements)>0)
+		{
+			foreach($elements as $key=>$element)
+			{
+				if(($key!="Cancel")&&($key!="Edit")&&($key!="Delete")&&($key!="Attachments")){
+				$element->setAttrib("disabled", "disabled");
+					}
+        	}
+        }
+		try
+		{
+		    if($id)
+			{
+			    if(is_numeric($id) && $id>0)
+				{
+					$identitydocumentsModel = new Default_Model_Identitydocuments();	
+					$data = $identitydocumentsModel->getIdentitydocumnetsrecordwithID($id);
+					if(!empty($data))
+					{
+						$data = $data[0]; 
+						$identitydocumentsform->populate($data);
+					}else
+					{
+					   $this->view->ermsg = 'norecord';
+					}
+                } 
+                else
+				{
+				   $this->view->ermsg = 'norecord';
+				}				
+			}
+            else
+			{
+			   $this->view->ermsg = 'norecord';
+			} 			
+		}
+		catch(Exception $e)
+		{
+			   $this->view->ermsg = 'nodata';
+		}
+		$this->view->controllername = $objName;
+		$this->view->id = $id;
+		$this->view->form = $identitydocumentsform;
+		$this->render('form');	
 	}
 	
 	
-	public function editAction()
+public function editAction()
 	{	
 	    $auth = Zend_Auth::getInstance();
      	if($auth->hasIdentity()){
 					$loginUserId = $auth->getStorage()->read()->id;
+					$loginuserRole = $auth->getStorage()->read()->emprole;
+					$loginuserGroup = $auth->getStorage()->read()->group_id;
 		}
+	 	
 		$id = $this->getRequest()->getParam('id');
+		$callval = $this->getRequest()->getParam('call');
+		if($callval == 'ajaxcall')
+			$this->_helper->layout->disableLayout();
 		
 		$identitydocumentsform = new Default_Form_identitydocuments();
-		
-		$identitydocumentsModel = new Default_Model_Identitydocuments();		
+		$identitydocumentsModel = new Default_Model_Identitydocuments();
+		$identitydocumentsform->submit->setLabel('Update');
 		try
-		{
-			if($id && $id>0 && is_numeric($id))
-			{$id = abs($id);	
-				$data = $identitydocumentsModel->getIdentitydocumnetsrecordwithID($id);
-				if(!empty($data))
-				{
-					$identitydocumentsform->populate($data[0]);
-					$selected_document_ids = array();
-
-					if($data[0]['passport'] == 1)
-					  $selected_document_ids[] = 1;
-					if($data[0]['ssn'] == 1)
-					  $selected_document_ids[] = 2;
-                    if($data[0]['aadhaar'] == 1)
-					  $selected_document_ids[] = 3;
-					if($data[0]['pancard'] == 1)
-					  $selected_document_ids[] = 4;
-                    if($data[0]['drivinglicense'] == 1)
-					  $selected_document_ids[] = 5;
-					if($data[0]['others'] !='')
-					{
-					  $identitydocumentsform->othercheck->setValue(1);
-					  $identitydocumentsform->otherdocument->setValue($data[0]['others']);
-                    }					  
-                    					  
- 					$identitydocumentsform->setDefaults(array('identitydoc'=>$selected_document_ids));
-					$identitydocumentsform->submit->setLabel('Update');
-					$this->view->data = $data;
-					$this->view->id = $id;
-					$this->view->nodata = '';
-				}
-				else
-				{
-					$this->view->nodata = 'norecord';
-				}
-				$identitydocumentsform->setAttrib('action',DOMAIN.'identitydocuments/edit/id/'.$id);
-			}
-            else
+        {		
+			if($id)
 			{
-				$this->view->nodata = 'norecord';
+			    if(is_numeric($id) && $id>0)
+				{
+					$data = $identitydocumentsModel->getIdentitydocumnetsrecordwithID($id);
+					if(!empty($data))
+					{
+						  $data = $data[0];
+						$identitydocumentsform->populate($data);
+						$identitydocumentsform->setAttrib('action',DOMAIN.'identitydocuments/edit/id/'.$id);
+                        $this->view->data = $data;
+					}else
+					{
+						$this->view->ermsg = 'norecord';
+					}
+				}
+                else
+				{
+					$this->view->ermsg = 'norecord';
+				}				
 			}
-		}
+			else
+			{
+				$this->view->ermsg = 'nodata';
+			}
+		}	
 		catch(Exception $e)
 		{
-			 $this->view->nodata = 'nodata';
-		}
+			   $this->view->ermsg = 'nodata';
+		}	
 		$this->view->form = $identitydocumentsform;
-		
-		if($this->getRequest()->getPost())
-		{
+		if($this->getRequest()->getPost()){
       		$result = $this->save($identitydocumentsform);	
-			//echo"<pre>";print_r($result);exit;
-			$this->view->msgarray = $result; 
+		    $this->view->msgarray = $result; 
 		}
+		$this->render('form');	
 	}
 	
 	public function save($identitydocumentsform)
@@ -147,104 +229,122 @@ class Default_IdentitydocumentsController extends Zend_Controller_Action
      	if($auth->hasIdentity()){
 					$loginUserId = $auth->getStorage()->read()->id;
 		} 
-		$date = new Zend_Date();
-		$errorflag = "true";
+	    $identitydocumentsModel = new Default_Model_Identitydocuments();
 		$msgarray = array();
-		$passport = '';
-		$ssn = '';
-		$aadhaar = '';
-		$pancard = '';
-		$drivinglicense = '';
-		//echo"<pre>";print_r($this->_request->getPost());
-				$identitydoc = $this->_request->getParam('identitydoc');
-					for($i=0;$i<sizeof($identitydoc);$i++)
-					{
-					  if($identitydoc[$i]== 1)
-						$passport = 1;
-					  else if($identitydoc[$i]== 2)
-						$ssn = 1;
-					  else if($identitydoc[$i]== 3)
-						$aadhaar = 1;
-					  else if($identitydoc[$i]== 4)
-						$pancard = 1;
-					  else if($identitydoc[$i]== 5)
-						$drivinglicense = 1;					
-					}
-				$othercheck = $this->_request->getParam('othercheck');
-				$otherdocument = $this->_request->getParam('otherdocument');
-		        if($othercheck == 1)
-                   { 
-				     if($otherdocument == '')
-					 {
-					    $errorflag = 'false';
-					    $msgarray['otherdocument'] = "Please enter document name.";
-					 }
-                   } 				   
-				
-		if($identitydocumentsform->isValid($this->_request->getPost()) && $errorflag == "true")
+	    
+		  if($identitydocumentsform->isValid($this->_request->getPost())){
+            try{
+            $id = $this->_request->getParam('id');
+            $document_name = trim($this->_request->getParam('document_name'));
+            $mandatory = $this->_request->getParam('mandatory');
+            $expiry = $this->_request->getParam('expiry');	
+			$description = $this->_request->getParam('description');
+			$menumodel = new Default_Model_Menu();
+			$actionflag = '';
+			$tableid  = ''; 
+			   $data = array('document_name'=>$document_name,
+			   				 'mandatory'=>$mandatory,
+			   				 'expiry'=>$expiry,	 	 
+							 'description'=>($description!=''?trim($description):NULL),
+							  'modifiedby'=>$loginUserId,
+							  'modifieddate'=>gmdate("Y-m-d H:i:s")
+					);
+				if($id!=''){
+					$where = array('id=?'=>$id);  
+					$actionflag = 2;
+				}
+				else
+				{
+					$data['createdby'] = $loginUserId;
+					$data['createddate'] = gmdate("Y-m-d H:i:s");
+					$data['isactive'] = 1;
+					$where = '';
+					$actionflag = 1;
+				}
+				$Id = $identitydocumentsModel->SaveorUpdateIdentitydocumentsData($data, $where);
+				if($Id == 'update')
+				{
+				   $tableid = $id;
+				   $this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Identity documents updated successfully."));
+				}   
+				else
+				{
+				   $tableid = $Id; 	
+					$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Identity documents added successfully."));					   
+				}   
+				$menuidArr = $menumodel->getMenuObjID('/identitydocuments');
+				$menuID = $menuidArr[0]['id'];
+				$result = sapp_Global::logManager($menuID,$actionflag,$loginUserId,$tableid);
+				$this->_redirect('identitydocuments');	
+                  }
+        catch(Exception $e)
+          {
+             $msgarray['service_desk_name'] = "Something went wrong, please try again.";
+             return $msgarray;
+          }
+		}else
 		{
-		   $identitydocumentsModel = new Default_Model_Identitydocuments();	
-			$id = $this->_request->getParam('id'); 
-
-				$data = array(  'passport'=>($passport!=''?$passport:NUll),
-				                 'ssn'=>($ssn!=''?$ssn:NULL),
-								 'aadhaar'=>($aadhaar!=''?$aadhaar:NULL),
-                                 'pancard'=>($pancard!=''?$pancard:NULL),
-								 'drivinglicense'=>($drivinglicense!=''?$drivinglicense:NULL),
-								 'others'=>($otherdocument!=''?$otherdocument:NULL),
-								 'modifiedby'=>$loginUserId,
-							//	  'modifieddate'=>$date->get('yyyy-MM-dd HH:mm:ss') 				
-								'modifieddate'=>gmdate("Y-m-d H:i:s")
-				      		);
-					if($id!='')
-					{
-						$where = array('id=?'=>$id);  
-						$actionflag = 2;
-					}
-					else
-					{
-					    $data['createdby'] = $loginUserId;
-						//$data['createddate'] = $date->get('yyyy-MM-dd HH:mm:ss');
-						$data['createddate'] = gmdate("Y-m-d H:i:s");
-						$data['isactive'] = 1;
-						$where = '';
-						$actionflag = 1;
-					}
-					//echo "<pre>";print_r($data);exit;
-					$Id = $identitydocumentsModel->SaveorUpdateIdentitydocumentsData($data, $where);
-					if($Id == 'update')
-					{
-					   $tableid = $id;
-					   $this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Identity documents updated successfully."));
-					}   
-					else
-					{
-                       $tableid = $Id; 	
-                        $this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Identity documents added successfully."));					   
-					}   
-					$menumodel = new Default_Model_Menu();
-					$menuidArr = $menumodel->getMenuObjID('/identitydocuments');
-					$menuID = $menuidArr[0]['id'];
-					//echo "<pre>";print_r($menuidArr);exit;
-					$result = sapp_Global::logManager($menuID,$actionflag,$loginUserId,$tableid);
-					//echo $result;exit;
-    			    $this->_redirect('identitydocuments');		
-			}else
-			{
-     			$messages = $identitydocumentsform->getMessages();
-				//echo "<br/>Messages >> <pre>";print_r($messages);die;
-				foreach ($messages as $key => $val)
-					{
-						foreach($val as $key2 => $val2)
-						 {
-							$msgarray[$key] = $val2;
-							break;
-						 }
-					}
-				//echo "<br/>msgArr <pre>";print_r($msgarray);die;
-				return $msgarray;	
-			}
+			$messages = $identitydocumentsform->getMessages();
+			foreach ($messages as $key => $val)
+				{
+					foreach($val as $key2 => $val2)
+					 {
+						$msgarray[$key] = $val2;
+						break;
+					 }
+				}
+			return $msgarray;	
+		}
 	
+	}
+	
+	public function deleteAction()
+	{
+	     $auth = Zend_Auth::getInstance();
+     		if($auth->hasIdentity()){
+					$loginUserId = $auth->getStorage()->read()->id;
+				}
+		  $id = $this->_request->getParam('objid');
+		  $messages['message'] = '';
+		  $messages['msgtype'] = '';
+		  $messages['flagtype'] = '';
+		  $documentname = '';
+		  $actionflag = 3;
+		    if($id)
+			{
+			 $identitydocumentsModel = new Default_Model_Identitydocuments();
+			  $menumodel = new Default_Model_Menu();
+			  
+			  $identitydocumentdata = $identitydocumentsModel->getIdentitydocumnetsrecordwithID($id);
+			  if(!empty($identitydocumentdata))
+			   $documentname = $identitydocumentdata[0]['document_name'];
+			   
+			  $data = array('isactive'=>0,
+			                'modifieddate'=>gmdate("Y-m-d H:i:s"));
+			  $where = array('id=?'=>$id);
+			  $Id = $identitydocumentsModel->SaveorUpdateIdentitydocumentsData($data, $where);
+			    if($Id == 'update')
+				{
+				   $menuidArr = $menumodel->getMenuObjID('/identitydocuments');
+				   $menuID = $menuidArr[0]['id'];
+				   $result = sapp_Global::logManager($menuID,$actionflag,$loginUserId,$id); 
+				   $configmail = sapp_Global::send_configuration_mail('Identity Document',$documentname);
+				   $messages['message'] = 'Identity document deleted successfully.';
+				    $messages['msgtype'] = 'success';
+				}   
+				else
+				{
+                   $messages['message'] = 'Identity document cannot be deleted.';
+                   $messages['msgtype'] = 'error'; 
+                }				   
+			}
+			else
+			{ 
+			 $messages['message'] = 'Identity document cannot be deleted.';
+			  $messages['msgtype'] = 'error';
+			}
+			$this->_helper->json($messages);
+		
 	}
 	
 }

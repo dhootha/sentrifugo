@@ -24,7 +24,6 @@
      <div class="ml-alert-1-info m1-info-set">
 				<div class="style-1-icon info"></div>
 				<?php if($this->rowexist == 'norows'){?>
-				<!--No record exists-->
 				No data found.
 				<?php }else{?>
 				Employee deleted
@@ -61,11 +60,31 @@ $data = $this->data;
                                 <div class="division"><?php echo $this->form->prefix_id; ?></div>
 							</div> 
 							
-                            <div class="new-form-ui" id="iddiv_fullname" style="display:none;">
-                                <label><?php echo $this->form->userfullname->getLabel(); ?></label>
-                                <div class="division"><input type="text" disabled value="<?php echo $this->form->userfullname->getValue(); ?>" /></div>
-                                <span id="errors-<?php echo $this->form->userfullname->getId(); ?>" class="errors"><?php echo isset($this->msgarray['userfullname'])?$this->msgarray['userfullname']:"";?></span>
-                            </div>                
+                          <!-- <div class="new-form-ui" id="iddiv_fullname" style="display:none;">
+                                <label><?php //echo $this->form->userfullname->getLabel(); ?></label>
+                                <div class="division"><input type="text" disabled value="<?php //echo $this->form->userfullname->getValue(); ?>" /></div>
+                                <span id="errors-<?php //echo $this->form->userfullname->getId(); ?>" class="errors"><?php //echo isset($this->msgarray['userfullname'])?$this->msgarray['userfullname']:"";?></span>
+                            </div>-->   
+                            
+                            <div id="iddiv_fullname" style="display:none;">     
+	                            <div class="new-form-ui" >
+	                                <label><?php echo $this->form->firstname->getLabel(); ?></label>
+	                                <div class="division">
+										<?php echo $this->form->firstname; ?>
+									</div>
+	                                <span id="errors-<?php echo $this->form->firstname->getId(); ?>" class="errors"><?php echo isset($this->msgarray['firstname'])?$this->msgarray['firstname']:"";?></span>
+	                            </div>
+                            
+                            
+	                            <div class="new-form-ui" >
+	                                <label><?php echo $this->form->lastname->getLabel(); ?></label>
+	                                <div class="division">
+										<?php echo $this->form->lastname; ?>
+									</div>
+	                                <span id="errors-<?php echo $this->form->lastname->getId(); ?>" class="errors"><?php echo isset($this->msgarray['lastname'])?$this->msgarray['lastname']:"";?></span>
+	                            </div>  
+                            </div>
+                                         
                             <div class="new-form-ui" id="iddiv_referredby" style="display:none;">
                                 <label><?php echo $this->form->candidatereferredby->getLabel(); ?></label>
                                 <div class="division">
@@ -135,9 +154,8 @@ $data = $this->data;
 						</div>
 						
 						<div class="new-form-ui">
-						  <label>Department<!-- <img class="tooltip" title="Select business unit to populate departments" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png">--></label>
+						  <label>Department</label>
 						<div class="division"><?php echo $this->form->department_id; ?></div>
-						<!--<div id="helptext" class="helptext">Select business unit to populate departments</div>-->
 						<span class="errors" id="errors-<?php echo $this->form->department_id->getId(); ?>" style="display:none;"></span>
 						<?php if(isset($this->msgarray['department_id'])){?>
 						   <span class="errors" id="errors-<?php echo $this->form->department_id->getId(); ?>"><?php echo $this->msgarray['department_id'];?></span>
@@ -163,9 +181,8 @@ $data = $this->data;
 				</div>
 				
 				<div class="new-form-ui">
-				  <label>Position<!-- <img class="tooltip" title="Select job title to populate positions" src="<?php echo MEDIA_PATH;?>images/help.png">--></label>
+				  <label>Position</label>
 				<div class="division"><?php echo $this->form->position_id; ?></div>
-				<!--<div id="helptext" class="helptext">Select job title to populate positions</div>-->
 				<span class="errors" id="positionerror" style="display:none;"></span>
 				<?php if(isset($this->msgarray['position_id'])){?>
 				   <span class="errors" id="errors-<?php echo $this->form->position_id->getId(); ?>"><?php echo $this->msgarray['position_id'];?></span>
@@ -186,7 +203,7 @@ $data = $this->data;
 				}
 	?>			
 				<div class="new-form-ui">
-				  <label>Date of joining<!-- <img class="tooltip" title="mm-dd-yyyy" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png">--></label>
+				  <label>Date of joining</label>
 				<div class="division"><?php echo $this->form->date_of_joining; ?></div>
 				<?php if(isset($this->msgarray['date_of_joining'])){?>
 				   <span class="errors" id="errors-<?php echo $this->form->date_of_joining->getId(); ?>"><?php echo $this->msgarray['date_of_joining'];?></span>
@@ -214,18 +231,18 @@ $data = $this->data;
 				</div>
 				
 				<div class="new-form-ui">
-				  <label ><?php echo $this->form->extension_number->getLabel(); ?></label>
-				<div class="division"><?php echo $this->form->extension_number; ?></div>
-				<?php if(isset($this->msgarray['extension_number'])){?>
-				   <span class="errors" id="errors-<?php echo $this->form->extension_number->getId(); ?>"><?php echo $this->msgarray['extension_number'];?></span>
-				<?php }?>
-				</div>
-				
-				<div class="new-form-ui">
 				  <label ><?php echo $this->form->office_number->getLabel(); ?></label>
 				<div class="division"><?php echo $this->form->office_number; ?></div>
 				<?php if(isset($this->msgarray['office_number'])){?>
 				   <span class="errors" id="errors-<?php echo $this->form->office_number->getId(); ?>"><?php echo $this->msgarray['office_number'];?></span>
+				<?php }?>
+				</div>
+				
+				<div class="new-form-ui">
+				  <label ><?php echo $this->form->extension_number->getLabel(); ?></label>
+				<div class="division"><?php echo $this->form->extension_number; ?></div>
+				<?php if(isset($this->msgarray['extension_number'])){?>
+				   <span class="errors" id="errors-<?php echo $this->form->extension_number->getId(); ?>"><?php echo $this->msgarray['extension_number'];?></span>
 				<?php }?>
 				</div>
 				
@@ -241,7 +258,7 @@ $data = $this->data;
      
 </div>	
 </div>
-<script>
+<script type='text/javascript'>
 $(document).ready(function(){
 
    $("#empdetails").addClass('active');
@@ -265,7 +282,9 @@ $(document).ready(function(){
         {
             $('#iddiv_referredby').show();
             $('#iddiv_fullname').hide();
-            $('#userfullname').val('');
+            //$('#userfullname').val('');
+            $('#firstname').val('');
+            $('#lastname').val('');
             $('#iddiv_canditatename').show();  
             $('#iddivrequi').show();
         }
@@ -275,7 +294,9 @@ $(document).ready(function(){
             $('#iddivrequi').show();
             $('#iddiv_otherentry').show();    
             $('#candidatereferredby').val('');                        
-            $('#userfullname').val('');
+            //$('#userfullname').val('');
+            $('#firstname').val('');
+            $('#lastname').val('');
             $('#iddiv_referredby').hide();
             $('#iddiv_fullname').hide();            
         }
@@ -284,7 +305,9 @@ $(document).ready(function(){
             $('#iddiv_canditatename').show();
             $('#iddivrequi').show();
             $('#candidatereferredby').val('');
-            $('#userfullname').val('');
+            //$('#userfullname').val('');
+            $('#firstname').val('');
+            $('#lastname').val('');
             $('#iddiv_referredby').hide();
             $('#iddiv_fullname').hide();           
         }

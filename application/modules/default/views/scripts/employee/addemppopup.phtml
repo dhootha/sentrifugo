@@ -42,19 +42,37 @@ sapp_Global::generateClientValidations($this->emp_form);?>
 			<?php }?>
 		</div>
 		<div class="new-form-ui">
-			<label class="required"><?php echo $this->emp_form->prefix_id->getLabel(); ;?> </label>
+			<label><?php echo $this->emp_form->prefix_id->getLabel(); ;?> </label>
 			<div class="division"><?php echo $this->emp_form->prefix_id; ?></div>
 			<?php if(isset($this->msgarray['prefix_id'])){?>
 					 <span class="errors" id="errors-<?php echo $this->emp_form->prefix_id->getId(); ?>"><?php echo $this->msgarray['prefix_id'];?></span>
 			<?php }?>
 		</div>
+		<!--  
 			<div class="new-form-ui">
 			  <label class="required">Department Head </label>
-			<div class="division"><?php echo $this->emp_form->userfullname; ?></div>
-			  <?php if(isset($this->msgarray['userfullname'])){?>
-				   <span class="errors" id="errors-<?php echo $this->emp_form->userfullname->getId(); ?>"><?php echo $this->msgarray['userfullname'];?></span>
+			<div class="division"><?php //echo $this->emp_form->userfullname; ?></div>
+			  <?php //if(isset($this->msgarray['userfullname'])){?>
+				   <span class="errors" id="errors-<?php //echo $this->emp_form->userfullname->getId(); ?>"><?php //echo $this->msgarray['userfullname'];?></span>
+			  <?php //}?>
+			</div>
+	   -->		
+			<div class="new-form-ui">
+			  <label class="required">First Name</label>
+			<div class="division"><?php echo $this->emp_form->firstname; ?></div>
+			  <?php if(isset($this->msgarray['firstname'])){?>
+				   <span class="errors" id="errors-<?php echo $this->emp_form->firstname->getId(); ?>"><?php echo $this->msgarray['firstname'];?></span>
 			  <?php }?>
 			</div>
+			
+			<div class="new-form-ui">
+			  <label class="required">Last Name</label>
+			<div class="division"><?php echo $this->emp_form->lastname; ?></div>
+			  <?php if(isset($this->msgarray['lastname'])){?>
+				   <span class="errors" id="errors-<?php echo $this->emp_form->lastname->getId(); ?>"><?php echo $this->msgarray['lastname'];?></span>
+			  <?php }?>
+			</div>
+			
 		<div class="new-form-ui">
 			<label class="required"><?php echo $this->emp_form->emprole->getLabel(); ;?> </label>
 			<div class="division"><?php echo $this->emp_form->emprole; ?></div>
@@ -65,7 +83,6 @@ sapp_Global::generateClientValidations($this->emp_form);?>
 		 
 		<div class="new-form-ui">
 			<label class="required">Reporting Manager </label>
-			<!-- <div class="division"><?php //echo $this->emp_form->reporting_manager; ?></div> -->
 			<select name="reporting_manager" id="reporting_manager">
                 <option value="">Select a Reporting Manager</option>
 				<?php 
@@ -94,14 +111,14 @@ sapp_Global::generateClientValidations($this->emp_form);?>
 			<?php }?>
 		</div>
 		<div class="new-form-ui">
-			<label class="required"><?php echo $this->emp_form->jobtitle_id->getLabel(); ;?> </label>
+			<label><?php echo $this->emp_form->jobtitle_id->getLabel(); ;?> </label>
 			<div class="division"><?php echo $this->emp_form->jobtitle_id; ?></div>
 			<?php if(isset($this->msgarray['jobtitle_id'])){?>
 					 <span class="errors" id="errors-<?php echo $this->emp_form->jobtitle_id->getId(); ?>"><?php echo $this->msgarray['jobtitle_id'];?></span>
 			<?php }?>
 		</div>
 		<div class="new-form-ui">
-			<label class="required"><?php echo $this->emp_form->position_id->getLabel(); ;?> </label>
+			<label ><?php echo $this->emp_form->position_id->getLabel(); ;?> </label>
 			<div class="division"><?php echo $this->emp_form->position_id; ?></div>		
 			<?php if(isset($this->msgarray['position_id'])){?>
 			   <span class="errors" id="errors-<?php echo $this->emp_form->position_id->getId(); ?>"><?php echo $this->msgarray['position_id'];?></span>
@@ -137,7 +154,7 @@ sapp_Global::generateClientValidations($this->emp_form);?>
 	</div>
 </form>
 <?php } ?>
-<script>
+<script type='text/javascript'>
 	$(document).ready(function() {
 		var yearrange = <?php echo "'".date("Y", strtotime("-30 years")).':'.date('Y')."'"; ?>;
 		$('#date_of_joining').datepicker({
@@ -154,7 +171,6 @@ sapp_Global::generateClientValidations($this->emp_form);?>
 				     onClose:function(){
                                     $('#date_of_joining').trigger('blur');
                                 }
-				//minDate: 1  
 		});
 		
 		<?php if (count($this->messages)) {?>
@@ -165,7 +181,7 @@ sapp_Global::generateClientValidations($this->emp_form);?>
 		<?php } ?>
 	});
 </script>
-<script language='javascript'>
+<script language='javascript' type='text/javascript'>
 
 	<?php if($this->popup != '') { ?>
 			setTimeout(function(){				

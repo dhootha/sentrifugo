@@ -35,7 +35,6 @@ class Default_CreditcarddetailsController extends Zend_Controller_Action
 
 	public function indexAction()
 	{
-		//echo "Here in controller";//die;
 	}
 
 	public function addAction()
@@ -52,11 +51,9 @@ class Default_CreditcarddetailsController extends Zend_Controller_Action
 		 		$loginUserId = $auth->getStorage()->read()->id;
 		 	}
 		 	$creditcardDetailsform = new Default_Form_Creditcarddetails();
-
 		 	$this->view->form = $creditcardDetailsform;
 		 	$this->view->msgarray = $msgarray;
 		 	$creditcardDetailsform->setAttrib('action',DOMAIN.'creditcarddetails/edit/add');
-		 	 
 		 	if($this->getRequest()->getPost())
 		 	{
 		 		$result = $this->save($creditcardDetailsform);
@@ -87,10 +84,8 @@ class Default_CreditcarddetailsController extends Zend_Controller_Action
 		 	}
 		 	$id = $this->getRequest()->getParam('userid');
 		 	$auth = Zend_Auth::getInstance();
-		 	 
 		 	$creditcardDetailsform = new Default_Form_Creditcarddetails();
 		 	$creditcardDetailsModel = new Default_Model_Creditcarddetails();
-		 
 		 		//TO get the Employee  profile information....
 		 		$usersModel = new Default_Model_Users();
 		 		$employeeModal = new Default_Model_Employee();
@@ -117,7 +112,6 @@ class Default_CreditcarddetailsController extends Zend_Controller_Action
 								$creditcardDetailsform->setDefault("card_type",$data[0]["card_type"]);
 								$creditcardDetailsform->setDefault("card_number",$data[0]["card_number"]);
 								$creditcardDetailsform->setDefault("nameoncard",$data[0]["nameoncard"]);
-									
 								$expiry_date = sapp_Global::change_date($data[0]["card_expiration"], 'view');
 								$creditcardDetailsform->setDefault('card_expiration', $expiry_date);
 								$creditcardDetailsform->setDefault("card_issuedby",$data[0]["card_issued_comp"]);
@@ -172,63 +166,69 @@ class Default_CreditcarddetailsController extends Zend_Controller_Action
 		$date = new Zend_Date();
 		if($creditcardDetailsform->isValid($this->_request->getPost()))
 		{
-			$creditcardDetailsModel = new Default_Model_Creditcarddetails();
-			$id = $this->_request->getParam('id');
-			$user_id = $this->_request->getParam('userid');
-			$card_type = $this->_request->getParam('card_type');
-			$card_number = $this->_request->getParam('card_number');
-			$card_name = $this->_request->getParam('nameoncard');
-			$card_expiry_1 = $this->_request->getParam('card_expiration',null);
-			$card_expiry = sapp_Global::change_date($card_expiry_1, 'database');
-
-			$card_issuedBy = $this->_request->getParam('card_issuedby');
-			$card_code = $this->_request->getParam('card_code');
-
-			$data = array(  'card_type'=>$card_type,
-								'card_number'=>$card_number,
-								'nameoncard'=>$card_name,
-								'card_expiration'=>$card_expiry,
-								'card_issued_comp'=>$card_issuedBy,
-								'card_code'=>$card_code,
-								'user_id'=>$user_id,
-								'modifiedby'=>$loginUserId,
-								'modifieddate'=>gmdate("Y-m-d H:i:s")
-			//'modifieddate'=>$date->get('yyyy-MM-dd HH:mm:ss')
-			);
-			//echo "<pre> Post vals ";print_r($data);die;
-			if($id!='')
-			{
-				$where = array('user_id=?'=>$user_id);
-				$actionflag = 2;
+			$post_values = $this->_request->getPost();
+           	if(isset($post_values['id']))
+            	unset($post_values['id']);
+            if(isset($post_values['user_id']))
+                unset($post_values['user_id']);
+            if(isset($post_values['submit']))	
+                unset($post_values['submit']);
+           	$new_post_values = array_filter($post_values);
+           	$user_id = $this->_request->getParam('userid');
+           	if(!empty($new_post_values))
+           	{
+				$creditcardDetailsModel = new Default_Model_Creditcarddetails();
+				$id = $this->_request->getParam('id');
+				$card_type = $this->_request->getParam('card_type');
+				$card_number = $this->_request->getParam('card_number');
+				$card_name = $this->_request->getParam('nameoncard');
+				$card_expiry_1 = $this->_request->getParam('card_expiration',null);
+				$card_expiry = sapp_Global::change_date($card_expiry_1, 'database');
+	
+				$card_issuedBy = $this->_request->getParam('card_issuedby');
+				$card_code = $this->_request->getParam('card_code');
+	
+				$data = array(  'card_type'=>$card_type,
+									'card_number'=>$card_number,
+									'nameoncard'=>$card_name,
+									'card_expiration'=>$card_expiry,
+									'card_issued_comp'=>$card_issuedBy,
+									'card_code'=>$card_code,
+									'user_id'=>$user_id,
+									'modifiedby'=>$loginUserId,
+									'modifieddate'=>gmdate("Y-m-d H:i:s")
+				);
+				if($id!='')
+				{
+					$where = array('user_id=?'=>$user_id);
+					$actionflag = 2;
+				}
+				else
+				{
+					$data['createdby'] = $loginUserId;
+					$data['createddate'] = gmdate("Y-m-d H:i:s");
+					$where = '';
+					$actionflag = 1;
+				}
+				$Id = $creditcardDetailsModel->SaveorUpdateCreditcardDetails($data, $where);
+				if($Id == 'update')
+				{
+					$tableid = $id;
+					$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee corporate card details updated successfully."));
+				}
+				else
+				{
+					$tableid = $Id;
+					$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee corporate card details added successfully."));
+				}
+				$menumodel = new Default_Model_Menu();
+				$menuidArr = $menumodel->getMenuObjID('/employee');
+				$menuID = $menuidArr[0]['id'];
+				$result = sapp_Global::logManager($menuID,$actionflag,$loginUserId,$user_id);
+				
+           	} else {
+           		$this->_helper->getHelper("FlashMessenger")->addMessage(array("error"=>FIELDMSG));
 			}
-			else
-			{
-				$data['createdby'] = $loginUserId;
-				$data['createddate'] = gmdate("Y-m-d H:i:s");
-				//$data['createddate'] = $date->get('yyyy-MM-dd HH:mm:ss');
-				$where = '';
-				$actionflag = 1;
-			}
-			//echo "<pre>";print_r($where);
-			//print_r($data);
-			//die;
-			$Id = $creditcardDetailsModel->SaveorUpdateCreditcardDetails($data, $where);
-			if($Id == 'update')
-			{
-				$tableid = $id;
-				$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee corporate card details updated successfully."));
-			}
-			else
-			{
-				$tableid = $Id;
-				$this->_helper->getHelper("FlashMessenger")->addMessage(array("success"=>"Employee corporate card details added successfully."));
-			}
-			$menumodel = new Default_Model_Menu();
-			$menuidArr = $menumodel->getMenuObjID('/employee');
-			$menuID = $menuidArr[0]['id'];
-			//echo "<pre>";print_r($menuidArr);exit;
-			$result = sapp_Global::logManager($menuID,$actionflag,$loginUserId,$user_id);
-			//echo $result;exit;
 			$this->_redirect('creditcarddetails/edit/userid/'.$user_id);
 		}
 		else
@@ -243,7 +243,6 @@ class Default_CreditcarddetailsController extends Zend_Controller_Action
 					break;
 				}
 			}
-			//echo "<br/>msgArr <pre>";print_r($msgarray);die;
 			return $msgarray;
 		}
 
@@ -303,12 +302,10 @@ class Default_CreditcarddetailsController extends Zend_Controller_Action
 									$creditcardDetailsform->setDefault("card_type",$data[0]["card_type"]);
 									$creditcardDetailsform->setDefault("card_number",$data[0]["card_number"]);
 									$creditcardDetailsform->setDefault("nameoncard",$data[0]["nameoncard"]);
-
 									$expiry_date = sapp_Global::change_date($data[0]["card_expiration"], 'view');
 									$creditcardDetailsform->setDefault('card_expiration', $expiry_date);
 									$creditcardDetailsform->setDefault("card_issuedby",$data[0]["card_issued_comp"]);
 									$creditcardDetailsform->setDefault("card_code",$data[0]["card_code"]);
-
 								}
 								$this->view->controllername = $objName;
 								$this->view->id = $id;
@@ -339,5 +336,4 @@ class Default_CreditcarddetailsController extends Zend_Controller_Action
 			$this->_redirect('error');
 		}
 	}
-
 }

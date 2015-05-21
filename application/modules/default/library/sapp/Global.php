@@ -78,10 +78,10 @@ class sapp_Global
 		$sessionData = sapp_Global::_readSession();
 		Zend_Session::namespaceUnset('recentlyViewed');
 		Zend_Session::namespaceUnset('organizationinfo');
-			//Zend_Session::namespaceUnset('globalOffset');
+			
 		$auth = Zend_Auth::getInstance();
 		$auth->clearIdentity();
-		//$this->_redirect('login');
+		
 		$redirector = Zend_Controller_Action_HelperBroker::getStaticHelper('redirector');
 		$redirector->gotoUrl('/default')
 				  ->redirectAndExit();
@@ -177,7 +177,7 @@ class sapp_Global
                     $value = isset($data[$column_key])?(trim($data[$column_key]) == ''?"--":$data[$column_key]):"--";                    
                     $value = html_entity_decode($value,ENT_QUOTES,'UTF-8');
                     $objPHPExcel->getActiveSheet()->SetCellValue($cell_name, $value);
-                    // $objPHPExcel->getActiveSheet()->getColumnDimensionByColumn($cell_name)->setAutoSize(true);
+                    
                     $count1++;	
                 }
                 $i++;
@@ -226,7 +226,7 @@ class sapp_Global
 
 			$options['cron'] = 'yes';
 			sapp_Global::_sendEmail($options);
-			//sapp_Mail::_email($options);
+			
 		}
 	}
 	/**
@@ -261,7 +261,8 @@ class sapp_Global
 			$key_class = "src_".$key_split[1];
 			else
 			$key_class = "src_".$key_split[0];
-			$yearrange =   date("Y", strtotime("-20 years")).':'.(date('Y')+10); 
+		//$yearrange =   date("Y", strtotime("-20 years")).':'.(date('Y')+10);
+			$yearrange =   YEAR.':'.(date('Y')+20);
 			if(isset($search_filters[$key]['yearrange']) && $search_filters[$key]['yearrange'] == 'yearrange')
 			 $yearrange =   date("Y", strtotime("-70 years")).':'.(date('Y')+20); 
 			 
@@ -318,7 +319,7 @@ class sapp_Global
          */
 	public static function _getBaseURL(){
 		$request = Zend_Controller_Front::getInstance()->getRequest();
-		//return $request->getHttpHost() . $request->getBaseUrl().'/';
+		
 		return $request->getBaseUrl().'/';
 	}
         /**
@@ -328,7 +329,7 @@ class sapp_Global
 	public static function _getHostBaseURL(){
 		$request = Zend_Controller_Front::getInstance()->getRequest();
 		return "http://".$request->getHttpHost() . $request->getBaseUrl().'/';
-		//return $request->getBaseUrl().'/';
+		
 	}
         /**
          * This function is used to encrypt any value
@@ -336,7 +337,7 @@ class sapp_Global
          * @return String Encrypted string
          */
 	public static function _encrypt($string){
-		$key = "chitgoks";
+		$key = "chitgoks_hrms";
 		$result = '';
 		for($i=0; $i<strlen($string); $i++) {
 			$char = substr($string, $i, 1);
@@ -352,8 +353,9 @@ class sapp_Global
          * @param String $string = string to be decrypt
          * @return String Decrypted string
          */
-	public static function _decrypt($string){
-		$key = "chitgoks";
+	public static function _decrypt($string)
+        {
+		$key = "chitgoks_hrms";
 		$result = '';
 		$string = base64_decode($string);
 
@@ -509,8 +511,8 @@ class sapp_Global
 			$uploaddir = USER_UPLOAD_PREVIEW_PATH;
 			$fileExt = $this->getFileExtenction(basename($_FILES['uploadfile']['name']));
 
-			//$file = $uploaddir.$this->uid .'_'.time().'_'.basename($_FILES['uploadfile']['name']);
-			//$filename = $this->uid .'_'.time().'_'.basename($_FILES['uploadfile']['name']);
+			
+			
 
 			$file = $uploaddir.'_'.time().'.'.$fileExt;
 			$filename = 'newuser_'.time().'.'.$fileExt;
@@ -518,23 +520,14 @@ class sapp_Global
 
 			if($size  >= 1024000)
 			{
-				//$error  =  "Image size limit exceeds.\n";
-				//$error .=  "Your image size = ".($size/1000000)."MB.\n";
-				//$error .=  "Image size limit = ".(IMAGE_LIMIT_SIZE/1000000)."MB.";
+				
 					
 				echo "Image size is more";
 				return;
 			}
 
 			if (move_uploaded_file($_FILES['uploadfile']['tmp_name'], $file)) {
-				/* $squareimage = makeImageTOSqare($filename,'square_'.$filename,$fileExt);
-				 $original_path   =  $uploaddir.$filename;
-				 $image_path   =  dirname(__FILE__).'/../../uploads/images/'.$squareimage;
-				 //$image_path   =  dirname(__FILE__).'/../../uploads/images/'.$filename;
-				 $thumb_width  =  THUMB_DIMENSION;
-				 $thumb_height =  THUMB_DIMENSION;
-				 $prefix       =  "";
-				 list($width,$height) = getimagesize($image_path);*/
+				
 					
 				if(($fileExt != "bmp") && ($fileExt != "BMP")){
 					$newimage =  $uploaddir.$filename;
@@ -542,38 +535,10 @@ class sapp_Global
 					$image-> resizeImage(50, 50, 'crop');
 					$image->saveImage($newimage.'/'.$logo, 100);
 
-					//$this->create_scaled_thumbnail($image_path, 520, 510, $new_image);  //vedam
+					
 				}
 					
-				/*if(($fileExt != "bmp") && ($fileExt != "BMP")){
-
-				$new_image =  dirname(__FILE__).'/../../uploads/images/'."medium_image_".$filename;
-
-				$resizeObj = new resize($image_path);
-				$resizeObj -> resizeImage(170,170, 0);
-				$resizeObj -> saveImage($new_image, 100);
-
-				//$this->create_scaled_thumbnail($image_path, 520, 510, $new_image);  //vedam
-				}
-					
-				if(($fileExt != "bmp") && ($fileExt != "BMP")){
-
-				$new_image =  dirname(__FILE__).'/../../uploads/images/'."medium_140_".$filename;
-
-				$resizeObj = new resize($image_path);
-				$resizeObj -> resizeImage(140,140, 0);
-				$resizeObj -> saveImage($new_image, 100);
-
-				//$this->create_scaled_thumbnail($image_path, 520, 510, $new_image);  //vedam
-				}
-					
-				if(($fileExt != "bmp") && ($fileExt != "BMP")){
-				$resizeObj = new resize($image_path);
-				$resizeObj -> resizeImage($thumb_width, $thumb_height, 0);
-				$resizeObj -> saveImage($original_path, 100);
-
-				//$this->create_scaled_thumbnail($image_path, $thumb_width, $thumb_height, $image_path);  //vedam
-				}*/					
+							
 				echo $filename;
 			}
 			else {					
@@ -679,7 +644,7 @@ class sapp_Global
 		$max_size = 1024;			// maxim size for image file, in KiloBytes
 
 		// Allowed image types
-		//$allowtype = array('gif', 'jpg', 'jpeg', 'png');
+		
 		$allowtype = array('gif', 'jpg', 'jpeg', 'png');
 
 		/** Uploading the image **/
@@ -691,7 +656,7 @@ class sapp_Global
 		if (isset ($_FILES['profile_photo'])) {
 			// checks to have the allowed extension
 			$type = end(explode(".", strtolower($_FILES['profile_photo']['name'])));
-			//echo in_array($type, $allowtype);exit;
+			
 			if (in_array($type, $allowtype)) {
 				// check its size
 				if ($_FILES['profile_photo']['size']<=$max_size*1024) {
@@ -706,7 +671,7 @@ class sapp_Global
 							
 							
 						$filename = $newname;
-						//$thefile = $_FILES['profile_photo']['name'];
+						
 						// if the file can`t be uploaded, return a message
 							
 						if (!move_uploaded_file ($_FILES['profile_photo']['tmp_name'], $newfilename)) {
@@ -716,8 +681,8 @@ class sapp_Global
 						}
 						else {
 					  // Return the img tag with uploaded image.
-					  //$rezultat = '<img src="'.$thefile.'" />';
-					  //$rezultat = $thefile;
+					  
+					  
 					  $rezultat = $filename;
 
 					  $image = new Zend_Resize($newfilename);
@@ -726,7 +691,7 @@ class sapp_Global
 
 					  $result_status = 'success';
 					  $result_msg = '';
-					  //echo 'The image was successfully loaded';//exit;
+					  
 						}
 					}
 				}
@@ -747,7 +712,7 @@ class sapp_Global
 		}
 
 		// encode with 'urlencode()' the $rezultat and return it in 'onload', inside a BODY tag
-		//$rezultat = urlencode($rezultat);
+		
 
 		$result = array(
 				'result'=>$result_status,
@@ -773,7 +738,7 @@ class sapp_Global
 		$result_msg = '';
 
 		$type = end(explode(".", strtolower($_FILES['form_attachment']['name'])));
-		//echo in_array($type, $allowtype);exit;
+		
 		if (in_array($type, $allowtype))
 		{
 			if ($_FILES['form_attachment']['size']<=$max_size*1000)
@@ -789,10 +754,10 @@ class sapp_Global
 				$logo = "";
 				foreach ($files as $fileID => $fileInfo) {
 					if (! $fileInfo['name'] == '') {
-						//$logo = time() . $fileInfo['name'];
+						
 						$varaible = explode('.',$fileInfo['name']);
 						$extension = end($varaible);
-						//$logo=time().$extension;
+						
 						$logo = md5(uniqid(rand(), true)).'.'.$extension;
 						$renameFilter->addFile(
 						array('source' => $fileInfo['tmp_name'],
@@ -812,7 +777,7 @@ class sapp_Global
 						}
 						//End Image Resize
 					} catch (Zend_File_Transfer_Exception $e) {
-						//$this->setErrorMessage($e->getMessage());
+						
 						$rezultat = '';
 						$result_status = 'error';
 						$result_msg = $e->getMessage();
@@ -869,7 +834,7 @@ class sapp_Global
 				$logarr[$i] = array('userid' => $loginUserId,
                        		'recordid' =>$recordId,
 							'childrecordid' => $childrecordArr[$i],
-				//'date' => $date->get('yyyy-MM-dd HH:mm:ss')
+				
 							'date' => gmdate("Y-m-d H:i:s")
 				);
 
@@ -881,8 +846,8 @@ class sapp_Global
 		{
 			$logarr = array('userid' => $loginUserId,
 								'recordid' =>$recordId,
-			//'childrecordid' => $childrecordId,
-			//'date' => $date->get('yyyy-MM-dd HH:mm:ss')
+			
+			
 								'date' => gmdate("Y-m-d H:i:s")
 			);
 			$jsonlogarr = json_encode($logarr);	// Building Json String of loggedinUser,DatabaseID of UserAction,Date
@@ -1038,38 +1003,10 @@ class sapp_Global
 	<?php
 	}
 	?>
+	
+	
 	<?php
-	/*  Commented on: 30-09-2013
-	 if($default_permissions['uploadattachments'] == 'Yes')
-	 {
-	 $i++;*/
-	?>
-	<!-- <div class="permission_div <?php echo ($i ==1 || $i == 3 || $i == 5)?"permission_div_brdr":"";?>">                                
-                    <div class="permission_radio_div">
-                        <input type="checkbox" <?php echo $chk_disabled_val;?> <?php echo ($permission_data['uploadattachments']=='Yes')?"checked='checked'":"";?> onclick="checkradio_child_roles('cls_radio_upatt_yes<?php echo $menu_id;?>',this);" class="cls_radiobuttons_rd cls_radiomenu_yes_<?php echo $menu_id;?> <?php echo $parent_menu_id1>0?"cls_radio_upatt_yes".$parent_menu_id1:"";?> <?php echo $parent_menu_id2>0?"cls_radio_upatt_yes".$parent_menu_id2:"";?>" name="rd_uploadattachment<?php echo $menu_id;?>" value="Yes" id="iduploadatt_yes_<?php echo $menu_id;?>" title="Assign upload attachments."  />                   
-                    </div>
-                    <span class="radio_titles">Upload Attachments</span>
-                </div> -->
-	<?php
-	/*  Commented on: 30-09-2013
-	 }
-	 */
-	?>
-	<?php
-	/* Commented on: 30-09-2013
-	 if($default_permissions['viewattachments'] == 'Yes')
-	 {
-	 $i++;*/
-	?>
-	<!-- <div class="permission_div <?php echo ($i ==1 || $i == 3 || $i == 5)?"permission_div_brdr":"";?>">                                
-                    <div class="permission_radio_div">
-                        <input type="checkbox" <?php echo $chk_disabled_val;?> <?php echo ($permission_data['viewattachments']=='Yes')?"checked='checked'":"";?> onclick="checkradio_child_roles('cls_radio_viewatt_yes<?php echo $menu_id;?>',this);" class="cls_radiobuttons_rd cls_radiomenu_yes_<?php echo $menu_id;?> <?php echo $parent_menu_id1>0?"cls_radio_viewatt_yes".$parent_menu_id1:"";?> <?php echo $parent_menu_id2>0?"cls_radio_viewatt_yes".$parent_menu_id2:"";?>" name="rd_viewattachment<?php echo $menu_id;?>" value="Yes" id="idviewatt_yes_<?php echo $menu_id;?>" title="Assign view attachments."  />                    
-                    </div>
-                    <span class="radio_titles">View Attachments</span>
-                </div> -->
-	<?php
-	/* Commented on: 30-09-2013
-	 }*/
+	
 	if($i == 1)
 	{
 		?>
@@ -1111,7 +1048,7 @@ class sapp_Global
         $form_elements = $form_obj->getElements();
         foreach($form_elements as $element)
         {
-            //echo "<pre>";print_r($element);echo "</pre>";
+            
             $ele_name = $element->getName();
             $element_id = $element->getId();
             $ele_validators = $element->getValidators();
@@ -1119,13 +1056,13 @@ class sapp_Global
             if(count($ele_validators) > 0)
             {
                 $ele_validators_cpy = $ele_validators;
-                //echo "<pre>";print_r($ele_validators);echo "</pre>";
+                
                 foreach($ele_validators as $validator)
                 {
                     $validator_name = get_class($validator);
                     if($validator_name == 'Zend_Validate_NotEmpty')
                     {
-					    //echo"<pre>";print_r($validator);
+					    
                         $messages_arr = $validator->getValidatorMessages();
                         $isempty_msg = $messages_arr['isEmpty'];
                         if($element_type == 'Zend_Form_Element_Select' || $element_type == 'Zend_Form_Element_Multiselect')
@@ -1160,7 +1097,7 @@ class sapp_Global
                             if($.trim($(this).val()) == '')
                              { 
 							    $(this).parent().append("<span class='errors' id='errors-<?php echo $element_id;?>'><?php echo $isempty_msg;?></span>");
-                                //$("#<?php echo $element_id;?>").val('');
+                                
                                 $(this).val('');								
                              }
                              else 
@@ -1194,7 +1131,7 @@ class sapp_Global
 						     var expr = <?php echo $pattern;?>;
                              $('#errors-<?php echo $element_id;?>').remove(); 
                              $('.errors-<?php echo $element_id;?>').remove(); 
-                            <?php  //if($.trim($(this).val()) != '')?>
+                            
                              if($(this).val() != '')
                              { 
                                  if(!expr.test($(this).val()))
@@ -1318,20 +1255,32 @@ class sapp_Global
 		{
 			if($date !='')
 			{
-				/*$date_arr = preg_split('/-/', $date);
-				 $new_date = $date_arr[2]."-".$date_arr[0]."-".$date_arr[1];*/
+				
 				$date_obj = new DateTime($date);
 				$new_date = $date_obj->format('Y-m-d');
+			}
+		}
+		else if($type == 'birthday')
+		{
+			if($date !='')
+			{
+				$date_obj = new DateTime($date);
+				$new_date = $date_obj->format('M d');
+			}
+		}
+		else if($type == 'announcement')
+		{
+			if($date !='')
+			{
+				$date_obj = new DateTime($date);
+				$new_date = $date_obj->format('D, M d');
 			}
 		}
 		else
 		{
 			if($date !='')
 			{
-				/*$date_arr = preg_split('/-/', $date);
-				 $new_date = $date_arr[1]."-".$date_arr[2]."-".$date_arr[0];
-				 *
-				 */
+				
 				$date_obj = new DateTime($date);
 				$new_date = $date_obj->format(DATEFORMAT_PHP);
 			}
@@ -1399,11 +1348,7 @@ class sapp_Global
 				}
 				catch (Exception $e)
 				{
-					/*echo "Exception";
-					 echo $errorMsg = 'Error on line '.$e->getLine().' in '.$e->getFile().': <b>'.$e->getMessage().'</b>';
-					 echo $e->getMessage()."<br/>";
-					 echo $e->getTraceAsString();
-					 exit; */
+					
 				}
 			}	
 	}
@@ -1425,11 +1370,7 @@ public static function writeApplicationConstants($email,$app_name)
 				}
 				catch (Exception $e)
 				{
-					/*echo "Exception";
-					 echo $errorMsg = 'Error on line '.$e->getLine().' in '.$e->getFile().': <b>'.$e->getMessage().'</b>';
-					 echo $e->getMessage()."<br/>";
-					 echo $e->getTraceAsString();
-					 exit; */
+				
 				}
 			}	
 	}
@@ -1441,6 +1382,7 @@ public static function writeApplicationConstants($email,$app_name)
 		$filename = Zend_Registry::get('siteconstant_file_path');
 		$site_model = new Default_Model_Sitepreference();
 		$site_data = $site_model->getActiveRecord();
+		if(!empty($site_data)){
 		$site_data = $site_data[0];
                 
                 $utc = new DateTimeZone('UTC');
@@ -1449,7 +1391,7 @@ public static function writeApplicationConstants($email,$app_name)
                 $tzoffset =  $current_tz->getOffset($dt);
                 $offset = self::formatOffset($tzoffset);
                                                                                                                     
-                //echo "<pre>";print_r($site_data);echo "</pre>";exit;
+                
 		$site_content = "<?php
            defined('DATEFORMAT_PHP') || define('DATEFORMAT_PHP','".$site_data['date_format']."');
            defined('DATEFORMAT_MYSQL') || define('DATEFORMAT_MYSQL','".$site_data['mysql_dateformat']."');
@@ -1467,16 +1409,11 @@ public static function writeApplicationConstants($email,$app_name)
 		}
 		catch (Exception $e)
 		{
-			/*echo "Exception";
-			 echo $errorMsg = 'Error on line '.$e->getLine().' in '.$e->getFile().': <b>'.$e->getMessage().'</b>';
-			 echo $e->getMessage()."<br/>";
-			 echo $e->getTraceAsString();
-			 exit; */
+			
 		}
-		/*
-		 $handle = fopen($filename, "r");
-		 echo $contents = fread($handle, filesize($filename));
-		 fclose($handle);*/
+		}
+		
+			
 	}
         /**
          * This will help to find offset by providing minutes.
@@ -1526,11 +1463,7 @@ public static function writeApplicationConstants($email,$app_name)
 		catch (Exception $e)
 		{
 			$successflag = "error";
-			/*	echo "Exception";
-				echo $errorMsg = 'Error on line '.$e->getLine().' in '.$e->getFile().': <b>'.$e->getMessage().'</b>';
-				echo $e->getMessage()."<br/>";
-				echo $e->getTraceAsString();
-				exit; */
+			
 		}
 		return $successflag;
 	}
@@ -1549,23 +1482,11 @@ public static function writeApplicationConstants($email,$app_name)
 			$egroup_content .= "\ndefined('".preg_replace('/\s/','_',$egroups['group_code'])."_".$egroups['business_unit_id']."') || define('".preg_replace('/\s/','_',$egroups['group_code'])."_".$egroups['business_unit_id']."','".$egroups['groupEmail']."');";
 		}
 		$egroup_content .= "?>";
-		/*
-		 $site_content = "<?php
-		 defined('DATE_FORMAT') || define('DATE_FORMAT','".$site_data['date_format']."');
-		 defined('TIME_FORMAT') || define('TIME_FORMAT','".$site_data['time_format']."');
-		 defined('CURRENCY_FORMAT') || define('CURRENCY_FORMAT','".$site_data['currency']."');
-		 defined('PASSWORD_FORMAT') || define('PASSWORD_FORMAT','".$site_data['passwordtype']."');
-		 ?>";
-
-
-		 */
+		
 		$handle = fopen($filename, "w+");
 		fwrite($handle,trim($egroup_content));
 		fclose($handle);
-		/*
-		 $handle = fopen($filename, "r");
-		 echo $contents = fread($handle, filesize($filename));
-		 fclose($handle);*/
+		
 	}
 	/**
 	 * This function is used to create access control dynamically.
@@ -1581,7 +1502,7 @@ public static function writeApplicationConstants($email,$app_name)
 
 		$controllers = $menu_model->getControllersByRole('1');
 		$roles_arr = $role_model->getRoleTypesForAccess();
-		//echo "<pre>";print_r($roles_arr);echo "</pre>"; exit;
+		
 		$acl = self::generateAccessControl_helper($controllers, '1');
 		$role_str = "";
 		$role_str1 = "";
@@ -1675,11 +1596,15 @@ protected function _getAcl()
   ?>";
 
 		$handle = fopen($filename, "w+");
-		fwrite($handle,$access_content);
-		fclose($handle);
-		/*$handle = fopen($filename, "r");
-		 echo $contents = fread($handle, filesize($filename));
-		 fclose($handle);*/
+		if(fwrite($handle,$access_content))
+                {
+                    fclose($handle);
+                }
+                else 
+                {
+                    throw new Exception('file permission');
+                }
+		
 	}
         /**
          * This function helps generate access control by providing static employee controllers based on group id.
@@ -1723,8 +1648,8 @@ protected function _getAcl()
                     $apprreqcandidates_controllers = array('apprreqcandidatescontroller.php'=>array('url'=>'apprreqcandidates','actions'=>array()));
                     $rcontent .= self::generateAccessControl_helper3($apprreqcandidates_controllers, $role_id, $roles['roletype']);
 
-                    //$empadditionaldetails_controllers = array('empadditionaldetailscontroller.php'=>array('url'=>'empadditionaldetails','actions'=>array()));
-                    //$rcontent .= self::generateAccessControl_helper3($empadditionaldetails_controllers, $role_id, $roles['roletype']);
+                    
+                    
                     //end of employee related controllers
             }
             if($group_id == EMPLOYEE_GROUP || $group_id == HR_GROUP || $group_id == MANAGEMENT_GROUP  || $role_id == SUPERADMINROLE)//for Employee,management ,HR groups
@@ -1733,6 +1658,9 @@ protected function _getAcl()
                     $personal_controllers = array('emppersonaldetailscontroller.php'=>array('url'=>'emppersonaldetails','actions'=>array()));
                     $rcontent .= self::generateAccessControl_helper3($personal_controllers, $role_id, $roles['roletype']);
 
+                    $employeedocs_controllers = array('employeedocscontroller.php'=>array('url'=>'employeedocs','actions'=>array()));
+                    $rcontent .= self::generateAccessControl_helper3($employeedocs_controllers, $role_id, $roles['roletype']);
+                    
                     $communication_controllers = array('empcommunicationdetailscontroller.php'=>array('url'=>'empcommunicationdetails','actions'=>array()));
                     $rcontent .= self::generateAccessControl_helper3($communication_controllers, $role_id, $roles['roletype']);
 
@@ -1794,7 +1722,7 @@ protected function _getAcl()
                     $process_controllers = array('processescontroller.php'=>array('url'=>'processes','actions'=>array()));
                     $process_acl = self::generateAccessControl_helper($process_controllers, $role_id);
                     $process_acl['processescontroller.php'] = array_combine($process_acl['processescontroller.php'],$process_acl['processescontroller.php']);
-                    //unset($process_acl['processescontroller.php']['index']);
+                    
                     unset($process_acl['processescontroller.php']['addpopup']);
                     unset($process_acl['processescontroller.php']['delete']);
 
@@ -1807,6 +1735,9 @@ protected function _getAcl()
                     //start of emloyee related controllers
                     $personal_controllers = array('emppersonaldetailscontroller.php'=>array('url'=>'emppersonaldetails','actions'=>array()));
                     $rcontent .= self::generateAccessControl_helper4($personal_controllers, $role_id, $roles['roletype']);
+                    
+                    $employeedocs_controllers = array('employeedocscontroller.php'=>array('url'=>'employeedocs','actions'=>array()));
+                    $rcontent .= self::generateAccessControl_helper3($employeedocs_controllers, $role_id, $roles['roletype']);
 
                     $communication_controllers = array('empcommunicationdetailscontroller.php'=>array('url'=>'empcommunicationdetails','actions'=>array()));
                     $rcontent .= self::generateAccessControl_helper4($communication_controllers, $role_id, $roles['roletype']);
@@ -1896,7 +1827,7 @@ protected function _getAcl()
 			$rcontent .= "if(\$role == ".$role_id." )
            {";
 			$controllers = $menu_model->getControllersByRole($role_id);
-			//echo "<pre>";print_r($controllers);echo "</pre>";
+			
 			$acl = self::generateAccessControl_helper($controllers, $role_id);
 			$acl_str = self::generateAccessControl_helper1($acl, $controllers,$roles['roletype']);
 			$rcontent .= $acl_str;
@@ -1925,7 +1856,7 @@ protected function _getAcl()
 		unset($controllers[key($acl)]['actions']['addpopup']);
 		unset($controllers[key($acl)]['actions']['editpopup']);
 		unset($controllers[key($acl)]['actions']['add']);
-		//echo "<pre>".key($acl);print_r($controllers[key($acl)]['actions']);echo "</pre>";
+		
 		$acl_str = self::generateAccessControl_helper1($acl, $controllers,$roletype);
 		return $acl_str;
 	}
@@ -1978,12 +1909,12 @@ protected function _getAcl()
                                         unset($diff_arr['add']);
 					unset($diff_arr['delete']);
 					$final_act_arr = $diff_arr+$controllers[$con_name]['actions'];
-					//echo "</pre>";
+					
                                         
-                                    //echo "<pre>".$controllers[$con_name]['url'];print_r($controllers[$con_name]['actions']);print_r($act_arr);print_r($final_act_arr);echo "</pre>";
+                                    
 					if(in_array('add', $controllers[$con_name]['actions']) && !in_array('edit',$controllers[$con_name]['actions']))
 					{
-						//echo "yes";
+						
 						$action_str = implode("','", $final_act_arr);
 
 						$acl_str .= "\n\t\t \$acl->addResource(new Zend_Acl_Resource('default:".$controllers[$con_name]['url']."'));
@@ -2014,9 +1945,9 @@ protected function _getAcl()
 				$acl_str .= "\n\t\t \$acl->addResource(new Zend_Acl_Resource('default:".$controllers[$con_name]['url']."'));
                     \$acl->allow('".$role_type."', 'default:".$controllers[$con_name]['url']."', array('".$action_str."'));\n";
 			}
-			// echo "<pre>";print_r($act_arr);echo "</pre>";
+			
 		}
-		// echo "<hr/>".$acl_str;
+		
 		return $acl_str;
 	}
 	/**
@@ -2035,7 +1966,7 @@ protected function _getAcl()
 		$front = Zend_Controller_Front::getInstance()->getControllerDirectory();
 		$acl = array();
 		unset($front['services']);
-		//echo "<pre>";print_r($front);echo "</pre>";
+		
 		foreach ($front as $module => $path)
 		{
 			foreach (scandir($path) as $file)
@@ -2049,7 +1980,7 @@ protected function _getAcl()
 					foreach (get_declared_classes() as $class)
 					{
 
-						//if (is_subclass_of($class, 'Zend_Controller_Action') && (strstr(strtolower($class),$controllers[strtolower($file)]['url']) !== false))
+						
 						if (is_subclass_of($class, 'Zend_Controller_Action') && (strtolower($class) == strtolower($module)."_".$controllers[strtolower($file)]['url']."controller"))
 						{
 							$controller = strtolower(substr($class, 0, strpos($class, "Controller")));
@@ -2072,11 +2003,7 @@ protected function _getAcl()
 							else
 							{
 								$acl[$module][strtolower($file)] = $actions;
-								// echo "<pre>role==".$role_id."file==".strtolower($file);print_r($actions);echo "</pre><hr/>";
-								/* echo "<pre>$controller";print_r($actions);print_r($controllers[strtolower($file)]);
-								 if(isset($controllers[strtolower($file)]['actions']))
-								 print_r(array_diff($actions,$controllers[strtolower($file)]['actions']));
-								 echo "</pre>";*/
+								
 							}
 						}
 					}
@@ -2209,72 +2136,7 @@ protected function _getAcl()
 
 		$DATE_CONSTANT =  gmdate("Y-m-d H:i:s");
 
-		/*$gmtvalue="SELECT
-		 CASE
-		 WHEN year('".$DATE_CONSTANT."') = 2011 and (date('".$DATE_CONSTANT."') >= '2011-03-13' AND date('".$DATE_CONSTANT."') <= '2011-11-06') THEN
-		 CASE
-		 when TIMEZONE = '-05:00' then '-4:00'
-		 when TIMEZONE = '-06:00' then '-5:00'
-		 when TIMEZONE = '-07:00' then '-6:00'
-		 when TIMEZONE = '-08:00' then '-7:00'
-		 when TIMEZONE = '-09:00' then '-8:00'
-		 when TIMEZONE = '-10:00' then '-9:00'
-		 ELSE TIMEZONE
-		 END
-		 WHEN year('".$DATE_CONSTANT."') = 2012 and (date('".$DATE_CONSTANT."') >= '2012-03-11' and date('".$DATE_CONSTANT."') <= '2012-11-04') THEN
-		 CASE
-		 when TIMEZONE = '-05:00' then '-4:00'
-		 when TIMEZONE = '-06:00' then '-5:00'
-		 when TIMEZONE = '-07:00' then '-6:00'
-		 when TIMEZONE = '-08:00' then '-7:00'
-		 when TIMEZONE = '-09:00' then '-8:00'
-		 when TIMEZONE = '-10:00' then '-9:00'
-		 ELSE TIMEZONE
-		 END
-		 WHEN year('".$DATE_CONSTANT."') = 2013 and (date('".$DATE_CONSTANT."') >= '2013-03-10' and date('".$DATE_CONSTANT."') <= '2013-11-03') THEN
-		 CASE
-		 when TIMEZONE = '-05:00' then '-4:00'
-		 when TIMEZONE = '-06:00' then '-5:00'
-		 when TIMEZONE = '-07:00' then '-6:00'
-		 when TIMEZONE = '-08:00' then '-7:00'
-		 when TIMEZONE = '-09:00' then '-8:00'
-		 when TIMEZONE = '-10:00' then '-9:00'
-		 ELSE TIMEZONE
-		 END
-		 WHEN year('".$DATE_CONSTANT."') = 2014 and (date('".$DATE_CONSTANT."') >= '2014-03-11' and date('".$DATE_CONSTANT."') <= '2014-11-04') THEN
-		 CASE
-		 when TIMEZONE = '-05:00' then '-4:00'
-		 when TIMEZONE = '-06:00' then '-5:00'
-		 when TIMEZONE = '-07:00' then '-6:00'
-		 when TIMEZONE = '-08:00' then '-7:00'
-		 when TIMEZONE = '-09:00' then '-8:00'
-		 when TIMEZONE = '-10:00' then '-9:00'
-		 ELSE TIMEZONE
-		 END END TIMEZONE ";
-
-
-		 $gmtvalue.=" FROM iptabledetails where IP_FROM <= INET_ATON('".$v."') order by IP_FROM desc limit 1";*/
-		/*$gmtvalue="SELECT
-	          CASE WHEN (date('".$DATE_CONSTANT."') >= year(now())+'-03-13' AND date('".$DATE_CONSTANT."') <=  year(now())+'-11-06')
-					THEN
-			          CASE
-						  when TIMEZONE = '-05:00' then '-4:00'
-						  when TIMEZONE = '-06:00' then '-5:00'
-						  when TIMEZONE = '-07:00' then '-6:00'
-						  when TIMEZONE = '-08:00' then '-7:00'
-						  when TIMEZONE = '-09:00' then '-8:00'
-						  when TIMEZONE = '-10:00' then '-9:00'
-					  ELSE TIMEZONE
-			          END
-	          END TIMEZONE ";
-
-
-		$gmtvalue.=" FROM iptabledetails where IP_FROM <= INET_ATON('".$v."') order by IP_FROM desc limit 1";
-
-
-	   $db = Zend_Db_Table::getDefaultAdapter();
-		$commentsModel = new Default_Model_Comments();
-		$gmt = $commentsModel->getGMTData($gmtvalue);*/
+		
 
 		$intTemp  = 0;
 		// Temporarily assigned . Need to work on it. 14032014
@@ -2300,7 +2162,7 @@ protected function _getAcl()
 	{
             $format = DATEFORMAT_PHP;
 
-            //$gmtOffset = sapp_Global::_getGlobalOffset();
+            
             $gmtOffset = !defined('TIMEZONE_OFFSET')?DEFAULT_GMT_OFFSET:TIMEZONE_OFFSET;
             $orgDateInSec = strtotime($orgDate);
             $offsetInMin = sapp_Global::hoursToMinutes($gmtOffset);
@@ -2309,6 +2171,26 @@ protected function _getAcl()
 
             $totalOrgDate = $orgDateInSec + $gmtOffsetInSec;
             $dateFormat = $format.' \a\\t '.TIME_FORMAT;
+
+            $finalDateTime = date($dateFormat,$totalOrgDate);
+            return $finalDateTime;
+	}
+        
+        /**
+         * This function used to convert gmt time to offset based time.
+         * @param string $orgDate = time to be converted.
+         * @return string  Converted time
+         */
+        public static function getDisplaySDTime($orgDate)
+	{                       
+            $gmtOffset = !defined('TIMEZONE_OFFSET')?DEFAULT_GMT_OFFSET:TIMEZONE_OFFSET;
+            $orgDateInSec = strtotime($orgDate);
+            $offsetInMin = sapp_Global::hoursToMinutes($gmtOffset);
+
+            $gmtOffsetInSec = $offsetInMin * 60;
+
+            $totalOrgDate = $orgDateInSec + $gmtOffsetInSec;
+            $dateFormat = TIME_FORMAT;
 
             $finalDateTime = date($dateFormat,$totalOrgDate);
             return $finalDateTime;
@@ -2344,7 +2226,7 @@ protected function _getAcl()
 		}
 		else
 		{
-			// $totalMinutes = $hours * 60;
+			
 			$totalMinutes = ceil($hours * 60);
 		}
 		return $totalMinutes;
@@ -2353,7 +2235,7 @@ protected function _getAcl()
 	public static function getTimeSummary($time, $timeBase = false) {
 
 		$timeBase = strtotime( sapp_Global::getDisplayDate(gmdate("Y-m-d H:i:s")));
-		// echo "<br/>".$time." >> ".$timeBase."<br/>";
+		
 		if ($time <= $timeBase) {
 			$dif = $timeBase - $time;
 
@@ -2382,13 +2264,7 @@ protected function _getAcl()
 			}
 
 			if (date("Y", $time) == date("Y", $timeBase)) {
-				//return date("F, jS g:i A", $time);
-				//return date("F, j g:i A", $time);
-				//date('F d, Y',strtotime($messageCreatedOn))." at ".date('h:i a',strtotime($messageCreatedOn));
-					
-				//return date("F j, g:i A", $time); commented on 6 May
-
-				//$finalDateFormat = date('F d, Y',$time)." at ".date('h:i a',$time);
+				
 				//changed by rakesh for making pm to PM
 				$finalDateFormat = date('F d, Y',$time)." at ".date('h:i A',$time);
 				return  $finalDateFormat;
@@ -2418,7 +2294,7 @@ protected function _getAcl()
 			}
 		}
 
-		//return date("F, jS Y \a\t g:i A", $time);
+		
 		return date("F j, Y \a\\t g:i A", $time);
 	}
 
@@ -2432,14 +2308,14 @@ protected function _getAcl()
 		$settingsmodel = new Default_Model_Settings();
 		$settingsdiv = '';
 		$menuidArr = $menumodel->getMenuObjID('/'.$controllerName);
-		//echo "<pre>";print_r($menuidArr);
-		if(!empty($menuidArr))
+		
+		if(!empty($menuidArr) && $controllerName != 'servicerequests')
 		{
 			$menuID = $menuidArr[0]['id'];
 			if($menuID !='')
 			{
 				$settingsmenuArr = $settingsmodel->getMenuIds($loginUserId,2);
-				//echo "<pre>";print_r($settingsmenuArr);
+				
 				if(!empty($settingsmenuArr))
 				{
 					$settingsmenustring = $settingsmenuArr[0]['menuid'];
@@ -2449,40 +2325,30 @@ protected function _getAcl()
 					{
 						if(in_array($menuID,$settingsmenuArray))
 						{
-							$settingsdiv = '<div id="pageshortcut" class = "activeshortcut" onclick="createorremoveshortcut('.$menuID.',2)">Remove Shortcut';
+							
+                                                        $settingsdiv = '<div id="pageshortcut" class = "sprite remove-shortcut-icon" onclick="createorremoveshortcut('.$menuID.',2)">Unpin from shortcuts';
 							$settingsdiv .='</div>';
 
 						}
 						else
 						{
-							$settingsdiv = '<div id="pageshortcut" class ="inactiveshortcut" onclick="createorremoveshortcut('.$menuID.',1)">Make Shortcut';
+							
+                                                        $settingsdiv = '<div id="pageshortcut" class ="sprite shortcut-icon" onclick="createorremoveshortcut('.$menuID.',1)">Pin to shortcuts';
 							$settingsdiv .='</div>';
 						}
-					}/*else
-					{
-						if(in_array($menuID,$settingsmenuArray))
-						{
-							$settingsdiv = '<div id="pageshortcut" class = "activeshortcut" onclick="createorremoveshortcut('.$menuID.',2)">Remove Shortcut';
-							$settingsdiv .='</div>';
-
-						}
-						else
-						{
-							$settingsdiv = '<div id="pageshortcut" class ="inactiveshortcut" onclick="createorremoveshortcut('.$menuID.',1)">Make Shortcut';
-							$settingsdiv .='</div>';
-						}
-					}*/
+					}
 				}
 				else
 				{
-					$settingsdiv = '<div id="pageshortcut" class ="inactiveshortcut" onclick="createorremoveshortcut('.$menuID.',3)">Make Shortcut';
+					
+                                        $settingsdiv = '<div id="pageshortcut" class ="sprite shortcut-icon" onclick="createorremoveshortcut('.$menuID.',3)">Pin to shortcuts';
 					$settingsdiv .='</div>';
 				}
 			}
 
 		}
 		return $settingsdiv;
-		//echo"<pre>";print_r($settingsmenuArray);echo"</pre>";exit;
+		
 	}
 
 	// To download a file
@@ -2528,6 +2394,50 @@ protected function _getAcl()
 			return array('message' => 'File not found. Please check the path is correct and file exists.');
 		}
 	}
+	
+	public static function getbudeptname($appraisalid)
+    {
+    	$appInitModel = new Default_Model_Appraisalinit();
+    	$businessunitmodel = new Default_Model_Businessunits();
+    	$deptmodel = new Default_Model_Departments();
+    	$buname = '';
+    	$deptname ='';
+    	$perf_impl_flag = '';
+    	$appraisaldataArr = array();
+    	if($appraisalid)
+    	{
+    		$appraisaldataArr = $appInitModel->getAppDataById($appraisalid);
+    		if(!empty($appraisaldataArr))
+    		{
+    			if($appraisaldataArr['businessunit_id']!='')
+    			{
+					$buDataArr = $businessunitmodel->getSingleUnitData($appraisaldataArr['businessunit_id']);
+					$perfimplementation = $appInitModel->check_performance_implmentation($appraisaldataArr['businessunit_id']);
+					if(!empty($buDataArr))
+					{
+						$buname = $buDataArr['unitname'];
+					}
+					if(!empty($perfimplementation))
+					{
+						$perf_impl_flag = $perfimplementation['performance_app_flag'];
+					}
+    			}
+    			if($perf_impl_flag == 0)
+    			{	
+					if($appraisaldataArr['department_id']!='')
+						$deptArr = $deptmodel->getSingleDepartmentData($appraisaldataArr['department_id']);
+
+					if(!empty($deptArr))
+					{
+						$deptname = $deptArr['deptname'];
+					}	
+    			}		
+    		}
+    	}
+    	
+    	return array('buname' => $buname,'deptname'=>$deptname,'perf_app_flag'=>$perf_impl_flag,'appdata'=>$appraisaldataArr);
+    
+    }
 	
 	public static function smartresizeimage($file,
 	$width              = 0,
@@ -2670,6 +2580,625 @@ protected function _getAcl()
             $menuobj = $menu_model->checkmenustatus($menuID);            
 			if($menuobj['isactive'] == '1')  return true;
 			else return false;
+	}
+	
+	public static function buildlocations($form,$wizardData)
+	{
+		$countriesModel = new Default_Model_Countries();
+        $statesmodel = new Default_Model_States();
+        $citiesmodel = new Default_Model_Cities();
+    	$countryId = '';
+    	$stateId = '';
+    	$cityId = '';
+    	$new_stateId = '';
+    	$new_cityId = '';
+    	
+    				if(isset($wizardData['country']) && $wizardData['country'] !='null')
+                	  $countryId = $wizardData['country'];
+                    if(isset($wizardData['state']) && $wizardData['state'] !='null')
+                	  $stateId = $wizardData['state'];
+                	if(isset($wizardData['city']) && $wizardData['city'] !='null')
+                	  $cityId = $wizardData['city'];	
+                	  
+    			if(count($_POST) > 0)
+                {
+                    $countryId = isset($_POST['country'])?$_POST['country']:"";
+                    $stateId = isset($_POST['state'])?$_POST['state']:"";
+                    $cityId = isset($_POST['city'])?$_POST['city']:"";                                    
+                }
+                if($countryId != '')
+                {
+                    $statesData = $statesmodel->getBasicStatesList((int)$countryId);
+                    foreach($statesData as $res)
+                    {
+                        if($stateId == $res['state_id_org'])
+                            $new_stateId = $res['state_id_org'].'!@#'.utf8_encode($res['state']);
+                        $form->state->addMultiOption($res['state_id_org'].'!@#'.utf8_encode($res['state']),utf8_encode($res['state']));
+                    }
+                    if(count($_POST) == 0)
+                        $stateId = $new_stateId;
+                }
+                if($stateId != '')
+                {
+                    $citiesData = $citiesmodel->getBasicCitiesList((int)$stateId);
+
+                    foreach($citiesData as $res)
+                    {
+                        if($cityId == $res['city_org_id'])
+                            $new_cityId = $res['city_org_id'].'!@#'.utf8_encode($res['city']);
+                        $form->city->addMultiOption($res['city_org_id'].'!@#'.utf8_encode($res['city']),utf8_encode($res['city']));
+                    }
+                    if(count($_POST) == 0)
+                        $cityId = $new_cityId;
+                }
+                
+                $form->setDefault('country',$countryId);
+                $form->setDefault('state',$stateId);
+                $form->setDefault('city',$cityId);
+	}
+	
+	/* Arrary created to use for title,text for anchor tag,empty message text
+	 *    for Dashboard widget format functions(format1 to format 6).
+	 */
+	public static function titleArr($id='',$con='')
+	{
+	$idsTitleArr = 
+	array(57  => array('title'=>'Scheduled Interviews','btnText'=>'Schedules','emptyText'=>'No interviews scheduled for today','addText'=>'Add'),
+      10  =>  array('title'=>'Business Units','btnText'=>'View All','emptyText'=>'No business units','addText'=>'Add Units'),
+      11  => array('title'=>'Departments','btnText'=>'View All','emptyText'=>'No deparments' ,'addText'=>'Add departments'),
+      20  => array('title'=>'Roles & Privileges','btnText'=>'View All','emptyText'=>'No active roles','addText'=>'Add roles'),
+      21  => array('title'=>'Manage External Users','btnText'=>'View All','emptyText'=>'No external users','addText'=>'Add'),
+      14  => array('title'=>'Employees','btnText'=>'View All','emptyText'=>'','addText'=>'Add')	,
+      23  => array('title'=>'Employee/Candidate Screening','btnText'=>'View All','emptyText'=>'','addText'=>'Add')  ,
+      34  => array('title'=>'My Team','btnText'=>'View My Team','emptyText'=>'','addText'=>'Add')  ,
+      45  => array('title'=>'Employee Leaves Summary','btnText'=>'View Leaves','emptyText'=>'','addText'=>'Add')  ,
+      54  => array('title'=>'Openings/Positions','btnText'=>'View','emptyText'=>'','addText'=>'Add')  ,
+      55  => array('title'=>'','btnText'=>'','emptyText'=>'','addText'=>'')  ,
+      56  => array('title'=>'Shortlisted & Selected Candidates','btnText'=>'View Candidates','emptyText'=>'','addText'=>'Add')  ,
+      65  => array('title'=>'Leaves Pending For Approval','btnText'=>'Approve Leaves','emptyText'=>'','addText'=>'Add')  ,
+      44  => array('title'=>'Leave Management Options','btnText'=>'View','emptyText'=>'','addText'=>'Add')  ,
+      43  => array('title'=>'My Holiday Calendar','btnText'=>'View Holidays','emptyText'=>'No holidays added yet','addText'=>'Add')  ,
+      80  => array('title'=>'Time Zones','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      86  => array('title'=>'Gender','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      87  => array('title'=>'Marital Status','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      88  => array('title'=>'Prefixes','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      89  => array('title'=>'Race Codes','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      90  => array('title'=>'Nationality Context Codes','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      91  => array('title'=>'Nationalities','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      92  => array('title'=>'Account Class Types ','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      93  => array('title'=>'License Types','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      100  => array('title'=>'Countries','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      101  => array('title'=>'States','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      102  => array('title'=>'Cities','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      103  => array('title'=>'Geo Groups','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      107  => array('title'=>'Veteran Status','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      108  => array('title'=>'Military Service Types','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      110  => array('title'=>'Currencies','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      111  => array('title'=>'Currency Conversions','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      114  => array('title'=>'Employment Status','btnText'=>'View All','emptyText'=>'','addText'=>'Add')  ,
+      115  => array('title'=>'EEOC Categories','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      116  => array('title'=>'Job Titles','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      117  => array('title'=>'Pay Frequency','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      118  => array('title'=>'Remuneration Basis','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      120  => array('title'=>'Positions','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      121  => array('title'=>'Languages','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      123  => array('title'=>'Bank Account Types','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      124  => array('title'=>'Competency Levels','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      125  => array('title'=>'Education Levels','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      126  => array('title'=>'Attendance Status','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      127  => array('title'=>'Work Eligibility Document Types','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      128  => array('title'=>'Leave Types','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      132  => array('title'=>'Number Formats','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      136  => array('title'=>'Email Contacts','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      144  => array('title'=>'Categories','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      145  => array('title'=>'Request Types','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      146  => array('title'=>'Settings','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      148  => array('title'=>'','btnText'=>'','emptyText'=>'','addText'=>'Add')  ,
+      150  => array('title'=>'Parameters','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      151  => array('title'=>'Skills','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      152  => array('title'=>'Appraisal Questions','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      154  => array('title'=>'Initialize Appraisal','btnText'=>'Initialize','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      155  => array('title'=>'Appraisal Settings','btnText'=>'View All','emptyText'=>'','addText'=>'Add')  ,
+      165  => array('title'=>'Parameters','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      166  => array('title'=>'Feedforward Questions','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      62  => array('title'=>'Pending Leaves','btnText'=>'View All','emptyText'=>'','addText'=>'Add')  ,
+      63  => array('title'=>'Approved Leaves','btnText'=>'View All','emptyText'=>'','addText'=>'Add')  ,
+      64  => array('title'=>'Cancelled Leaves','btnText'=>'View All','emptyText'=>'','addText'=>'Add')  ,
+      68  => array('title'=>'Screening Types','btnText'=>'View All','emptyText'=>'Not configured yet','addText'=>'Add')  ,
+      69  => array('title'=>'Agencies','btnText'=>'View All','emptyText'=>'','addText'=>'Add')  ,
+      85  => array('title'=>'Ethnic Codes','btnText'=>'View All','emptyText'=>'Ethnic codes not added','addText'=>'Add')  ,
+      134  => array('title'=>'Approved Requisitions','btnText'=>'View All','emptyText'=>'','addText'=>'Add')  ,
+      135  => array('title'=>'Rejected Leaves','btnText'=>'View All','emptyText'=>'','addText'=>'Add')  ,
+      138  => array('title'=>'Rejected Requisitions','btnText'=>'View All','emptyText'=>'','addText'=>'Add')  ,
+      139  => array('title'=>'Identity Documents','btnText'=>'View All','emptyText'=>'','addText'=>'Add')  ,
+      140  => array('title'=>'','btnText'=>'','emptyText'=>'','addText'=>'')  ,
+      142  =>  '',
+      158  => array('title'=>'Manager Status','btnText'=>'View','emptyText'=>'No data','addText'=>'')  ,
+      159  => array('title'=>'Appraisal Employee Status','btnText'=>'View','emptyText'=>'No data','addText'=>''),
+      35  => array('title'=>'My Team Appraisal','btnText'=>'View','emptyText'=>'No data','addText'=>''),
+      160  =>  '',
+      161  => array('title'=>'Self Appraisal','btnText'=>'View','emptyText'=>'No data','addText'=>''),
+      167  =>  '',
+      168  =>  '',
+      169  =>  array('title'=>'Manager Appraisal','btnText'=>'View','emptyText'=>'No data','addText'=>''), 
+      170  =>  array('title'=>'Appraise Your Manager','btnText'=>'View','emptyText'=>'No data','addText'=>''), 
+      172  => array('title'=>'Feedforward Employee Status','btnText'=>'View','emptyText'=>'No data','addText'=>''),
+      174  => array('title'=>'My Team Appraisal','btnText'=>'View','emptyText'=>'No data','addText'=>''),
+      );
+	return $idsTitleArr[$id][$con];
+	}
+	
+	public static function format1($url='')
+	{
+		try {
+			$widgetsModel = new Default_Model_Widgets();
+			$format1 = $widgetsModel->format1();
+			if(!empty($url))
+			{
+			  $url = substr($url,1);
+			}
+			
+			// Get login user data
+			$auth = Zend_Auth::getInstance();
+	        $session = $auth->getStorage()->read();
+	        $loginUserId = $session->id;
+	        $login_user_name = $session->userfullname;
+	        $login_user_profile_image = $session->profileimg;
+	        
+	        // Get job title name
+	        if ($session->emprole == 1) {
+	        	$job_title_name = "Super Admin";
+	        } else {
+	        	$result = $widgetsModel->getJobTitleName($session->jobtitle_id);
+	        	$job_title_name = $result["jobtitlename"];
+	        }
+	        $login_user_name1 = (strlen($login_user_name) > 13) ? substr($login_user_name,0,13).'..':$login_user_name;
+			$job_title =(strlen($job_title_name) > 13) ? substr($job_title_name,0,13).'..':$job_title_name;
+	       
+	        if(empty($format1))
+			{ 
+				$htmlContent = '<div id="format1_div" class="interview_shed_block no_interview_shed_block" >
+					<div class="left_block_shed">
+						<div class="users_left_list_div users_list">
+							<span class="values">
+								<div class="profile_img">
+									<img src="'.DOMAIN.'public/uploads/profile/'.$login_user_profile_image.'" width="80px" height="80px" onerror=\'this.src="'.DOMAIN.'public/media/images/default-profile-pic.jpg"\'>
+								</div> 
+							</span>
+							<div class="member_name" title="'.$login_user_name.'">'.$login_user_name1.'</div>		
+							<div class="member_jname" title="'.$job_title_name.'">'.$job_title.'</div>
+						</div>
+					</div>
+			  <div class="interview_shed_box" style="display:none;"><h4><div>Interview Schedules, <span>'.date("D j, M Y").'</span></div> ';
+			  $htmlContent .=  "<div class='no_interview'>No interviews scheduled for today.</div> </h4>";
+			}
+			else{
+				$htmlContent = '<div id="format1_div" class="interview_shed_block" >
+					<div class="left_block_shed">
+						<div class="users_left_list_div users_list">
+							<span class="values">
+								<div class="profile_img">
+									<img src="'.DOMAIN.'public/uploads/profile/'.$login_user_profile_image.'" width="80px" height="80px" onerror=\'this.src="'.DOMAIN.'public/media/images/default-profile-pic.jpg"\'>
+								</div> 
+							</span>
+							<div class="member_name" title="'.$login_user_name.'">'.$login_user_name1.'</div>		
+							<div class="member_jname" title="'.$job_title_name.'">'.$job_title.'</div>
+						</div>
+						<h4><div>Interview Schedules</div><span>'.date("D j, M Y").'</span></h4>
+					</div>
+					<div class="interview_shed_box" style="display:none;">';
+				if(!empty($url))
+				$htmlContent .= '<div class="box_link view_link"><a href="'.DOMAIN.$url.'" >All</a></div>';				
+				$htmlContent.='<ul>';
+			
+				foreach($format1 as $interview_scheduled ) 
+				{
+					$candidate_id = $interview_scheduled['id'];					
+					 $candidate_name = $interview_scheduled['candidate_name'];
+					 $interview_type = $interview_scheduled['interview_mode'];
+					 $interview_time = sapp_Global::change_time($interview_scheduled['interview_time'],'interview_time');
+					 $contact_number = $interview_scheduled['contact_number'];
+					 $interview_id = $interview_scheduled['interview_id'];
+					 $emailid = $interview_scheduled['emailid'];
+					 $cand_resume = $interview_scheduled['cand_resume']; 
+					 $candidate_name_shrt=(strlen($candidate_name) > 10) ? substr($candidate_name,0,10):$candidate_name; 
+					 $htmlContent .= '<li>
+					 <span class="emp_lable me_label">Candidate</span>
+					 <span class="can_name_lable" title="'.$candidate_name.'">'.$candidate_name_shrt. '('.$interview_type.'),</span>
+					 <span class="txt_lable">At:</span>
+					 <span class="txt_block">'. $interview_time.',</span>';
+					 
+					 if (!empty($contact_number)) {
+					 	$htmlContent .= '<div style="display: inline-block;"><span class="txt_lable">Phone:</span>
+					 <span class="txt_block">'. $contact_number.',</span></div>';	
+					 }
+					 
+					 if (!empty($emailid)) {
+					 	$htmlContent .= '<div style="display: inline-block;"><span class="txt_lable">Email:</span>
+					 <span class="txt_block">'. $emailid .',</span></div>';
+					 }	
+					 
+					 $htmlContent .= '<span class="emp_resume_link"><a href="'.DOMAIN.'scheduleinterviews/downloadresume/id/'.$candidate_id.'/int_id/'.$interview_id.'" title="'.$cand_resume.'">';
+					 if(!empty($cand_resume)){
+					 	$htmlContent .= 'Resume';
+					 } else {
+					 	$htmlContent .= 'View';
+					 }
+					 $htmlContent .= '</a></span></li>';
+				}
+				$htmlContent .= '</ul>';
+			} 
+			
+	        return $htmlContent .= '</div><div class="clear"></div></div>';
+		} 	catch(Expection $e) {
+			echo $e->getMessage();
+		}
+	}
+	public static function format2($id='',$i=0,$url='')
+	{ 
+		$widgetsModel = new Default_Model_Widgets();
+		$format2 = $widgetsModel->format2($id);
+		$title = self::titleArr($id,'title');
+		$btnText = self::titleArr($id,'btnText');
+		$append_url1 = DOMAIN.'empscreening/con/pQ==';
+		$append_url2 = DOMAIN.'empscreening/con/pA==';
+		if(!empty($url))
+		{
+		 $url = substr($url,1);
+		}
+		$htmlContent = '<div id="format1_div" class="dashboard_wid_box colour_'.$i.'  emp_total"><h4 >'.$title.'</h4>';
+		if(empty($format2))
+		{
+			
+		$htmlContent .= '<a href="'.$append_url1.'" class ="cls_redirect"><div class="dashboard_wid_box_inner">Candidates<span class="box_count">0</span></div></a>
+			<a href="'.$append_url2.'" class ="cls_redirect"><div class="dashboard_wid_box_inner last-child">Employees<span class="box_count">0</span></div></a>';
+		if(!empty($url))
+		$htmlContent .= '<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a>';
+		}
+		else{
+			$htmlContent .= '<a href="'.$append_url1.'" class ="cls_redirect"><div class="dashboard_wid_box_inner">Candidates<span class="box_count">'.(isset($format2[0])? $format2[0]:0).'</span></div>
+			<a href="'.$append_url2.'" class ="cls_redirect"><div class="dashboard_wid_box_inner last-child">Employees<span class="box_count">'.(isset($format2[1])? $format2[1]:0).'</span></div>';
+			if(!empty($url))
+			$htmlContent .= '<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a>';
+			}
+		return $htmlContent .='</div>';
+	}
+	
+	
+	public static function format4($id='',$i=0,$url='')
+	{
+		$widgetsModel = new Default_Model_Widgets();
+		$format4 = $widgetsModel->format4($id);															
+		$title = self::titleArr($id,'title');
+		$btnText = self::titleArr($id,'btnText');
+		$count = 0;
+		if(!empty($url))
+		{
+		 $url = substr($url,1);
+		}
+		 $class = '';
+		 $append_url1 = '';
+		 $append_url2 = '';
+	      if($id == 14 || $id == 34)
+		   {
+				$title1='Active';
+				$title2='Inactive';
+				if(!empty($format4))
+				{
+					$count = $format4['param1'];
+					$format4['param3'] = $count-(int)$format4['param2'];
+				}
+		   }
+		   
+		  else if($id == 54)
+		   {
+				$title1='Approved';
+				$title2='Rejected';
+				$append_url1 = DOMAIN.'/approvedrequisitions'; // $append_url for redirecting to specific page
+				$append_url2 = DOMAIN.'/rejectedrequisitions';
+				if(!empty($format4))
+				$count = $format4['param1'];
+				
+		   }
+		   else
+		   {
+				$title1='ShortList';
+				$title2='Selected';
+				$class = ' shortlist_cls';// class added for the shortlist candidate menu widget because of overlapping to view all Button.
+				$append_url1 = DOMAIN.'shortlistedcandidates/pA==';
+				$append_url2 = DOMAIN.'shortlistedcandidates/pQ==';
+				if(!empty($format4))
+				$count = $format4['param1'] + $format4['param2'] + $format4['param3'];
+		   }
+			
+		   		$htmlContent = '<div class="dashboard_wid_box '.$class.' colour_'.$i.' emp_total">
+						<h4 >
+						<div class="box_count_tol emp_total">'.$count .'</div>'.$title.'</h4>';
+		   	if(!empty($format4))
+			{
+				// Avoid hand symbol for Employee widget tabs
+				$href1 = !empty($append_url1) ? "href='$append_url1'" : "";
+				$href2 = !empty($append_url1) ? "href='$append_url2'" : "";
+				
+				$htmlContent .='<a '.$href1.' class ="cls_redirect"><div class="dashboard_wid_box_inner">'.$title1.'<span class="box_count">'.$format4['param2'] .'</span></div></a>
+						<a '.$href2.' class ="cls_redirect"><div class="dashboard_wid_box_inner last-child">'.$title2.'<span class="box_count">'. $format4['param3'].'</span></div></a>';
+			}
+			else
+			{
+				$htmlContent .='<a href="'.$append_url1.'" class ="cls_redirect"><div class="dashboard_wid_box_inner">'.$title1.'<span class="box_count">0</span></div></a>
+						<a href="'.$append_url2.'" class ="cls_redirect"><div class="dashboard_wid_box_inner last-child">'.$title2.'<span class="box_count">0</span></div></a>';
+			}	
+				if(!empty($url)) 
+				$htmlContent .='<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a>';
+				$htmlContent .='</div>';
+		
+		return $htmlContent;
+	}
+	
+	public static function format5($id='',$i=0,$url='')
+	{
+		$widgetsModel = new Default_Model_Widgets();
+		$format5 = $widgetsModel->format5($id);
+		$size = sizeof($format5);
+		$title = self::titleArr($id,'title');
+		$btnText = self::titleArr($id,'btnText');
+		$emptyText = self::titleArr($id,'emptyText');
+		$total =0;
+		if(!empty($url))
+		{
+		 $url = substr($url,1);
+		}
+		$htmlContent = '<div class="dashboard_bottom_box" >';
+		
+		if($id == 21)
+		{ 
+			if(!empty($format5))
+			{
+				$total = (int)$format5['backgroundagency']+(int)$format5['users']+(int)$format5['vendors']+(int)$format5['staffing'];
+				$htmlContent .= '<h4 >'.$title.'</h4><div id="cnt_div" class ="tot_cnt num_color_'.$i.'">'.$total.'</div><div class="dashboard_bottom_div" ><ul>';
+				foreach($format5 as $k=>$v)
+				{	
+					$shrt_key = (strlen($k) > 30) ? substr($k,0,30):$k;
+					$htmlContent .= '<li title="'.$k.'">'.$shrt_key." "."(".$v.")"."</li>";
+				} 
+			 
+				$htmlContent .= "</ul>";
+				if(!empty($url)) 
+				$htmlContent .='<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a>';
+				$htmlContent .='</div>';
+			}
+			else 
+			{
+				$htmlContent .= '<h4 >'.$title.'</h4><div id="cnt_div" class ="tot_cnt num_color_'.$i.'">0</div><div class="dashboard_bottom_div" >';
+				$htmlContent .= "<span class='no_text no_data'>$emptyText</span>"; 
+				if(!empty($url))
+				$htmlContent .='<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a>';
+				$htmlContent .='</div>';
+			}
+		}
+		
+		else if($id == 159 || $id == 174)
+		{
+			
+			if(!empty($format5))
+			{
+			   $total = (int)$format5['ratings']['pending_employee_ratings']+(int)$format5['ratings']['completed']+(int)$format5['ratings']['pending_manager_ratings'];	
+			   $htmlContent .= '<h4 >'.$title.'</h4><div id="cnt_div" class ="tot_cnt num_color_'.$i.'">'.$total.'</div><div class="dashboard_bottom_div" >';
+			   $htmlContent .= '<span class="businessunit_title" title="BusinessUnit">Business Unit : '.$format5['businessUnit']."</span>";
+			   if(isset($format5['department']))
+			   {
+			   $htmlContent .= '<span class="department_txt" title="Department">Department : '.$format5['department']."</span>";
+			   }
+			    $htmlContent .= "<span class='department_txt' title='Appraisal Mode'>".$format5['appraisal_period']." Appraisal (".$format5['from_year']." - ".$format5['to_year'].")"  
+			    					."</span><ul> ";
+			   $htmlContent .= '<li title="Pending employee ratings">Pending employee ratings'." (".$format5['ratings']['pending_employee_ratings'].")"."</li>";
+			   $htmlContent .= '<li title="Pending manager ratings">Pending manager ratings'." (".$format5['ratings']['pending_manager_ratings'].")"."</li>";
+			   $htmlContent .= '<li title="Completed">Completed'." (".$format5['ratings']['completed'].")"."</li></ul>";
+			   if(!empty($url)) 
+				$htmlContent .='<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a>';
+				$htmlContent .='</div>';
+			   
+			}
+			else 
+			{
+				$htmlContent .= '<h4 >'.$title.'</h4><div id="cnt_div" class ="tot_cnt num_color_'.$i.'">0</div><div class="dashboard_bottom_div" >';
+				$htmlContent .= "<span class='no_text no_data'>$emptyText</span>"; 
+				if(!empty($url))
+				$htmlContent .='<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a>';
+				$htmlContent .='</div>';
+			}
+			
+			
+		}
+		else if($id == 172)
+		{
+			
+			if(!empty($format5))
+			{
+			   $total = (int)$format5['ratings']['pending_employee_ratings']+(int)$format5['ratings']['completed'];	
+			   $htmlContent .= '<h4 >'.$title.'</h4><div id="cnt_div" class ="tot_cnt num_color_'.$i.'">'.$total.'</div><div class="dashboard_bottom_div" >';
+			   $htmlContent .= '<span class="businessunit_title" title="BusinessUnit">Business Unit : '.$format5['businessUnit']."</span>";
+			   if(isset($format5['department']))
+			   {
+			   $htmlContent .= '<span class="department_txt" title="Department">Department : '.$format5['department']."</span>";
+			   }
+			    $htmlContent .= "<span  class='department_txt' title='Appraisal Mode'>".$format5['ff_period']." Feedforward (".$format5['ff_from_year']." - ".$format5['ff_to_year'].")"  
+			    					."</span><ul> ";
+			   $htmlContent .= '<li title="Pending employee ratings">Pending employee ratings'." (".$format5['ratings']['pending_employee_ratings'].")"."</li>";
+			   $htmlContent .= '<li title="Completed">Completed'." (".$format5['ratings']['completed'].")"."</li></ul>";
+			   if(!empty($url)) 
+				$htmlContent .='<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a>';
+				$htmlContent .='</div>';
+			   
+			}
+			else 
+			{
+				$htmlContent .= '<h4 >'.$title.'</h4><div id="cnt_div" class ="tot_cnt num_color_'.$i.'">0</div><div class="dashboard_bottom_div" >';
+				$htmlContent .= "<span class='no_text no_data'>$emptyText</span>"; 
+				if(!empty($url))
+				$htmlContent .='<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a>';
+				$htmlContent .='</div>';
+			}
+			
+			
+		}
+	  else if($id == 158)
+		{
+			if(!empty($format5))
+			{  
+				$completedMngrCnt = isset($format5['compltedmgrIdArr'])? $format5['compltedmgrIdArr']:0;
+				$notCompletedMngrCnt = isset($format5['notCompltedmgrIdArr'])? $format5['notCompltedmgrIdArr']:0;
+			   $total = (int)$completedMngrCnt+(int)$notCompletedMngrCnt;	
+			   $htmlContent .= '<h4 >'.$title.'</h4><div id="cnt_div" class ="tot_cnt num_color_'.$i.'">'.$total.'</div><div class="dashboard_bottom_div" >';
+			   $htmlContent .= '<span class="businessunit_title" title="BusinessUnit">Business Unit : '.$format5['businessUnit']."</span>";
+			   if(isset($format5['department']))
+			   {
+			   $htmlContent .= '<span class="department_txt" title="Department">Department : '.$format5['department']."</span>";
+			   }
+			    $htmlContent .= "<span  class='department_txt' title='Appraisal Mode'>".$format5['appraisal_period']." Appraisal (".$format5['from_year']." - ".$format5['to_year'].")"  
+			    					."</span><ul>";
+			   $htmlContent .= '<li title="Pending manager ratings">Pending manager ratings'." (".$notCompletedMngrCnt.")"."</li>";
+			   $htmlContent .= '<li title="Completed manager ratings">Completed manager ratings'." (".$completedMngrCnt.")"."</li></ul>";
+			   if(!empty($url)) 
+				$htmlContent .='<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a>';
+				$htmlContent .='</div>';
+			   
+			}
+			else 
+			{
+				$htmlContent .= '<h4 >'.$title.'</h4><div id="cnt_div" class ="tot_cnt num_color_'.$i.'">0</div><div class="dashboard_bottom_div" >';
+				$htmlContent .= "<span class='no_text no_data'>$emptyText</span>"; 
+				if(!empty($url))
+				$htmlContent .='<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a>';
+				$htmlContent .='</div>';
+			}
+			
+			
+		}
+	 
+		
+		
+		else
+		{  
+			
+			if($format5['count']['count'] > 0) 
+			{
+				$htmlContent .= '<h4 >'.$title.'</h4><div id="cnt_div" class ="tot_cnt num_color_'.$i.'">'. $format5['count']['count'].'</div><div class="dashboard_bottom_div" >';
+					unset($format5['count']);
+						
+						$htmlContent .= "<ul>";
+						foreach($format5 as $val)
+						{  
+							if(isset($val['param2']))
+							{
+							   $shrt_key = (strlen($val['param1']) > 30) ? substr($val['param1'],0,30):$val['param1'];
+								if($id != 111)
+								  $htmlContent .= '<li title="'.$val['param1'].'">'.$shrt_key." "."(".$val['param2'].")"."</li>";
+							    else
+							      $htmlContent .= '<li title="'.$val['param1'].'">'.$shrt_key." to ".$val['param2']."</li>";
+							
+							}
+							else
+							{
+								$shrt_key = (strlen($val['param1']) > 30) ? substr($val['param1'],0,30):$val['param1'];
+								$htmlContent .= '<li title="'.$val['param1'].'">'.$shrt_key."</li>";
+								
+							}
+							
+						}
+				$htmlContent .= "</ul>"; 
+				if(!empty($url)) 
+				$htmlContent .='<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a>';
+				$htmlContent .='</div>';
+			}
+			else 
+			{
+				$htmlContent .= '<h4 >'.$title.'</h4><div id="cnt_div" class ="tot_cnt num_color_'.$i.'">0</div><div class="dashboard_bottom_div" >';
+				$htmlContent .= "<span class='no_text no_data'>$emptyText</span>"; 
+				if(!empty($url)) 
+				$htmlContent .='<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a>';
+				$htmlContent .='</div>';
+			}
+			
+		}
+				
+		return $htmlContent .='</div>';
+	}
+	
+	
+	public static function format3($id='',$i=0,$url='')
+	{
+		$widgetsModel = new Default_Model_Widgets();
+		$format3 = $widgetsModel->format3($id);
+		$title = self::titleArr($id,'title');
+		$btnText = self::titleArr($id,'btnText');
+		if(!empty($url))
+		{
+		 $url = substr($url,1);
+		}
+		if(!empty($format3))
+		{
+			if($id == 161)
+			$htmlContent = '<div class="dashboard_wid_box colour_'.$i.' single_txt"><h4 >'.$format3['cnt'].' '.$title.'</h4>';
+			else if($id == 170)
+			{
+				$val = ($format3['cnt']== 1) ? "Pending employee ratings":"Completed";
+			$htmlContent = '<div class="dashboard_wid_box colour_'.$i.' single_txt"><h4 >'.$title.' '.$val.'</h4>';
+			}
+			else 
+			$htmlContent = '<div class="dashboard_wid_box colour_'.$i.' single_txt"><h4 ><span>'.$format3['cnt'].'&nbsp</span>'.$title.'</h4>';
+			
+			
+		}
+		else 
+		{	
+			if($id == 161)
+			$htmlContent = '<div class="dashboard_wid_box colour_'.$i.' single_txt"><h4 ><div class="colour_not_conf">'.$title.' <div class="no_info_txt">Not Configured</div></div></h4>';
+			else if($id == 170)
+			$htmlContent = '<div class="dashboard_wid_box colour_'.$i.' single_txt"><h4 ><div class="colour_not_conf">'.$title.' <div class="no_info_txt">Not Configured</div></div></h4>';
+			else
+			$htmlContent = '<div class="dashboard_wid_box colour_'.$i.' single_txt"><h4 ><span>0 </span> '.$title.'</h4>';
+			
+		}
+		if(!empty($url)) 
+				$htmlContent .='<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a>';
+				$htmlContent .='</div>';
+		return $htmlContent ;//.='<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a></div>';
+	}
+	
+	public static function format6($id='',$url='')
+	{
+		$widgetsModel = new Default_Model_Widgets();
+		$format6 = $widgetsModel->format6($id);
+		$title = self::titleArr($id,'title');
+		$btnText = self::titleArr($id,'btnText');
+		$emptyText = self::titleArr($id,'emptyText');
+		if(!empty($url))
+		{
+		 $url = substr($url,1);
+		}
+		 $htmlContent = '<div class="dashboard_bottom_box" ><h4 >'.$title.'</h4>';
+			if(!empty($format6))
+			{	
+		 		foreach($format6 as $format6)
+						{ 
+							$dept_name = (strlen($format6['deptname']) > 30) ? substr($format6['deptname'],0,30):$format6['deptname'];
+							$htmlContent .= "<div class='dashboard_bottom_div'><ul class='leave_mana'><li><span>Department</span>:<span class='ul_span_2' title=".$format6['deptname'].">".$dept_name."</span></li>";
+							$htmlContent .= "<li><span>Calender start month</span>:<span class='ul_span_2'>".$format6['month_name']."</span></li>";
+							$htmlContent .= "<li><span>Weekend</span>:<span class='ul_span_2'>".$format6['weekend_start']." to ".$format6['weekend_end']."</span></li>";
+							$htmlContent .= "<li><span>Half day</span>:<span class='ul_span_2'>".$format6['is_halfday']."</span></li>";
+							$htmlContent .= "<li><span>Leave transferable</span>:<span class='ul_span_2'>".$format6['is_leavetransfer']."</span></li></ul></div>";
+							
+						}
+			}
+			else 
+			{
+				$htmlContent .= "<div class='dashboard_bottom_div' ><span class='no_text no_data'>No leave management options</span></div>"; 
+			}
+				if(!empty($url)) 
+				$htmlContent .='<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a>';
+				$htmlContent .='</div>';		
+        	return $htmlContent ;//.='<a href="'.DOMAIN.$url.'"class="box_link view_link">'.$btnText.'</a></div>';					
 	}
 
 }//end of class

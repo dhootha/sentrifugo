@@ -24,12 +24,14 @@
 	$data = $storage->read();
 	$request = Zend_Controller_Front::getInstance();
 	$controllerName = $request->getRequest()->getControllerName();
-
+        
+        
+        
 	if($data != "") {
-		/*if($controllerName == 'managemenus')
-			include "configheader.phtml";
-		else*/
-		include "hrmsheader.phtml";
+		if($controllerName == 'wizard')
+			include "wizardheader.phtml";
+		else
+			include "hrmsheader.phtml";
 	} 
 	else {       
 		include "defaultheader.phtml";
@@ -39,7 +41,10 @@
 <?php echo $this->layout()->content; ?>
 <?php 
 if($data != "") {
-	include "hrmsfooter.phtml";
+	if($controllerName == 'wizard')
+		include "wizardfooter.phtml";
+	else		
+		include "hrmsfooter.phtml";
 }
 else
 {

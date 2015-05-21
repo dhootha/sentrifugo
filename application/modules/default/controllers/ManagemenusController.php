@@ -46,6 +46,7 @@ class Default_ManagemenusController extends Zend_Controller_Action
     {			
         $menu_model = new Default_Model_Menu();
         $isactiveArr = $menu_model->getisactivemenus();
+        //echo "<pre>"; print_r($isactiveArr); exit();
         $this->view->isactArr = $isactiveArr;
         $this->view->messages = $this->_helper->flashMessenger->getMessages();
     }
@@ -66,10 +67,9 @@ class Default_ManagemenusController extends Zend_Controller_Action
         try 
         { 
 			
-            //if($this->_request->getPost() && $chk_menu != '' && $chk_menu != ',')
             if($this->_request->getPost())
             { 
-                $defined_menus = array(TIMEMANAGEMENT,PERFORMANCEAPPRAISAL_M,RESOURCEREQUISITION,BGCHECKS,STAFFING,COMPLIANCES,REPORTS,BENEFITS);
+                $defined_menus = array(TIMEMANAGEMENT,RESOURCEREQUISITION,BGCHECKS,STAFFING,COMPLIANCES,REPORTS,BENEFITS,SERVICEDESK,PERFORMANCEAPPRAISAL);
                 $chk_menu = $this->_request->getParam('chk_menu');// menus to be activate
 				$chk_menu = trim($chk_menu,',');
 				$logmenus = $chk_menu;
@@ -80,13 +80,10 @@ class Default_ManagemenusController extends Zend_Controller_Action
                 else 
                     $chk_menu = array();
                 $disable_menus = array_diff($defined_menus, $chk_menu); //menus to be deactivated                              
-                //echo "<pre>"; print_r($defined_menus); echo "</pre>";exit;
-				//echo "<pre>"; print_r($defined_menus);print_r($chk_menu);print_r($disable_menus);echo "</pre>"; die;
                 if(!empty($chk_menu))
                 {                                        
                     foreach($chk_menu as $menu)
                     {       
-						//echo $menu.'</br>';
                         $this->save_helper(1,$menu);                                                          
                     }
                                         
@@ -110,7 +107,6 @@ class Default_ManagemenusController extends Zend_Controller_Action
 	                            'childrecordid' => $menuNames,
 	                            'date' => $date->get('yyyy-MM-dd HH:mm:ss')
 	                            );
-	            //echo "<pre>";print_r($logarr);echo "</pre>";
 	            $jsonlogarr = json_encode($logarr);
 	            $menuID = MANAGEMODULE;
 	            $actionflag = 2;
@@ -122,12 +118,6 @@ class Default_ManagemenusController extends Zend_Controller_Action
                     $trDb->commit();		
                     sapp_Global::generateAccessControl();
                     $this->_redirect('managemenus');
-                 
-                /*else
-                {
-                  $this->_helper->getHelper("FlashMessenger")->addMessage("No Menus were added.");
-                  $this->_redirect('managemenus');				  
-                }*/ 				
             }
 			else
             {
@@ -138,7 +128,6 @@ class Default_ManagemenusController extends Zend_Controller_Action
         catch (Exception $e) 
         {		
             $trDb->rollBack();			
-           // $msg = Zend_Registry::get('exception_msg');	
             $msg = $e->getMessage();//echo $msg; die;
             $this->_helper->getHelper("FlashMessenger")->addMessage($msg);
             $this->_redirect('managemenus');	  			
@@ -170,112 +159,17 @@ class Default_ManagemenusController extends Zend_Controller_Action
             $menumodel->UpdateMenus($querystring_menu);        
             $querystring_menu = "UPDATE main_privileges SET isactive = ".$is_active." where $where_privi  ";
             $menumodel->UpdateMenus($querystring_menu);
-            if($menu == PERFORMANCEAPPRAISAL_M)
+            /*if(defined('PERFORMANCEAPPRAISAL_M') && $menu == PERFORMANCEAPPRAISAL_M)
             {
                 $querystring_menu = "UPDATE main_menu SET isactive = ".$is_active." where id in (".MYPERFORMANCEAPPRAISAL.",".MYTEAMPERFORMANCEAPPRAISAL.")  ";
                 $menumodel->UpdateMenus($querystring_menu);
 
                 $querystring_menu = "UPDATE main_privileges SET isactive = ".$is_active." where object in (".MYPERFORMANCEAPPRAISAL.",".MYTEAMPERFORMANCEAPPRAISAL.")  ";
                 $menumodel->UpdateMenus($querystring_menu);
-            }
+            }*/
 
            
            
         }
     }
-        /*
-         public function saveAction()
-    {
-        $auth = Zend_Auth::getInstance();
-     	if($auth->hasIdentity())
-        {
-            $loginUserId = $auth->getStorage()->read()->id;
-        } 
-        $trDb = Zend_Db_Table::getDefaultAdapter();		
-        // starting transaction
-        $trDb->beginTransaction();	
-        try 
-        {  
-            if($this->_request->getPost())
-            {
-                $defined_menus = array(130,18,19,5,6,7,8);
-                                $chk_menu = $this->_request->getParam('chk_menu');
-                                
-                                $totalmenusize = $this->_request->getParam('totalmenusize');
-                                //echo sizeof($chk_menu['child']);exit;
-                                //echo "<pre>";print_r(array_diff($defined_menus, $chk_menu));echo "</pre>";exit;
-
-                                if(!empty($chk_menu))
-                                {
-                                        $date = new Zend_Date();
-                                                      $menumodel = new Default_Model_Menu();
-                                                      $resArrData =  $menumodel->getExcludedMenuids();
-                                                              foreach($resArrData as $resdata)
-                                                              {
-                                                                $resArr[]= $resdata['id'];
-                                                              }
-                                                      $resArrString = implode(",",$resArr);	
-                                                      $actionflag = 2;
-                                                      $totalisactivezero = $menumodel->UpdateMenuTable($resArrString);
-                                                      $where = '';
-                                                      foreach ($chk_menu['child'] as $menuids)
-                                                      {
-                                                        $where.= " id= $menuids OR ";
-                                                        $menulogids[] = $menuids;
-                                                      }
-                                                      //echo "<pre>";print_r($menulogids);exit;
-                                                      $menuidstr = implode(",",$menulogids);
-                                                      $where = trim($where," OR");
-                                                      $querystring = "UPDATE main_menu SET isactive = 1 where $where  ";
-                                                      $menusave = $menumodel->UpdateMenus($querystring);
-                                                      // Code to Update Logmanager table with comma separated menuids 
-                                                              $logarr = array('userid' => $loginUserId,
-                                                                      'recordid' =>$menuidstr,
-                                                                      'childrecordid' => '',
-                                                                      'date' => $date->get('yyyy-MM-dd HH:mm:ss')
-                                                                      );
-                                                          $jsonlogarr = json_encode($logarr);
-                                                              $menuID = 0;
-                                                              $actionflag = 2;
-                                                              $id = $menumodel->addOrUpdateMenuLogManager($menuID,$actionflag,$jsonlogarr,$loginUserId);
-
-                                                      $this->_helper->getHelper("FlashMessenger")->addMessage("Menus added successfully.");	
-                          $trDb->commit();							
-
-                                                              
-                                                              $this->_redirect('managemenus');
-                                              } 
-                                              else
-                                              {
-                                                $this->_helper->getHelper("FlashMessenger")->addMessage("No Menus were added.");
-                                                $this->_redirect('managemenus');				  
-                                              } 				
-                                      }
-              }
-              catch (Exception $e) 
-              {
-                      $trDb->rollBack();			
-                      $msg = Zend_Registry::get('exception_msg');	
-          $this->_helper->getHelper("FlashMessenger")->addMessage($msg);
-                      $this->_redirect('managemenus');	  			
-                      //$this->_helper->json(array('saved'=>'exception','exception'=>$msg));	
-              }
-
-	}
-         */
-	
-	/*public function managemenuAction(){
-		$this->view->msg='this is manage menu';
-	}
-	public function sitepreferencesAction()
-	{
-	}
-	
-	public function newAction()
-	{
-		$menu_model = new Default_Model_Menu();
-		$isactiveArr = $menu_model->getisactivemenus();
-		$this->view->isactArr = $isactiveArr;
-		$this->view->messages = $this->_helper->flashMessenger->getMessages();
-	}*/
 }

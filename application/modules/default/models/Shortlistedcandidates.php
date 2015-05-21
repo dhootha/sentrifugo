@@ -47,13 +47,13 @@ class Default_Model_Shortlistedcandidates extends Zend_Db_Table_Abstract
                         ->setIntegrityCheck(false)
                         ->from(array('c'=>$this->_name),array('id'=>'c.id','cand_status'=>'c.cand_status','candidate_name'=>'c.candidate_name','emailid'=>'c.emailid','contact_number'=>'c.contact_number'))
                         ->joinInner(array('r'=>'main_requisition'), "r.id = c.requisition_id and r.isactive = 1",array('requisition_code'=>'r.requisition_code'))
-                        ->joinInner(array('p'=>'main_positions'), "p.id = r.position_id",array('positionname'=>'p.positionname'))
-                        ->joinInner(array('j'=>'main_jobtitles'), "j.id = r.jobtitle",array('jobtitlename'=>'j.jobtitlename'))
+                        ->joinLeft(array('p'=>'main_positions'), "p.id = r.position_id",array('positionname'=>'p.positionname'))
+                        ->joinLeft(array('j'=>'main_jobtitles'), "j.id = r.jobtitle",array('jobtitlename'=>'j.jobtitlename'))
                         ->joinInner(array('m'=>'main_interviewdetails'), "m.candidate_id = c.id and m.isactive = 1",array('interview_status'=>'m.interview_status'))
                         ->where($where)
                         ->order("$by $sort") 
                         ->limitPage($pageNo, $perPage); 
-		//echo $shortlistedData->__toString(); 
+		
         return $shortlistedData;       		
 	}
 	
@@ -88,20 +88,14 @@ class Default_Model_Shortlistedcandidates extends Zend_Db_Table_Abstract
 	   $tablecontent = $this->getShortlistedData($sort, $by, $pageNo, $perPage,$searchQuery,$queryflag);     
 	   
 	   $search_filters = array();
-	   /* if($statusid != 0)
-        {
-            unset($tableFields['cand_status']);
-            
-        }
-        else
-        {*/
+	   
             $search_filters = array(
                 'cand_status' => array(
                     'type' => 'select',
                     'filter_data' => array('' => 'All','Selected' => 'Selected','Shortlisted' => 'Shortlisted','Rejected'=>'Rejected'),
                 ),
             );
-      //  }
+      
 	  
 	  $dataTmp = array(
                 'sort' => $sort,
@@ -144,7 +138,7 @@ class Default_Model_Shortlistedcandidates extends Zend_Db_Table_Abstract
 	public function getinterviewrounds($intrid,$reqid,$candid)
 	{
 		$db = Zend_Db_Table::getDefaultAdapter();	
-		//$intervwData = $db->query("select * from main_interviewrounddetails where isactive = 1 AND interview_id = ".$intrid." AND req_id = ".$reqid." AND candidate_id = ".$candid.";");
+		
 		$intervwData = $db->query("select *,u.userfullname as interviewer,ct.city,s.state,c.country from main_interviewrounddetails i 
 									left join main_users u on u.id = i.interviewer_id
 									left join main_countries c on c.country_id_org = i.int_country

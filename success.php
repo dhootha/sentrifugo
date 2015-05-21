@@ -31,7 +31,6 @@ require 'data/PHPMailer/PHPMailerAutoload.php';
 <?php 
 if(!empty($_POST))
 {
-	//echo "<pre>";print_r($_POST);exit;
 	$msgarray = array();
     if(isset($_POST['btnfinish']) && isset($_POST['mailcontent']))
     {
@@ -55,14 +54,14 @@ if(!empty($_POST))
 								{
 								  $msgarray['error'] = "<div>Problem encountered while sending mail to ".SUPERADMIN_EMAIL."</div><br/>
 														<div>Login Credentials for ".APPLICATION_NAME."</div><br/>
-														<div style='color: rgb(105, 145, 61); font-weight: 400; margin-bottom: 14px; margin-top: 8px;'>Username : empp-0001</div>
+														<div style='color: rgb(105, 145, 61); font-weight: 400; margin-bottom: 14px; margin-top: 8px;'>Username : empp0001</div>
 														<div style='color: rgb(105, 145, 61); font-weight: 400;'>Password : ".$generatedPswd."</div><br/><br/>
 								  						<div style='margin-bottom: 20px;'>Follow this <a style='color: rgb(172, 88, 26); text-decoration: none;' href=".DOMAIN.">link</a> to open application.</div>";
 								}else 
 								{
 								  $msgarray['error'] = "<div>Problem encountered while sending mail to ".SUPERADMIN_EMAIL."</div><br/>
 														<div>Login Credentials for ".APPLICATION_NAME."</div><br/>
-														<div style='color: rgb(105, 145, 61); font-weight: 400; margin-bottom: 14px; margin-top: 8px;'>Username : empp-0001</div>
+														<div style='color: rgb(105, 145, 61); font-weight: 400; margin-bottom: 14px; margin-top: 8px;'>Username : empp0001</div>
 														<div style='color: rgb(105, 145, 61); font-weight: 400;'>Password : ".$generatedPswd."</div><br/><br/>
 								  						<div style='margin-bottom: 20px;'>After you delete, move or rename the install directory follow this  <a style='color: rgb(172, 88, 26); text-decoration: none;' href=".DOMAIN.">link</a> to access your application. While the install directory exists, only the Install Panel will be accessible.</div>";	
 									
@@ -75,14 +74,14 @@ if(!empty($_POST))
 								{
 								  $msgarray['error'] = "<div class='sucss_mess_info'>Mail has been succesfully sent to ".SUPERADMIN_EMAIL."</div><br/>
 														<div>Login Credentials for ".APPLICATION_NAME."</div><br/>
-														<div style='color: rgb(105, 145, 61); font-weight: 400; margin-bottom: 14px; margin-top: 8px;'>Username : empp-0001</div>
+														<div style='color: rgb(105, 145, 61); font-weight: 400; margin-bottom: 14px; margin-top: 8px;'>Username : empp0001</div>
 														<div style='color: rgb(105, 145, 61); font-weight: 400;'>Password : ".$generatedPswd."</div><br/><br/>
 								  						<div style='margin-bottom: 20px;'>Follow this <a style='color: rgb(172, 88, 26); text-decoration: none;' href=".DOMAIN.">link</a> to open application.</div>";
 								}else 
 								{
 								  $msgarray['error'] = "<div>Mail has been succesfully sent to ".SUPERADMIN_EMAIL."</div><br/>
 								  						<div>Login Credentials for ".APPLICATION_NAME."</div><br/>
-														<div style='color: rgb(105, 145, 61); font-weight: 400; margin-bottom: 14px; margin-top: 8px;'>Username : empp-0001</div>
+														<div style='color: rgb(105, 145, 61); font-weight: 400; margin-bottom: 14px; margin-top: 8px;'>Username : empp0001</div>
 														<div style='color: rgb(105, 145, 61); font-weight: 400;'>Password : ".$generatedPswd."</div><br/><br/>
 								  						<div style='margin-bottom: 20px;'>After you delete, move or rename the install directory follow this  <a style='color: rgb(172, 88, 26); text-decoration: none;' href=".DOMAIN.">link</a> to access your application. While the install directory exists, only the Install Panel will be accessible.</div>";	
 									
@@ -97,7 +96,6 @@ if(!empty($_POST))
             {   
         
    				   $msgarray['error'] = $e->getMessage();                     
-                  //$msgarray['error'] = "Some error occured while connecting to database.";
             }
     }
 }
@@ -113,7 +111,7 @@ function sendconfirmationmail($content,$encodedPswd)
 			                       <div>
 										<div>Dear Super Admin,</div><br/>
 										<div>Sentrifugo has been successfully installed. Following are the Super Admin login credentials for '.APPLICATION_NAME.':</div><br/>
-										<div>Username : empp-0001</div>
+										<div>Username : empp0001</div>
 										<div>Password : '.$encodedPswd.'</div><br/><br/>
 										<div>'.$content.'</div>
 								  </div>
@@ -126,7 +124,7 @@ function sendconfirmationmail($content,$encodedPswd)
 			                </div>    
             			</div>
     					</div>';
-	   
+	$username = '';   
     $mail = new PHPMailer(); // create a new object
     $mail->isSMTP(); // enable SMTP
     $mail->SMTPDebug = 0; // debugging: 1 = errors and messages, 2 = messages only
@@ -159,7 +157,7 @@ function renamefolder()
         {
 			if(is_writable("install"))
 			{
-				if(rename("install","install_old"))
+				if(@rename("install","install_old"))
 					return "true"; 
 				else 
 					return "false";
@@ -197,6 +195,7 @@ if(!empty($_POST))
 	$mailtls = $_POST['mailtls'];
 	$mailport = $_POST['mailport'];
 	$cronjoburl = $_POST['cronjoburl'];
+	$expirydocurl = $_POST['expirydocurl'];
 	
 ?>	
 
@@ -223,7 +222,7 @@ if(!empty($_POST))
           <div id="successmsgdiv"><?php echo isset($msgarray['error'])?$msgarray['error']:'';?></div>
 			<form name="generatereport" id="generatereport" action="data/generatereport.php" method="post">
 			<input type="hidden" id="pdfcontent" name="pdfcontent" value="<?php echo $content;?>" />
-			<input type="hidden" id="loginusername" name="loginusername" value="empp-0001" />
+			<input type="hidden" id="loginusername" name="loginusername" value="empp0001" />
 			<input type="hidden" id="loginpwd" name="loginpwd" value="<?php echo $generatedPswd;?>" />
 			<input type="hidden" id="dbhost" name="dbhost" value="<?php echo $dbhost;?>" />
 		    <input type="hidden" id="dbusername" name="dbusername" value="<?php echo $dbusername;?>" />
@@ -238,6 +237,7 @@ if(!empty($_POST))
 		    <input type="hidden" id="mailtls" name="mailtls" value="<?php echo $mailtls;?>" />
 		    <input type="hidden" id="mailport" name="mailport" value="<?php echo $mailport;?>" />
 		    <input type="hidden" id="cronjoburl" name="cronjoburl" value="<?php echo $cronjoburl;?>" />
+		    <input type="hidden" id="expirydocurl" name="expirydocurl" value="<?php echo $expirydocurl;?>" />
 			<input type="submit" name="btnfinish" id="idbtnfinish"    value="Download PDF" />
 			</form>
         </div>

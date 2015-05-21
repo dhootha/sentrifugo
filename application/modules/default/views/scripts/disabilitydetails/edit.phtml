@@ -24,7 +24,6 @@
    <div class="ml-alert-1-info m1-info-set">
 				<div class="style-1-icon info"></div>
 				<?php if($this->rowexist == 'norows'){?>
-					<!--No record exists-->
 					No data found.
 				<?php }else{?>
 						Employee deleted
@@ -60,14 +59,14 @@ sapp_Global::generateClientValidations($this->form);
         <div class="total-form-controller">
 		 
 			<div class="new-form-ui clearb" id="injuryType">
-			    <label class="required">Disability Type</label>
+			    <label >Disability Type</label>
 				<div class="division"><?php echo $this->form->disability_type; ?></div>
 				 <?php if(isset($this->msgarray['disability_type'])){?>
 				   <span class="errors" id="errors-<?php echo $this->form->disability_type->getId(); ?>"><?php echo $this->msgarray['disability_type'];?></span>
 				<?php }?>
 				</div>
 			<div class="new-form-ui clearb">
-			  <label id="injuredDate" class="required">Disability <img class="tooltip" title="Accepts spaces, hyphens, numbers and characters" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"></label>
+			  <label id="injuredDate" >Disability <img class="tooltip" title="Accepts spaces, hyphens, numbers and characters" src="<?php echo $this->baseUrl().'/public/media/';?>images/help.png"></label>
 				<div class="division loca_state_div"><?php echo $this->form->disability_name; ?></div>
 				<?php if(isset($this->msgarray['disability_name'])){?>
 				<span class="errors" id="errors-<?php echo $this->form->disability_name->getId(); ?>"><?php echo $this->msgarray['disability_name'];?></span>
@@ -75,7 +74,7 @@ sapp_Global::generateClientValidations($this->form);
 			</div>
 			
 			<div class="new-form-ui textareaheight clearb" id="injuryDesc">
-				<label class="required">Description/Reason</label>
+				<label >Description/Reason</label>
 				<div class="division"><?php echo $this->form->disability_description; ?></div>
 				 <?php if(isset($this->msgarray['disability_description'])){?>
 				   <span class="errors" id="errors-<?php echo $this->form->disability_description->getId(); ?>"><?php echo $this->msgarray['disability_description'];?></span>
@@ -84,7 +83,7 @@ sapp_Global::generateClientValidations($this->form);
 			
 																	
 			<div class="new-form-ui clearb" id="OtherdisabilityType" style="display:none;">
-			  <label class="required">Other Disability Type</label>
+			  <label >Other Disability Type</label>
 			  <div class="division"><?php echo $this->form->other_disability_type; ?></div>
 				<?php if(isset($this->msgarray['other_disability_type'])){?>
 				   <span class="errors" id="errors-<?php echo $this->form->other_disability_type->getId(); ?>"><?php echo $this->msgarray['other_disability_type'];?></span>
@@ -92,34 +91,19 @@ sapp_Global::generateClientValidations($this->form);
 			</div>
         <div class="new-form-ui-submit" id="formSubmit">
         <?php echo $this->form->submit; ?>
-       <!-- <button onclick="window.location.href='/hrms/employee';" type="button" id="Cancel" name="Cancel">Cancel</button>-->
         </div>
 </div>
 </form>
 </div>
 </div>
 
-<script>
+<script type='text/javascript'>
 $(document).ready(function(){
 	var disabilityType = $("#disability_type").val();
 	if(disabilityType !="" && disabilityType == "other impairments")
 	{	
 		showdisabilityField('disability_type');
 	}
-	
-	 /* Making window responsive
- 	var complete_width = $('.poc-ui-data-control').width();
-	$('.left-block-ui-data').css("width", "230");
-	$('.right-block-data').css("width", (complete_width-(253)));	
-		
-	 function checkWidth() {
-        var complete_width = $('.poc-ui-data-control').width();		
-		$('.left-block-ui-data').css("width", "230");
-		$('.right-block-data').css("width", (complete_width-(253)));		
-    }
-	$(window).resize(function() {
-		checkWidth();
-	}); */
 	
     $("#disabilitydetails").addClass('active');
 	$("#disabilitydetails").removeAttr("onclick");
